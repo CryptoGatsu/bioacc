@@ -123,6 +123,10 @@ cursor:pointer;
 margin-top:15px;
 }
 
+.walletButton{
+margin-bottom:15px;
+}
+
 .signatures{
 margin-top:40px;
 border-top:1px solid #222;
@@ -130,7 +134,7 @@ padding-top:20px;
 }
 
 .signature{
-margin-bottom:10px;
+margin-bottom:8px;
 color:#aaa;
 }
 
@@ -168,6 +172,7 @@ color:#777;
 
 </div>
 
+
 <div class="contract">
 
 bio/acc contract
@@ -191,9 +196,9 @@ bio/acc (Biotech Accelerationism) is the belief that humanity should aggressivel
 
 as computation becomes the substrate of intelligence, biotechnology becomes the interface for engineering life itself.
 
-dna is the operating system of biology.  
-ai is the discovery engine.  
-crypto is the funding layer.
+dna is the operating system of biology  
+ai is the discovery engine  
+crypto is the funding layer
 
 together they form the infrastructure for accelerating biological innovation.
 
@@ -209,7 +214,7 @@ together they form the infrastructure for accelerating biological innovation.
 
 <b>ai protein design</b>
 
-<p>ai systems are generating proteins never seen in nature.</p>
+<p>ai models are generating proteins never seen in nature.</p>
 
 </div>
 
@@ -217,13 +222,13 @@ together they form the infrastructure for accelerating biological innovation.
 
 <b>crispr evolution</b>
 
-<p>next generation gene editing tools are enabling precision dna engineering.</p>
+<p>next generation gene editing tools enable precision dna engineering.</p>
 
 </div>
 
 <div class="news-item">
 
-<b>desci</b>
+<b>decentralized science</b>
 
 <p>crypto communities are funding biotech research outside traditional institutions.</p>
 
@@ -249,7 +254,7 @@ crispr discovered as programmable gene editing.
 
 <b>2020</b>
 
-ai protein folding breakthroughs.
+ai protein folding breakthroughs transform biology.
 
 </div>
 
@@ -275,63 +280,35 @@ ai + biotech accelerate biological engineering.
 
 <h2>research explorer</h2>
 
-<div class="topic" onclick="toggle('crispr')">
-
-> crispr gene editing
-
-</div>
-
+<div class="topic" onclick="toggle('crispr')">> crispr gene editing</div>
 <div id="crispr" class="topic-content">
-
 crispr enables precise dna editing using programmable molecular scissors.
-
 </div>
 
-<div class="topic" onclick="toggle('protein')">
-
-> ai protein design
-
-</div>
-
+<div class="topic" onclick="toggle('protein')">> ai protein design</div>
 <div id="protein" class="topic-content">
-
-ai models can generate new proteins for medicines and enzymes.
-
+ai systems can generate new proteins used for drugs and enzymes.
 </div>
 
-<div class="topic" onclick="toggle('longevity')">
-
-> longevity biotech
-
-</div>
-
+<div class="topic" onclick="toggle('longevity')">> longevity biotechnology</div>
 <div id="longevity" class="topic-content">
-
-gene therapy and cell reprogramming aim to slow or reverse aging.
-
+gene therapy and cellular reprogramming aim to slow or reverse aging.
 </div>
 
-<div class="topic" onclick="toggle('desci')">
-
-> decentralized science
-
-</div>
-
+<div class="topic" onclick="toggle('desci')">> decentralized science</div>
 <div id="desci" class="topic-content">
-
-desci allows communities to fund research directly through crypto.
-
+desci allows communities to fund biotech research through crypto.
 </div>
 
 
 
 <h2>sign the bio/acc manifesto</h2>
 
-<p>
+<p>support the biotech acceleration movement by signing the manifesto.</p>
 
-support the biotech acceleration movement by signing the manifesto.
+<button class="walletButton" onclick="connectWallet()">connect wallet</button>
 
-</p>
+<p id="walletStatus"></p>
 
 <form id="manifestoForm">
 
@@ -339,14 +316,11 @@ support the biotech acceleration movement by signing the manifesto.
 
 <input placeholder="first name (optional)" id="name">
 
-<input placeholder="solana wallet (optional)" id="wallet">
-
 <input placeholder="affiliation (optional)" id="affiliation">
 
 <button type="submit">sign manifesto</button>
 
 </form>
-
 
 
 <div class="signatures" id="signatures">
@@ -383,7 +357,32 @@ bio/acc is a movement accelerating biotechnology.
 
 
 
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+
 <script>
+
+let walletAddress=null
+
+async function connectWallet(){
+
+if(window.solana){
+
+const resp=await window.solana.connect()
+
+walletAddress=resp.publicKey.toString()
+
+document.getElementById("walletStatus").innerText=
+"wallet connected: "+walletAddress
+
+}else{
+
+alert("install phantom wallet")
+
+}
+
+}
+
+
 
 function toggle(id){
 
@@ -413,7 +412,7 @@ signatures.forEach(s=>{
 const div=document.createElement("div")
 div.className="signature"
 
-div.innerText=`@${s.twitter} ${s.name? "• "+s.name:""} ${s.affiliation? "• "+s.affiliation:""}`
+div.innerText=`@${s.twitter} • ${s.wallet.slice(0,6)}...${s.wallet.slice(-4)}`
 
 list.appendChild(div)
 
@@ -423,16 +422,33 @@ list.appendChild(div)
 
 render()
 
-form.addEventListener("submit",e=>{
+
+
+form.addEventListener("submit",async e=>{
 
 e.preventDefault()
+
+if(!walletAddress){
+
+alert("connect wallet first")
+
+return
+
+}
+
+const message="I support Biotech Accelerationism"
+
+const encoded=new TextEncoder().encode(message)
+
+const signed=await window.solana.signMessage(encoded,"utf8")
 
 const sig={
 
 twitter:document.getElementById("twitter").value,
 name:document.getElementById("name").value,
-wallet:document.getElementById("wallet").value,
-affiliation:document.getElementById("affiliation").value
+affiliation:document.getElementById("affiliation").value,
+wallet:walletAddress,
+signature:Array.from(signed.signature)
 
 }
 
