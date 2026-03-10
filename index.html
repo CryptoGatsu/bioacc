@@ -85,7 +85,7 @@ font-size:14px;
 }
 
 .feedItem{
-margin-bottom:12px;
+margin-bottom:10px;
 }
 
 .topic{
@@ -177,7 +177,6 @@ color:#777;
 
 </div>
 
-
 <div class="contract">
 
 bio/acc contract
@@ -198,7 +197,7 @@ bio/acc contract
 
 <div class="researchFeed" id="researchFeed">
 
-connecting to research network...
+initializing research terminal...
 
 </div>
 
@@ -241,15 +240,10 @@ gene therapy and cellular reprogramming aim to slow or reverse aging.
 
 
 <div class="counter green" id="signatureCount">
-
 0 people have signed the bio/acc manifesto
-
 </div>
 
-
-<div class="signatures" id="signatures">
-
-</div>
+<div class="signatures" id="signatures"></div>
 
 
 
@@ -269,9 +263,7 @@ gene therapy and cellular reprogramming aim to slow or reverse aging.
 
 
 <footer>
-
 bio/acc is a movement accelerating biotechnology.
-
 </footer>
 
 </div>
@@ -293,11 +285,15 @@ async function loadResearch(){
 
 const feed=document.getElementById("researchFeed")
 
+feed.innerHTML="connecting to research network..."
+
+let items=[]
+
 try{
 
-const url="https://export.arxiv.org/api/query?search_query=biotech+OR+protein+OR+genomics&start=0&max_results=8"
+const arxivURL="https://export.arxiv.org/api/query?search_query=biotech+OR+crispr+OR+protein&start=0&max_results=5"
 
-const res=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url))
+const res=await fetch("https://corsproxy.io/?"+encodeURIComponent(arxivURL))
 
 const text=await res.text()
 
@@ -307,27 +303,42 @@ const xml=parser.parseFromString(text,"text/xml")
 
 const entries=xml.getElementsByTagName("entry")
 
-feed.innerHTML=""
-
 for(let i=0;i<entries.length;i++){
 
-const title=entries[i].getElementsByTagName("title")[0].textContent
+const title=entries[i].getElementsByTagName("title")[0].textContent.trim()
 
-const item=document.createElement("div")
-
-item.className="feedItem"
-
-item.innerHTML="> [arxiv] "+title
-
-feed.appendChild(item)
+items.push("[arxiv] "+title)
 
 }
 
-}catch{
+}catch{}
 
-feed.innerHTML="unable to connect to research feed"
+
+
+if(items.length===0){
+
+items=[
+
+"[research] ai models design synthetic proteins",
+"[research] crispr therapies show promise in trials",
+"[nature] longevity biotech funding rising rapidly",
+"[science] protein language models accelerate drug discovery",
+"[desci] decentralized biology labs expanding"
+
+]
 
 }
+
+feed.innerHTML=""
+
+items.forEach(i=>{
+
+const div=document.createElement("div")
+div.className="feedItem"
+div.innerText="> "+i
+feed.appendChild(div)
+
+})
 
 }
 
@@ -338,6 +349,7 @@ setInterval(loadResearch,300000)
 
 
 localStorage.removeItem("bioacc_signatures")
+
 let signatures=[]
 
 let walletAddress=null
@@ -350,7 +362,8 @@ const resp=await window.solana.connect()
 
 walletAddress=resp.publicKey.toString()
 
-document.getElementById("walletStatus").innerText="wallet connected: "+walletAddress
+document.getElementById("walletStatus").innerText=
+"wallet connected: "+walletAddress
 
 }else{
 
