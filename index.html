@@ -44,14 +44,14 @@ margin-bottom:30px;
 
 h1{
 color:white;
-font-size:36px;
 font-weight:normal;
+font-size:36px;
 }
 
 h2{
 color:white;
-margin-top:70px;
 font-weight:normal;
+margin-top:70px;
 }
 
 .green{
@@ -63,6 +63,7 @@ border-top:1px solid #222;
 border-bottom:1px solid #222;
 padding:20px 0;
 margin:40px 0;
+font-size:18px;
 text-align:center;
 }
 
@@ -76,7 +77,6 @@ display:inline-block;
 
 .market{
 margin-top:20px;
-font-size:18px;
 }
 
 .researchFeed{
@@ -87,7 +87,6 @@ height:320px;
 overflow-y:auto;
 margin-top:20px;
 font-size:14px;
-word-break:break-word;
 }
 
 .feedItem{
@@ -100,10 +99,45 @@ border:none;
 padding:8px 14px;
 cursor:pointer;
 margin-top:10px;
+font-family:inherit;
 }
 
-.manifesto p{
+input,textarea{
+background:#000;
+border:1px solid #333;
+color:white;
+padding:10px;
+width:100%;
 margin-top:10px;
+font-family:inherit;
+}
+
+textarea{
+height:80px;
+}
+
+.walletButton{
+margin-bottom:15px;
+background:#7CFF3A;
+border:none;
+padding:10px 16px;
+cursor:pointer;
+}
+
+.signatures{
+margin-top:30px;
+border-top:1px solid #222;
+padding-top:20px;
+}
+
+.signature{
+margin-bottom:14px;
+color:#aaa;
+}
+
+.counter{
+margin-top:10px;
+font-size:18px;
 }
 
 .links a{
@@ -156,11 +190,11 @@ bio/acc contract
 
 market cap: <span id="marketCap">loading...</span>
 
-<br><br>
+<br>
 
 <button class="refreshButton" onclick="refreshMarketCap()">refresh market cap</button>
 
-<div id="marketStatus" style="margin-top:6px;color:#777;font-size:14px;"></div>
+<div id="marketStatus" style="color:#777;font-size:14px;"></div>
 
 </div>
 
@@ -176,65 +210,80 @@ market cap: <span id="marketCap">loading...</span>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
-
 <h2>bio/acc manifesto</h2>
 
-<div class="manifesto">
-
-<p><b>Bio/acc principles</b></p>
-
-<p><b>1. DECENTRALIZE biopower</b></p>
+<p><b>DECENTRALIZE biopower</b></p>
 
 <p>
-Harness <b>decentralized networks</b> for data storage, transactions and fundraising to build global collectives that fund, coordinate and commercialize scientific research outside the traditional gates and keepers.
+Harness decentralized networks for data storage, transactions and fundraising
+to coordinate scientific research outside traditional gatekeepers.
 </p>
 
-<p><b>2. ENGINEER ethical evolution</b></p>
+<p><b>ENGINEER ethical evolution</b></p>
 
 <p>
-<b>Biosafety and accountability</b> can be embedded through <b>smart contracts</b> and decentralized governance.
+Build biosafety and accountability into biotechnology through cryptography,
+smart contracts and community governance.
 </p>
 
-<p><b>3. ALIGN with ecological blueprints</b></p>
+<p><b>ALIGN with ecological blueprints</b></p>
 
 <p>
-Use <b>biomimicry</b> and biotechnology to restore ecosystems and engineer organisms that repair planetary systems.
+Engineer biology inspired by nature to restore ecosystems and planetary health.
 </p>
 
-<p><b>4. HACK health</b></p>
+<p><b>HACK health</b></p>
 
 <p>
-Assert the right to explore and optimize <b>human biology</b>.
+Every human has the right to explore and optimize their biology and cognition.
 </p>
 
-<p><b>5. OPEN-SOURCE the code</b></p>
+<p><b>OPEN-SOURCE biology</b></p>
 
 <p>
-Genomes, drug designs and experimental protocols should exist in a <b>global public commons</b>.
+The code of life should be a global commons accessible to humanity.
 </p>
 
-<p><b>6. ACCELERATE supply chains</b></p>
+<p><b>ACCELERATE supply chains</b></p>
 
 <p>
-Open biomanufacturing networks dramatically reduce time and cost required to deliver therapies.
+Decentralized biomanufacturing reduces time and cost to deliver therapies.
 </p>
 
 <p><b>The bio/acc trinity</b></p>
 
 <p>
-<b>Biotech + AI + Crypto</b> creates a new acceleration engine for science.
+Biotech + AI + Crypto creates an exponential engine for scientific progress.
 </p>
 
 <p><b>Bio Singularity</b></p>
 
 <p>
-From <b>CRISPR</b> to <b>AI protein design</b> to <b>synthetic ecosystems</b>, biology and computation converge toward a <b>bio singularity</b>.
+CRISPR, AI protein design, synthetic ecosystems and bio-digital interfaces
+will redefine life itself.
 </p>
 
 <p><b>Evolve or expire.</b></p>
 
+<h2>sign the bio/acc manifesto</h2>
+
+<button class="walletButton" onclick="connectWallet()">connect wallet</button>
+
+<p id="walletStatus"></p>
+
+<form id="manifestoForm">
+
+<textarea placeholder="leave a note (optional)" id="note"></textarea>
+
+<button type="submit">sign manifesto</button>
+
+</form>
+
+<div class="counter green" id="signatureCount">
+0 people have signed the bio/acc manifesto
 </div>
 
+<div class="signatures" id="signatures"></div>
 
 <h2>community</h2>
 
@@ -256,6 +305,7 @@ bio/acc is a movement accelerating biotechnology.
 
 </div>
 
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
 
 <script>
 
@@ -283,21 +333,17 @@ feed.appendChild(line)
 
 })
 
-feed.scrollTop=feed.scrollHeight
-
 const updated=new Date(data.lastUpdated)
-
 status.innerText="intelligence updated: "+updated.toLocaleString()
 
 }catch{
 
 feed.innerHTML="[error] intelligence network offline"
-status.innerText="unable to reach intelligence network"
+status.innerText=""
 
 }
 
 }
-
 
 async function refreshMarketCap(){
 
@@ -334,6 +380,93 @@ refreshMarketCap()
 setInterval(refreshResearch,300000)
 setInterval(refreshMarketCap,60000)
 
+let signatures=[]
+let walletAddress=null
+
+async function connectWallet(){
+
+if(window.solana){
+
+const resp=await window.solana.connect()
+
+walletAddress=resp.publicKey.toString()
+
+document.getElementById("walletStatus").innerText="wallet connected: "+walletAddress
+
+}else{
+
+alert("install phantom wallet")
+
+}
+
+}
+
+const form=document.getElementById("manifestoForm")
+const list=document.getElementById("signatures")
+const counter=document.getElementById("signatureCount")
+
+function render(){
+
+list.innerHTML=""
+
+signatures.forEach(s=>{
+
+const div=document.createElement("div")
+div.className="signature"
+
+div.innerHTML=
+s.wallet.slice(0,6)+"..."+s.wallet.slice(-4)+
+(s.note ? "<br>\""+s.note+"\"" : "")
+
+list.appendChild(div)
+
+})
+
+counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
+
+}
+
+render()
+
+form.addEventListener("submit",async e=>{
+
+e.preventDefault()
+
+if(!walletAddress){
+
+alert("connect wallet first")
+return
+
+}
+
+const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
+
+if(alreadySigned){
+
+alert("this wallet has already signed")
+return
+
+}
+
+const message="I support Biotech Accelerationism"
+
+const encoded=new TextEncoder().encode(message)
+
+const signed=await window.solana.signMessage(encoded,"utf8")
+
+const sig={
+wallet:walletAddress,
+note:document.getElementById("note").value,
+signature:Array.from(signed.signature)
+}
+
+signatures.push(sig)
+
+render()
+
+form.reset()
+
+})
 
 const canvas=document.getElementById("particles")
 const ctx=canvas.getContext("2d")
