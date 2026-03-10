@@ -288,31 +288,17 @@ async function loadResearch(){
 
 const feed=document.getElementById("researchFeed")
 
-feed.innerHTML="connecting to biotech intelligence network..."
+feed.innerHTML="connecting to bio/acc intelligence network..."
 
 try{
 
-const rssURL="https://news.google.com/rss/search?q=biotech+crispr+protein+ai&hl=en-US&gl=US&ceid=US:en"
-
-const proxy="https://api.allorigins.win/get?url="
-
-const res=await fetch(proxy+encodeURIComponent(rssURL))
+const res=await fetch("news.json")
 
 const data=await res.json()
 
-const parser=new DOMParser()
-
-const xml=parser.parseFromString(data.contents,"text/xml")
-
-const items=xml.querySelectorAll("item")
-
 feed.innerHTML=""
 
-items.forEach((item,i)=>{
-
-if(i>=8) return
-
-const title=item.querySelector("title").textContent
+data.items.forEach(item=>{
 
 const line=document.createElement("div")
 
@@ -320,17 +306,15 @@ line.className="feedItem"
 
 const time=new Date().toLocaleTimeString()
 
-line.innerHTML="["+time+"] "+title.toLowerCase()
+line.innerHTML="["+time+"] "+item
 
 feed.appendChild(line)
 
 })
 
-}catch(err){
+}catch{
 
-feed.innerHTML="research network temporarily offline"
-
-console.log(err)
+feed.innerHTML="intelligence network offline"
 
 }
 
