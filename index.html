@@ -393,7 +393,9 @@ const feed=document.getElementById("researchFeed")
 
 try{
 
-const res=await fetch("https://export.arxiv.org/api/query?search_query=biotech+OR+protein+OR+genomics&start=0&max_results=6")
+const url="https://export.arxiv.org/api/query?search_query=biotech+OR+protein+OR+genomics&start=0&max_results=8"
+
+const res=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url))
 
 const text=await res.text()
 
