@@ -196,7 +196,12 @@ bio/acc contract
 <h2>live biotech research terminal</h2>
 
 <div class="researchFeed" id="researchFeed">
-    <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>  
+[boot] connecting to bio/acc intelligence network...
+</div>
+
+<div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;">
+loading intelligence metadata...
+</div>  
     
   
 
@@ -289,28 +294,29 @@ LIVE RESEARCH TERMINAL
 
 async function loadResearch(){
 
-const feed=document.getElementById("researchFeed")
-const status=document.getElementById("feedStatus")
-
-feed.innerHTML="[boot] connecting to bio/acc intelligence network..."
+const feed = document.getElementById("researchFeed")
+const status = document.getElementById("feedStatus")
 
 try{
 
-const res=await fetch("news.json?cache="+Date.now())
-const data=await res.json()
+// force fresh fetch (bypass GitHub caching)
+const res = await fetch("news.json?cache=" + Date.now())
 
-feed.innerHTML=""
+const data = await res.json()
 
-let i=0
+feed.innerHTML = ""
 
-function streamLine(){
+let i = 0
+
+function stream(){
 
 if(i >= data.items.length) return
 
-const line=document.createElement("div")
-line.className="feedItem"
+const line = document.createElement("div")
 
-line.innerHTML="> "+data.items[i]
+line.className = "feedItem"
+
+line.innerHTML = "> " + data.items[i]
 
 feed.appendChild(line)
 
@@ -318,26 +324,41 @@ feed.scrollTop = feed.scrollHeight
 
 i++
 
-setTimeout(streamLine,500)
+setTimeout(stream,500)
 
 }
 
-streamLine()
+stream()
 
-const updated=new Date(data.lastUpdated)
+// show last update time
+if(data.lastUpdated){
 
-status.innerText="last intelligence update: "+updated.toLocaleString()
+const updated = new Date(data.lastUpdated)
 
-}catch{
+status.innerText =
+"last intelligence update: " + updated.toLocaleString()
 
-feed.innerHTML="[error] intelligence network offline"
+}else{
+
+status.innerText =
+"last intelligence update: unknown"
+
+}
+
+}catch(e){
+
+feed.innerHTML = "[error] intelligence network offline"
+
+status.innerText = "unable to read intelligence metadata"
 
 }
 
 }
 
+// load when page opens
 loadResearch()
 
+// refresh every 5 minutes
 setInterval(loadResearch,300000)
 
 
