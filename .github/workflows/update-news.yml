@@ -18,7 +18,11 @@ jobs:
 
       - name: Fetch biotech news
         run: |
-          curl -s "https://news.google.com/rss/search?q=biotech+crispr+longevity+ai+biology&hl=en-US&gl=US&ceid=US:en" > feed.xml
+          curl -s "https://news.google.com/rss/search?q=biotech+crispr+longevity+ai+biology&hl=en-US&gl=US&ceid=US:en" > google.xml
+          curl -s "https://export.arxiv.org/rss/q-bio" > arxiv.xml
+          curl -s "https://www.nature.com/subjects/biotechnology.rss" > nature.xml
+
+          cat google.xml arxiv.xml nature.xml > feed.xml
 
       - name: Convert RSS to JSON
         run: |
