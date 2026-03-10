@@ -26,7 +26,7 @@ jobs:
           cat google.xml arxiv.xml nature.xml longevity.xml > feed.xml
           cat google.xml arxiv.xml nature.xml > feed.xml
 
-      - name: Convert RSS feeds to tagged JSON
+      - name: Convert RSS feeds to randomized tagged JSON
         run: |
           sudo apt-get install -y jq
 
@@ -35,18 +35,20 @@ jobs:
           nature=$(grep -oP '(?<=<title>).*?(?=</title>)' nature.xml | tail -n +2 | head -n 5 | sed 's/^/[NATURE] /')
           longevity=$(grep -oP '(?<=<title>).*?(?=</title>)' longevity.xml | tail -n +2 | head -n 4 | sed 's/^/[LONGEVITY] /')
 
+          combined=$(printf "%s\n%s\n%s\n%s" "$news" "$arxiv" "$nature" "$longevity")
+
+          shuffled=$(printf "%s\n" "$combined" | shuf | head -n 20)
+
           printf '{\n' > news.json
           printf '  "lastUpdated": "%s",\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> news.json
           printf '  "items": [\n' >> news.json
-
-          combined=$(printf "%s\n%s\n%s\n%s" "$news" "$arxiv" "$nature" "$longevity" | head -n 20)
 
           i=0
           while read -r line; do
             if [ $i -gt 0 ]; then printf ",\n" >> news.json; fi
             printf '    "%s"' "$line" >> news.json
             i=$((i+1))
-          done <<< "$combined"
+          done <<< "$shuffled"
 
           printf '\n  ]\n}' >> news.json
 
