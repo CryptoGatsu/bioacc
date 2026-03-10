@@ -54,11 +54,6 @@ font-weight:normal;
 margin-top:70px;
 }
 
-h3{
-color:white;
-margin-top:40px;
-}
-
 .green{
 color:#7CFF3A;
 }
@@ -69,6 +64,7 @@ border-bottom:1px solid #222;
 padding:20px 0;
 margin:40px 0;
 font-size:18px;
+text-align:center;
 }
 
 .button{
@@ -80,17 +76,20 @@ margin-right:10px;
 display:inline-block;
 }
 
+.market{
+margin-top:20px;
+font-size:18px;
+}
+
 .researchFeed{
 background:#050505;
 border:1px solid #222;
 padding:20px;
 height:320px;
-max-height:320px;
 overflow-y:auto;
 overflow-x:hidden;
 margin-top:20px;
 font-size:14px;
-white-space:normal;
 word-break:break-word;
 }
 
@@ -98,56 +97,17 @@ word-break:break-word;
 margin-bottom:8px;
 }
 
-.topic{
-color:#7CFF3A;
-margin-top:8px;
-}
-
-.manifesto p{
-margin-top:10px;
-}
-
-input,textarea{
-background:#000;
-border:1px solid #333;
-color:white;
-padding:10px;
-width:100%;
-margin-top:10px;
-font-family:inherit;
-}
-
-textarea{
-height:80px;
-}
-
-button{
+.refreshButton{
 background:#7CFF3A;
+color:black;
+padding:8px 14px;
 border:none;
-padding:10px 16px;
-font-family:inherit;
 cursor:pointer;
 margin-top:15px;
 }
 
-.walletButton{
-margin-bottom:15px;
-}
-
-.signatures{
-margin-top:40px;
-border-top:1px solid #222;
-padding-top:20px;
-}
-
-.signature{
-margin-bottom:14px;
-color:#aaa;
-}
-
-.counter{
+.manifesto p{
 margin-top:10px;
-font-size:18px;
 }
 
 .links a{
@@ -196,6 +156,10 @@ bio/acc contract
 
 <a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">buy</a>
 
+<div class="market">
+market cap: <span id="marketCap">loading...</span>
+</div>
+
 </div>
 
 <h2>live biotech intelligence terminal</h2>
@@ -204,93 +168,65 @@ bio/acc contract
 [boot] connecting to bio/acc intelligence network...
 </div>
 
+<button class="refreshButton" onclick="loadResearch()">refresh intelligence</button>
+
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
-
-<h2>research explorer</h2>
-
-<div id="researchExplorer"></div>
 
 <h2>bio/acc manifesto</h2>
 
 <div class="manifesto">
 
-<h3><b>Bio/acc principles</b></h3>
-
 <p><b>1. DECENTRALIZE biopower</b></p>
 
 <p>
-Harness <b>decentralized networks</b> for data storage, transactions and fundraising to build global collectives that fund, coordinate and commercialize scientific research outside traditional institutions. Build <b>network states</b> with new regulatory frameworks for safe, open clinical trials.
+Harness <b>decentralized networks</b> for data storage, transactions and fundraising to build global collectives that fund and coordinate scientific research outside traditional institutions.
 </p>
 
 <p><b>2. ENGINEER ethical evolution</b></p>
 
 <p>
-<b>Biosafety and accountability</b> can be built into biotechnology through <b>smart contracts</b> and <b>onchain governance</b>. These systems create immutable records while enabling selective disclosure and community-defined safety parameters.
+<b>Biosafety</b> and accountability can be embedded through <b>smart contracts</b>, creating immutable governance and transparent coordination of biotech development.
 </p>
 
 <p><b>3. ALIGN with ecological blueprints</b></p>
 
 <p>
-Integrate biotechnology with <b>natural ecosystems</b> using <b>biomimicry</b>. Design organisms capable of <b>reducing carbon dioxide</b>, <b>consuming plastic</b>, and restoring biodiversity.
+Use <b>biomimicry</b> and biotechnology to restore ecosystems and design organisms that remove carbon and repair planetary systems.
 </p>
 
 <p><b>4. HACK health, claim mind-body liberty</b></p>
 
 <p>
-Assert the right to explore and optimize <b>human biology</b>. Build tools for <b>self-experimentation</b>, <b>brain-computer interfaces</b>, and decentralized health data systems.
+Develop tools for <b>self experimentation</b>, brain-computer interfaces, and decentralized health data networks.
 </p>
 
-<p><b>5. OPEN-SOURCE the code, spread the wealth</b></p>
+<p><b>5. OPEN SOURCE the code</b></p>
 
 <p>
-Create a global commons of <b>genomes, drug designs, and research protocols</b>. Use decentralized IP frameworks and <b>zero-knowledge proofs</b> so the <b>code of life remains a public good</b>.
+Genomes, drug designs, and experimental protocols should exist in a global public commons.
 </p>
 
 <p><b>6. ACCELERATE supply chains</b></p>
 
 <p>
-Build <b>direct-to-consumer biotech manufacturing</b> and open global biomanufacturing markets to dramatically reduce time-to-market for therapies.
+Open biomanufacturing networks dramatically reduce the cost and time required to deliver therapies.
 </p>
 
 <h3><b>The Bio/acc Trinity</b></h3>
 
 <p>
-<b>Bio/acc is the convergence of biotech, AI, and crypto.</b> This creates a <b>Cambrian explosion in science</b> where researchers and patients collaborate globally through decentralized systems.
+<b>Biotech + AI + Crypto</b> creates a new scientific acceleration engine where decentralized communities coordinate global research.
 </p>
 
 <h3><b>Bio Singularity</b></h3>
 
 <p>
-From <b>CRISPR 2.0</b> and <b>AI-driven protein design</b> to <b>synthetic ecosystems</b> and <b>biological superintelligence</b>, humanity is moving toward a new <b>bio singularity</b>.
+From <b>CRISPR</b> to <b>AI protein design</b> to <b>synthetic ecosystems</b>, biology and computation converge toward a <b>bio singularity</b>.
 </p>
 
-<p>
-<b>Evolve or expire.</b>
-</p>
+<p><b>Evolve or expire.</b></p>
 
 </div>
-
-<h2>sign the bio/acc manifesto</h2>
-
-<button class="walletButton" onclick="connectWallet()">connect wallet</button>
-
-<p id="walletStatus"></p>
-
-<form id="manifestoForm">
-
-<input placeholder="twitter handle (optional)" id="twitter">
-
-<textarea placeholder="leave a note (optional)" id="note"></textarea>
-
-<button type="submit">sign manifesto</button>
-
-</form>
-
-<div class="counter green" id="signatureCount">
-0 people have signed the bio/acc manifesto
-</div>
-
-<div class="signatures" id="signatures"></div>
 
 <h2>community</h2>
 
@@ -312,40 +248,7 @@ bio/acc is a movement accelerating biotechnology.
 
 </div>
 
-<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-
 <script>
-
-function updateExplorer(){
-
-const explorer=document.getElementById("researchExplorer")
-
-const keywords=[
-"crispr gene editing",
-"ai protein design",
-"longevity biotech",
-"synthetic biology",
-"gene therapy",
-"ai drug discovery",
-"biomanufacturing",
-"genomics",
-"aging reversal",
-"bioinformatics"
-]
-
-explorer.innerHTML=""
-
-keywords.sort(()=>0.5-Math.random()).slice(0,5).forEach(k=>{
-
-const div=document.createElement("div")
-div.className="topic"
-div.innerHTML="> "+k
-
-explorer.appendChild(div)
-
-})
-
-}
 
 async function loadResearch(){
 
@@ -359,30 +262,16 @@ const data=await res.json()
 
 feed.innerHTML=""
 
-let i=0
-
-function stream(){
-
-if(i>=data.items.length) return
+data.items.forEach(item=>{
 
 const line=document.createElement("div")
 line.className="feedItem"
-
-line.innerHTML="> "+data.items[i]
-
+line.innerHTML="> "+item
 feed.appendChild(line)
 
+})
+
 feed.scrollTop=feed.scrollHeight
-
-i++
-
-setTimeout(stream,400)
-
-}
-
-stream()
-
-updateExplorer()
 
 const updated=new Date(data.lastUpdated)
 status.innerText="last intelligence update: "+updated.toLocaleString()
@@ -390,14 +279,80 @@ status.innerText="last intelligence update: "+updated.toLocaleString()
 }catch{
 
 feed.innerHTML="[error] intelligence network offline"
-status.innerText=""
+
+}
+
+}
+
+async function loadMarketCap(){
+
+try{
+
+const res=await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw")
+const data=await res.json()
+
+const mc=data.pair.fdv
+
+document.getElementById("marketCap").innerText="$"+Number(mc).toLocaleString()
+
+}catch{
+
+document.getElementById("marketCap").innerText="unavailable"
 
 }
 
 }
 
 loadResearch()
+loadMarketCap()
+
 setInterval(loadResearch,300000)
+setInterval(loadMarketCap,60000)
+
+const canvas=document.getElementById("particles")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let particles=[]
+
+for(let i=0;i<120;i++){
+
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+vx:(Math.random()-.5)*0.4,
+vy:(Math.random()-.5)*0.4
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+particles.forEach(p=>{
+
+p.x+=p.vx
+p.y+=p.vy
+
+if(p.x<0||p.x>canvas.width)p.vx*=-1
+if(p.y<0||p.y>canvas.height)p.vy*=-1
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,2,0,Math.PI*2)
+ctx.fillStyle="#7CFF3A"
+ctx.fill()
+
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
 </script>
 
 </body>
