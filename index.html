@@ -11,9 +11,9 @@
 
 body{
 margin:0;
-background:black;
-color:#d0d0d0;
-font-family: "Courier New", monospace;
+background:#000;
+color:#cfcfcf;
+font-family:Courier New, monospace;
 line-height:1.7;
 }
 
@@ -22,7 +22,7 @@ position:fixed;
 top:0;
 left:0;
 z-index:-1;
-opacity:.3;
+opacity:.35;
 }
 
 .container{
@@ -37,7 +37,7 @@ margin-bottom:80px;
 }
 
 .hero img{
-width:280px;
+width:260px;
 margin-bottom:30px;
 }
 
@@ -51,11 +51,10 @@ h2{
 color:white;
 font-weight:normal;
 margin-top:70px;
-margin-bottom:20px;
 }
 
 .green{
-color:#6cff2f;
+color:#7CFF3A;
 }
 
 .contract{
@@ -66,25 +65,13 @@ margin:40px 0;
 font-size:18px;
 }
 
-button{
-background:#6cff2f;
-border:none;
-padding:12px 20px;
-font-family:inherit;
-cursor:pointer;
-margin-left:20px;
-}
-
 .button{
-background:#6cff2f;
+background:#7CFF3A;
 color:black;
 padding:10px 18px;
 text-decoration:none;
 margin-right:10px;
-}
-
-.section{
-margin-top:70px;
+display:inline-block;
 }
 
 .news{
@@ -107,22 +94,48 @@ margin-bottom:25px;
 
 .topic{
 cursor:pointer;
-color:#6cff2f;
+color:#7CFF3A;
 margin-top:15px;
 }
 
 .topic-content{
 display:none;
 margin-top:10px;
-color:#bfbfbf;
+color:#bbb;
 }
 
-.links{
+input{
+background:#000;
+border:1px solid #333;
+color:white;
+padding:10px;
+width:100%;
+margin-top:10px;
+font-family:inherit;
+}
+
+button{
+background:#7CFF3A;
+border:none;
+padding:10px 16px;
+font-family:inherit;
+cursor:pointer;
+margin-top:15px;
+}
+
+.signatures{
 margin-top:40px;
+border-top:1px solid #222;
+padding-top:20px;
+}
+
+.signature{
+margin-bottom:10px;
+color:#aaa;
 }
 
 .links a{
-color:#6cff2f;
+color:#7CFF3A;
 margin-right:20px;
 text-decoration:none;
 }
@@ -151,42 +164,42 @@ color:#777;
 
 <h1>bio/acc on solana</h1>
 
-<p class="green">accelerating biotechnology through crypto</p>
+<p class="green">biotech accelerationism</p>
 
 </div>
 
 <div class="contract">
 
-bio/acc contract  
+bio/acc contract
+
 <br><br>
 
 <b>CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump</b>
+
+<br><br>
 
 <a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">buy</a>
 
 </div>
 
 
-<div class="section">
-
 <h2>what is bio/acc</h2>
 
 <p>
 
-bio/acc (biological accelerationism) is the belief that humanity should aggressively accelerate biotechnology progress.
+bio/acc (Biotech Accelerationism) is the belief that humanity should aggressively accelerate biotechnology progress.
 
-as computation becomes the substrate for intelligence, biotechnology becomes the interface for engineering life itself.
+as computation becomes the substrate of intelligence, biotechnology becomes the interface for engineering life itself.
 
-crypto provides the funding layer.  
-ai provides the discovery engine.  
-biology becomes programmable.
+dna is the operating system of biology.  
+ai is the discovery engine.  
+crypto is the funding layer.
+
+together they form the infrastructure for accelerating biological innovation.
 
 </p>
 
-</div>
 
-
-<div class="section">
 
 <h2>ai biotech feed</h2>
 
@@ -196,7 +209,7 @@ biology becomes programmable.
 
 <b>ai protein design</b>
 
-<p>ai models are designing proteins never seen in nature.</p>
+<p>ai systems are generating proteins never seen in nature.</p>
 
 </div>
 
@@ -204,7 +217,7 @@ biology becomes programmable.
 
 <b>crispr evolution</b>
 
-<p>next generation gene editing is enabling precise dna engineering.</p>
+<p>next generation gene editing tools are enabling precision dna engineering.</p>
 
 </div>
 
@@ -212,16 +225,13 @@ biology becomes programmable.
 
 <b>desci</b>
 
-<p>crypto communities are funding biotech experiments outside traditional institutions.</p>
+<p>crypto communities are funding biotech research outside traditional institutions.</p>
 
 </div>
 
 </div>
 
-</div>
 
-
-<div class="section">
 
 <h2>research timeline</h2>
 
@@ -239,7 +249,7 @@ crispr discovered as programmable gene editing.
 
 <b>2020</b>
 
-ai protein folding breakthrough.
+ai protein folding breakthroughs.
 
 </div>
 
@@ -247,7 +257,7 @@ ai protein folding breakthrough.
 
 <b>2023</b>
 
-ai begins designing new proteins.
+ai begins designing novel proteins.
 
 </div>
 
@@ -255,16 +265,13 @@ ai begins designing new proteins.
 
 <b>2025+</b>
 
-biotech + ai accelerate biological engineering.
+ai + biotech accelerate biological engineering.
 
 </div>
 
 </div>
 
-</div>
 
-
-<div class="section">
 
 <h2>research explorer</h2>
 
@@ -280,7 +287,6 @@ crispr enables precise dna editing using programmable molecular scissors.
 
 </div>
 
-
 <div class="topic" onclick="toggle('protein')">
 
 > ai protein design
@@ -289,14 +295,13 @@ crispr enables precise dna editing using programmable molecular scissors.
 
 <div id="protein" class="topic-content">
 
-ai systems can generate new proteins for medicines and enzymes.
+ai models can generate new proteins for medicines and enzymes.
 
 </div>
 
-
 <div class="topic" onclick="toggle('longevity')">
 
-> longevity biotechnology
+> longevity biotech
 
 </div>
 
@@ -306,7 +311,6 @@ gene therapy and cell reprogramming aim to slow or reverse aging.
 
 </div>
 
-
 <div class="topic" onclick="toggle('desci')">
 
 > decentralized science
@@ -315,34 +319,49 @@ gene therapy and cell reprogramming aim to slow or reverse aging.
 
 <div id="desci" class="topic-content">
 
-desci allows communities to fund research directly using crypto.
+desci allows communities to fund research directly through crypto.
 
 </div>
 
-</div>
 
 
-
-<div class="section">
-
-<h2>manifesto</h2>
+<h2>sign the bio/acc manifesto</h2>
 
 <p>
 
-the bio/acc philosophy and full manifesto can be read here.
+support the biotech acceleration movement by signing the manifesto.
 
 </p>
 
-<a class="button" href="https://bioacc.life">read manifesto</a>
+<form id="manifestoForm">
+
+<input placeholder="twitter username (required)" id="twitter" required>
+
+<input placeholder="first name (optional)" id="name">
+
+<input placeholder="solana wallet (optional)" id="wallet">
+
+<input placeholder="affiliation (optional)" id="affiliation">
+
+<button type="submit">sign manifesto</button>
+
+</form>
+
+
+
+<div class="signatures" id="signatures">
+
+<h3 class="green">signatures</h3>
 
 </div>
 
 
-<div class="section">
 
 <h2>community</h2>
 
 <div class="links">
+
+<a href="https://bioacc.life">manifesto</a>
 
 <a href="https://x.com/bioacconsolana?s=21">x</a>
 
@@ -352,16 +371,16 @@ the bio/acc philosophy and full manifesto can be read here.
 
 </div>
 
-</div>
 
 
 <footer>
 
-bio/acc is a movement to accelerate biotechnology.
+bio/acc is a movement accelerating biotechnology.
 
 </footer>
 
 </div>
+
 
 
 <script>
@@ -377,6 +396,55 @@ el.style.display="block"
 }
 
 }
+
+
+
+const form=document.getElementById("manifestoForm")
+const list=document.getElementById("signatures")
+
+let signatures=JSON.parse(localStorage.getItem("bioacc_signatures"))||[]
+
+function render(){
+
+list.innerHTML="<h3 class='green'>signatures</h3>"
+
+signatures.forEach(s=>{
+
+const div=document.createElement("div")
+div.className="signature"
+
+div.innerText=`@${s.twitter} ${s.name? "• "+s.name:""} ${s.affiliation? "• "+s.affiliation:""}`
+
+list.appendChild(div)
+
+})
+
+}
+
+render()
+
+form.addEventListener("submit",e=>{
+
+e.preventDefault()
+
+const sig={
+
+twitter:document.getElementById("twitter").value,
+name:document.getElementById("name").value,
+wallet:document.getElementById("wallet").value,
+affiliation:document.getElementById("affiliation").value
+
+}
+
+signatures.push(sig)
+
+localStorage.setItem("bioacc_signatures",JSON.stringify(signatures))
+
+render()
+
+form.reset()
+
+})
 
 
 
@@ -413,7 +481,7 @@ if(p.y<0||p.y>canvas.height)p.vy*=-1
 
 ctx.beginPath()
 ctx.arc(p.x,p.y,2,0,Math.PI*2)
-ctx.fillStyle="#6cff2f"
+ctx.fillStyle="#7CFF3A"
 ctx.fill()
 
 })
