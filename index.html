@@ -193,13 +193,15 @@ bio/acc contract
 </div>
 
 
+
 <h2>live biotech research feed</h2>
 
 <div class="researchFeed" id="researchFeed">
 
-loading research feed...
+connecting to research network...
 
 </div>
+
 
 
 <h2>research explorer</h2>
@@ -213,6 +215,12 @@ crispr enables precise dna editing using programmable molecular scissors.
 <div id="protein" class="topic-content">
 ai systems can generate new proteins used for drugs and enzymes.
 </div>
+
+<div class="topic" onclick="toggle('longevity')">> longevity biotechnology</div>
+<div id="longevity" class="topic-content">
+gene therapy and cellular reprogramming aim to slow or reverse aging.
+</div>
+
 
 
 <h2>sign the bio/acc manifesto</h2>
@@ -244,6 +252,7 @@ ai systems can generate new proteins used for drugs and enzymes.
 </div>
 
 
+
 <h2>community</h2>
 
 <div class="links">
@@ -273,117 +282,10 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
-localStorage.removeItem("bioacc_signatures")
-let signatures=[]
-
-let walletAddress=null
-
-async function connectWallet(){
-
-if(window.solana){
-
-const resp=await window.solana.connect()
-
-walletAddress=resp.publicKey.toString()
-
-document.getElementById("walletStatus").innerText=
-"wallet connected: "+walletAddress
-
-}else{
-
-alert("install phantom wallet")
-
-}
-
-}
-
-
-
 function toggle(id){
-
 const el=document.getElementById(id)
-
 el.style.display=el.style.display==="block"?"none":"block"
-
 }
-
-
-
-const form=document.getElementById("manifestoForm")
-const list=document.getElementById("signatures")
-const counter=document.getElementById("signatureCount")
-
-function render(){
-
-list.innerHTML=""
-
-signatures.forEach(s=>{
-
-const div=document.createElement("div")
-div.className="signature"
-
-div.innerHTML=
-
-s.wallet.slice(0,6)+"..."+s.wallet.slice(-4)+
-(s.note ? "<br>\""+s.note+"\"" : "")
-
-list.appendChild(div)
-
-})
-
-counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
-
-}
-
-render()
-
-
-
-form.addEventListener("submit",async e=>{
-
-e.preventDefault()
-
-if(!walletAddress){
-
-alert("connect wallet first")
-
-return
-
-}
-
-const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
-
-if(alreadySigned){
-
-alert("this wallet has already signed")
-
-return
-
-}
-
-const message="I support Biotech Accelerationism"
-
-const encoded=new TextEncoder().encode(message)
-
-const signed=await window.solana.signMessage(encoded,"utf8")
-
-const sig={
-
-wallet:walletAddress,
-note:document.getElementById("note").value,
-signature:Array.from(signed.signature)
-
-}
-
-signatures.push(sig)
-
-localStorage.setItem("bioacc_signatures",JSON.stringify(signatures))
-
-render()
-
-form.reset()
-
-})
 
 
 
@@ -415,7 +317,7 @@ const item=document.createElement("div")
 
 item.className="feedItem"
 
-item.innerHTML="> "+title
+item.innerHTML="> [arxiv] "+title
 
 feed.appendChild(item)
 
@@ -423,7 +325,7 @@ feed.appendChild(item)
 
 }catch{
 
-feed.innerHTML="unable to load research feed"
+feed.innerHTML="unable to connect to research feed"
 
 }
 
@@ -432,6 +334,104 @@ feed.innerHTML="unable to load research feed"
 loadResearch()
 
 setInterval(loadResearch,300000)
+
+
+
+localStorage.removeItem("bioacc_signatures")
+let signatures=[]
+
+let walletAddress=null
+
+async function connectWallet(){
+
+if(window.solana){
+
+const resp=await window.solana.connect()
+
+walletAddress=resp.publicKey.toString()
+
+document.getElementById("walletStatus").innerText="wallet connected: "+walletAddress
+
+}else{
+
+alert("install phantom wallet")
+
+}
+
+}
+
+
+
+const form=document.getElementById("manifestoForm")
+const list=document.getElementById("signatures")
+const counter=document.getElementById("signatureCount")
+
+function render(){
+
+list.innerHTML=""
+
+signatures.forEach(s=>{
+
+const div=document.createElement("div")
+div.className="signature"
+
+div.innerHTML=
+s.wallet.slice(0,6)+"..."+s.wallet.slice(-4)+
+(s.note ? "<br>\""+s.note+"\"" : "")
+
+list.appendChild(div)
+
+})
+
+counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
+
+}
+
+render()
+
+
+
+form.addEventListener("submit",async e=>{
+
+e.preventDefault()
+
+if(!walletAddress){
+
+alert("connect wallet first")
+return
+
+}
+
+const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
+
+if(alreadySigned){
+
+alert("this wallet has already signed")
+return
+
+}
+
+const message="I support Biotech Accelerationism"
+
+const encoded=new TextEncoder().encode(message)
+
+const signed=await window.solana.signMessage(encoded,"utf8")
+
+const sig={
+wallet:walletAddress,
+note:document.getElementById("note").value,
+signature:Array.from(signed.signature)
+}
+
+signatures.push(sig)
+
+localStorage.setItem("bioacc_signatures",JSON.stringify(signatures))
+
+render()
+
+form.reset()
+
+})
 
 
 
