@@ -44,14 +44,14 @@ margin-bottom:30px;
 
 h1{
 color:white;
-font-weight:normal;
 font-size:36px;
+font-weight:normal;
 }
 
 h2{
 color:white;
-font-weight:normal;
 margin-top:70px;
+font-weight:normal;
 }
 
 .green{
@@ -63,7 +63,6 @@ border-top:1px solid #222;
 border-bottom:1px solid #222;
 padding:20px 0;
 margin:40px 0;
-font-size:18px;
 text-align:center;
 }
 
@@ -72,7 +71,6 @@ background:#7CFF3A;
 color:black;
 padding:10px 18px;
 text-decoration:none;
-margin-right:10px;
 display:inline-block;
 }
 
@@ -87,7 +85,6 @@ border:1px solid #222;
 padding:20px;
 height:320px;
 overflow-y:auto;
-overflow-x:hidden;
 margin-top:20px;
 font-size:14px;
 word-break:break-word;
@@ -99,11 +96,10 @@ margin-bottom:8px;
 
 .refreshButton{
 background:#7CFF3A;
-color:black;
-padding:8px 14px;
 border:none;
+padding:8px 14px;
 cursor:pointer;
-margin-top:15px;
+margin-top:10px;
 }
 
 .manifesto p{
@@ -157,7 +153,17 @@ bio/acc contract
 <a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">buy</a>
 
 <div class="market">
+
 market cap: <span id="marketCap">loading...</span>
+
+<br><br>
+
+<button class="refreshButton" onclick="refreshMarketCap()">
+refresh market cap
+</button>
+
+<div id="marketStatus" style="margin-top:6px;color:#777;font-size:14px;"></div>
+
 </div>
 
 </div>
@@ -168,7 +174,9 @@ market cap: <span id="marketCap">loading...</span>
 [boot] connecting to bio/acc intelligence network...
 </div>
 
-<button class="refreshButton" onclick="loadResearch()">refresh intelligence</button>
+<button class="refreshButton" onclick="refreshResearch()">
+refresh intelligence
+</button>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
@@ -177,52 +185,22 @@ market cap: <span id="marketCap">loading...</span>
 <div class="manifesto">
 
 <p><b>1. DECENTRALIZE biopower</b></p>
-
-<p>
-Harness <b>decentralized networks</b> for data storage, transactions and fundraising to build global collectives that fund and coordinate scientific research outside traditional institutions.
-</p>
+<p>Harness <b>decentralized networks</b> to fund and coordinate global scientific research outside traditional institutions.</p>
 
 <p><b>2. ENGINEER ethical evolution</b></p>
-
-<p>
-<b>Biosafety</b> and accountability can be embedded through <b>smart contracts</b>, creating immutable governance and transparent coordination of biotech development.
-</p>
+<p>Use <b>smart contracts</b> and decentralized governance to embed safety, transparency and accountability into biotech development.</p>
 
 <p><b>3. ALIGN with ecological blueprints</b></p>
-
-<p>
-Use <b>biomimicry</b> and biotechnology to restore ecosystems and design organisms that remove carbon and repair planetary systems.
-</p>
+<p>Apply <b>biomimicry</b> and biotechnology to restore ecosystems and build organisms that remove carbon and repair planetary systems.</p>
 
 <p><b>4. HACK health, claim mind-body liberty</b></p>
+<p>Develop tools for <b>self experimentation</b>, brain-computer interfaces and decentralized health data.</p>
 
-<p>
-Develop tools for <b>self experimentation</b>, brain-computer interfaces, and decentralized health data networks.
-</p>
-
-<p><b>5. OPEN SOURCE the code</b></p>
-
-<p>
-Genomes, drug designs, and experimental protocols should exist in a global public commons.
-</p>
+<p><b>5. OPEN-SOURCE the code</b></p>
+<p>Genomes, drug designs and experimental protocols should exist in a <b>global research commons</b>.</p>
 
 <p><b>6. ACCELERATE supply chains</b></p>
-
-<p>
-Open biomanufacturing networks dramatically reduce the cost and time required to deliver therapies.
-</p>
-
-<h3><b>The Bio/acc Trinity</b></h3>
-
-<p>
-<b>Biotech + AI + Crypto</b> creates a new scientific acceleration engine where decentralized communities coordinate global research.
-</p>
-
-<h3><b>Bio Singularity</b></h3>
-
-<p>
-From <b>CRISPR</b> to <b>AI protein design</b> to <b>synthetic ecosystems</b>, biology and computation converge toward a <b>bio singularity</b>.
-</p>
+<p>Create <b>open biomanufacturing networks</b> that reduce the time and cost required to deliver therapies.</p>
 
 <p><b>Evolve or expire.</b></p>
 
@@ -250,10 +228,12 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
-async function loadResearch(){
+async function refreshResearch(){
 
 const feed=document.getElementById("researchFeed")
 const status=document.getElementById("feedStatus")
+
+status.innerText="[scan] refreshing biotech intelligence..."
 
 try{
 
@@ -274,40 +254,51 @@ feed.appendChild(line)
 feed.scrollTop=feed.scrollHeight
 
 const updated=new Date(data.lastUpdated)
-status.innerText="last intelligence update: "+updated.toLocaleString()
+status.innerText="intelligence updated: "+updated.toLocaleString()
 
 }catch{
 
 feed.innerHTML="[error] intelligence network offline"
+status.innerText="unable to reach intelligence network"
 
 }
 
 }
 
-async function loadMarketCap(){
+async function refreshMarketCap(){
+
+const mc=document.getElementById("marketCap")
+const status=document.getElementById("marketStatus")
+
+status.innerText="updating market data..."
 
 try{
 
-const res=await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw")
+const res=await fetch(
+"https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw"
+)
+
 const data=await res.json()
 
-const mc=data.pair.fdv
+const cap=data.pair?.fdv || 0
 
-document.getElementById("marketCap").innerText="$"+Number(mc).toLocaleString()
+mc.innerText="$"+Number(cap).toLocaleString()
+
+status.innerText="market data updated"
 
 }catch{
 
-document.getElementById("marketCap").innerText="unavailable"
+status.innerText="market data unavailable"
 
 }
 
 }
 
-loadResearch()
-loadMarketCap()
+refreshResearch()
+refreshMarketCap()
 
-setInterval(loadResearch,300000)
-setInterval(loadMarketCap,60000)
+setInterval(refreshResearch,300000)
+setInterval(refreshMarketCap,60000)
 
 const canvas=document.getElementById("particles")
 const ctx=canvas.getContext("2d")
