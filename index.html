@@ -23,6 +23,7 @@ top:0;
 left:0;
 z-index:-1;
 opacity:.35;
+pointer-events:none;
 }
 
 .container{
@@ -53,6 +54,11 @@ font-weight:normal;
 margin-top:70px;
 }
 
+h3{
+color:white;
+margin-top:40px;
+}
+
 .green{
 color:#7CFF3A;
 }
@@ -78,16 +84,12 @@ display:inline-block;
 background:#050505;
 border:1px solid #222;
 padding:20px;
-
 height:320px;
 max-height:320px;
-
 overflow-y:auto;
 overflow-x:hidden;
-
 margin-top:20px;
 font-size:14px;
-
 white-space:normal;
 word-break:break-word;
 }
@@ -97,15 +99,12 @@ margin-bottom:8px;
 }
 
 .topic{
-cursor:pointer;
 color:#7CFF3A;
-margin-top:15px;
+margin-top:8px;
 }
 
-.topic-content{
-display:none;
+.manifesto p{
 margin-top:10px;
-color:#bbb;
 }
 
 input,textarea{
@@ -209,19 +208,66 @@ bio/acc contract
 
 <h2>research explorer</h2>
 
-<div class="topic" onclick="toggle('crispr')">> crispr gene editing</div>
-<div id="crispr" class="topic-content">
-crispr enables precise dna editing using programmable molecular scissors.
-</div>
+<div id="researchExplorer"></div>
 
-<div class="topic" onclick="toggle('protein')">> ai protein design</div>
-<div id="protein" class="topic-content">
-ai systems can generate new proteins used for drugs and enzymes.
-</div>
+<h2>bio/acc manifesto</h2>
 
-<div class="topic" onclick="toggle('longevity')">> longevity biotechnology</div>
-<div id="longevity" class="topic-content">
-gene therapy and cellular reprogramming aim to slow or reverse aging.
+<div class="manifesto">
+
+<h3><b>Bio/acc principles</b></h3>
+
+<p><b>1. DECENTRALIZE biopower</b></p>
+
+<p>
+Harness <b>decentralized networks</b> for data storage, transactions and fundraising to build global collectives that fund, coordinate and commercialize scientific research outside traditional institutions. Build <b>network states</b> with new regulatory frameworks for safe, open clinical trials.
+</p>
+
+<p><b>2. ENGINEER ethical evolution</b></p>
+
+<p>
+<b>Biosafety and accountability</b> can be built into biotechnology through <b>smart contracts</b> and <b>onchain governance</b>. These systems create immutable records while enabling selective disclosure and community-defined safety parameters.
+</p>
+
+<p><b>3. ALIGN with ecological blueprints</b></p>
+
+<p>
+Integrate biotechnology with <b>natural ecosystems</b> using <b>biomimicry</b>. Design organisms capable of <b>reducing carbon dioxide</b>, <b>consuming plastic</b>, and restoring biodiversity.
+</p>
+
+<p><b>4. HACK health, claim mind-body liberty</b></p>
+
+<p>
+Assert the right to explore and optimize <b>human biology</b>. Build tools for <b>self-experimentation</b>, <b>brain-computer interfaces</b>, and decentralized health data systems.
+</p>
+
+<p><b>5. OPEN-SOURCE the code, spread the wealth</b></p>
+
+<p>
+Create a global commons of <b>genomes, drug designs, and research protocols</b>. Use decentralized IP frameworks and <b>zero-knowledge proofs</b> so the <b>code of life remains a public good</b>.
+</p>
+
+<p><b>6. ACCELERATE supply chains</b></p>
+
+<p>
+Build <b>direct-to-consumer biotech manufacturing</b> and open global biomanufacturing markets to dramatically reduce time-to-market for therapies.
+</p>
+
+<h3><b>The Bio/acc Trinity</b></h3>
+
+<p>
+<b>Bio/acc is the convergence of biotech, AI, and crypto.</b> This creates a <b>Cambrian explosion in science</b> where researchers and patients collaborate globally through decentralized systems.
+</p>
+
+<h3><b>Bio Singularity</b></h3>
+
+<p>
+From <b>CRISPR 2.0</b> and <b>AI-driven protein design</b> to <b>synthetic ecosystems</b> and <b>biological superintelligence</b>, humanity is moving toward a new <b>bio singularity</b>.
+</p>
+
+<p>
+<b>Evolve or expire.</b>
+</p>
+
 </div>
 
 <h2>sign the bio/acc manifesto</h2>
@@ -250,7 +296,7 @@ gene therapy and cellular reprogramming aim to slow or reverse aging.
 
 <div class="links">
 
-<a href="https://bioacc.life">manifesto</a>
+<a href="https://bioacc.life">manifesto (ETH)</a>
 
 <a href="https://x.com/bioacconsolana?s=21">x</a>
 
@@ -270,9 +316,35 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
-function toggle(id){
-const el=document.getElementById(id)
-el.style.display=el.style.display==="block"?"none":"block"
+function updateExplorer(){
+
+const explorer=document.getElementById("researchExplorer")
+
+const keywords=[
+"crispr gene editing",
+"ai protein design",
+"longevity biotech",
+"synthetic biology",
+"gene therapy",
+"ai drug discovery",
+"biomanufacturing",
+"genomics",
+"aging reversal",
+"bioinformatics"
+]
+
+explorer.innerHTML=""
+
+keywords.sort(()=>0.5-Math.random()).slice(0,5).forEach(k=>{
+
+const div=document.createElement("div")
+div.className="topic"
+div.innerHTML="> "+k
+
+explorer.appendChild(div)
+
+})
+
 }
 
 async function loadResearch(){
@@ -304,11 +376,13 @@ feed.scrollTop=feed.scrollHeight
 
 i++
 
-setTimeout(stream,500)
+setTimeout(stream,400)
 
 }
 
 stream()
+
+updateExplorer()
 
 const updated=new Date(data.lastUpdated)
 status.innerText="last intelligence update: "+updated.toLocaleString()
@@ -324,139 +398,6 @@ status.innerText=""
 
 loadResearch()
 setInterval(loadResearch,300000)
-
-let signatures=[]
-let walletAddress=null
-
-async function connectWallet(){
-
-if(window.solana){
-
-const resp=await window.solana.connect()
-
-walletAddress=resp.publicKey.toString()
-
-document.getElementById("walletStatus").innerText="wallet connected: "+walletAddress
-
-}else{
-
-alert("install phantom wallet")
-
-}
-
-}
-
-const form=document.getElementById("manifestoForm")
-const list=document.getElementById("signatures")
-const counter=document.getElementById("signatureCount")
-
-function render(){
-
-list.innerHTML=""
-
-signatures.forEach(s=>{
-
-const div=document.createElement("div")
-div.className="signature"
-
-div.innerHTML=
-s.wallet.slice(0,6)+"..."+s.wallet.slice(-4)+
-(s.note ? "<br>\""+s.note+"\"" : "")
-
-list.appendChild(div)
-
-})
-
-counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
-
-}
-
-render()
-
-form.addEventListener("submit",async e=>{
-
-e.preventDefault()
-
-if(!walletAddress){
-
-alert("connect wallet first")
-return
-
-}
-
-const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
-
-if(alreadySigned){
-
-alert("this wallet has already signed")
-return
-
-}
-
-const message="I support Biotech Accelerationism"
-
-const encoded=new TextEncoder().encode(message)
-
-const signed=await window.solana.signMessage(encoded,"utf8")
-
-const sig={
-wallet:walletAddress,
-note:document.getElementById("note").value,
-signature:Array.from(signed.signature)
-}
-
-signatures.push(sig)
-
-render()
-
-form.reset()
-
-})
-
-const canvas=document.getElementById("particles")
-const ctx=canvas.getContext("2d")
-
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight
-
-let particles=[]
-
-for(let i=0;i<120;i++){
-
-particles.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-vx:(Math.random()-.5)*0.4,
-vy:(Math.random()-.5)*0.4
-})
-
-}
-
-function draw(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-particles.forEach(p=>{
-
-p.x+=p.vx
-p.y+=p.vy
-
-if(p.x<0||p.x>canvas.width)p.vx*=-1
-if(p.y<0||p.y>canvas.height)p.vy*=-1
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,2,0,Math.PI*2)
-ctx.fillStyle="#7CFF3A"
-ctx.fill()
-
-})
-
-requestAnimationFrame(draw)
-
-}
-
-draw()
-
 </script>
 
 </body>
