@@ -85,7 +85,7 @@ font-size:14px;
 }
 
 .feedItem{
-margin-bottom:10px;
+margin-bottom:8px;
 }
 
 .topic{
@@ -193,11 +193,11 @@ bio/acc contract
 
 
 
-<h2>live biotech research feed</h2>
+<h2>live biotech research terminal</h2>
 
 <div class="researchFeed" id="researchFeed">
 
-initializing research terminal...
+booting research network...
 
 </div>
 
@@ -261,7 +261,6 @@ gene therapy and cellular reprogramming aim to slow or reverse aging.
 
 </div>
 
-
 <footer>
 bio/acc is a movement accelerating biotechnology.
 </footer>
@@ -281,64 +280,45 @@ el.style.display=el.style.display==="block"?"none":"block"
 
 
 
+/* ---------------------------
+LIVE RESEARCH TERMINAL
+--------------------------- */
+
 async function loadResearch(){
 
 const feed=document.getElementById("researchFeed")
 
-feed.innerHTML="connecting to research network..."
-
-let items=[]
+feed.innerHTML="connecting to biotech research network..."
 
 try{
 
-const arxivURL="https://export.arxiv.org/api/query?search_query=biotech+OR+crispr+OR+protein&start=0&max_results=5"
+const rss="https://api.rss2json.com/v1/api.json?rss_url=https://export.arxiv.org/rss/q-bio"
 
-const res=await fetch("https://corsproxy.io/?"+encodeURIComponent(arxivURL))
+const res=await fetch(rss)
 
-const text=await res.text()
-
-const parser=new DOMParser()
-
-const xml=parser.parseFromString(text,"text/xml")
-
-const entries=xml.getElementsByTagName("entry")
-
-for(let i=0;i<entries.length;i++){
-
-const title=entries[i].getElementsByTagName("title")[0].textContent.trim()
-
-items.push("[arxiv] "+title)
-
-}
-
-}catch{}
-
-
-
-if(items.length===0){
-
-items=[
-
-"[research] ai models design synthetic proteins",
-"[research] crispr therapies show promise in trials",
-"[nature] longevity biotech funding rising rapidly",
-"[science] protein language models accelerate drug discovery",
-"[desci] decentralized biology labs expanding"
-
-]
-
-}
+const data=await res.json()
 
 feed.innerHTML=""
 
-items.forEach(i=>{
+data.items.slice(0,8).forEach(item=>{
 
-const div=document.createElement("div")
-div.className="feedItem"
-div.innerText="> "+i
-feed.appendChild(div)
+const line=document.createElement("div")
+
+line.className="feedItem"
+
+const time=new Date().toLocaleTimeString()
+
+line.innerHTML="["+time+"] "+item.title.toLowerCase()
+
+feed.appendChild(line)
 
 })
+
+}catch(err){
+
+feed.innerHTML="research network temporarily offline"
+
+}
 
 }
 
@@ -348,10 +328,13 @@ setInterval(loadResearch,300000)
 
 
 
+/* ---------------------------
+MANIFESTO SIGNING
+--------------------------- */
+
 localStorage.removeItem("bioacc_signatures")
 
 let signatures=[]
-
 let walletAddress=null
 
 async function connectWallet(){
@@ -362,8 +345,7 @@ const resp=await window.solana.connect()
 
 walletAddress=resp.publicKey.toString()
 
-document.getElementById("walletStatus").innerText=
-"wallet connected: "+walletAddress
+document.getElementById("walletStatus").innerText="wallet connected: "+walletAddress
 
 }else{
 
@@ -409,19 +391,15 @@ form.addEventListener("submit",async e=>{
 e.preventDefault()
 
 if(!walletAddress){
-
 alert("connect wallet first")
 return
-
 }
 
 const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
 
 if(alreadySigned){
-
 alert("this wallet has already signed")
 return
-
 }
 
 const message="I support Biotech Accelerationism"
@@ -447,6 +425,10 @@ form.reset()
 })
 
 
+
+/* ---------------------------
+PARTICLE BACKGROUND
+--------------------------- */
 
 const canvas=document.getElementById("particles")
 const ctx=canvas.getContext("2d")
