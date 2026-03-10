@@ -158,9 +158,7 @@ market cap: <span id="marketCap">loading...</span>
 
 <br><br>
 
-<button class="refreshButton" onclick="refreshMarketCap()">
-refresh market cap
-</button>
+<button class="refreshButton" onclick="refreshMarketCap()">refresh market cap</button>
 
 <div id="marketStatus" style="margin-top:6px;color:#777;font-size:14px;"></div>
 
@@ -174,37 +172,69 @@ refresh market cap
 [boot] connecting to bio/acc intelligence network...
 </div>
 
-<button class="refreshButton" onclick="refreshResearch()">
-refresh intelligence
-</button>
+<button class="refreshButton" onclick="refreshResearch()">refresh intelligence</button>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
+
 
 <h2>bio/acc manifesto</h2>
 
 <div class="manifesto">
 
+<p><b>Bio/acc principles</b></p>
+
 <p><b>1. DECENTRALIZE biopower</b></p>
-<p>Harness <b>decentralized networks</b> to fund and coordinate global scientific research outside traditional institutions.</p>
+
+<p>
+Harness <b>decentralized networks</b> for data storage, transactions and fundraising to build global collectives that fund, coordinate and commercialize scientific research outside the traditional gates and keepers.
+</p>
 
 <p><b>2. ENGINEER ethical evolution</b></p>
-<p>Use <b>smart contracts</b> and decentralized governance to embed safety, transparency and accountability into biotech development.</p>
+
+<p>
+<b>Biosafety and accountability</b> can be embedded through <b>smart contracts</b> and decentralized governance.
+</p>
 
 <p><b>3. ALIGN with ecological blueprints</b></p>
-<p>Apply <b>biomimicry</b> and biotechnology to restore ecosystems and build organisms that remove carbon and repair planetary systems.</p>
 
-<p><b>4. HACK health, claim mind-body liberty</b></p>
-<p>Develop tools for <b>self experimentation</b>, brain-computer interfaces and decentralized health data.</p>
+<p>
+Use <b>biomimicry</b> and biotechnology to restore ecosystems and engineer organisms that repair planetary systems.
+</p>
+
+<p><b>4. HACK health</b></p>
+
+<p>
+Assert the right to explore and optimize <b>human biology</b>.
+</p>
 
 <p><b>5. OPEN-SOURCE the code</b></p>
-<p>Genomes, drug designs and experimental protocols should exist in a <b>global research commons</b>.</p>
+
+<p>
+Genomes, drug designs and experimental protocols should exist in a <b>global public commons</b>.
+</p>
 
 <p><b>6. ACCELERATE supply chains</b></p>
-<p>Create <b>open biomanufacturing networks</b> that reduce the time and cost required to deliver therapies.</p>
+
+<p>
+Open biomanufacturing networks dramatically reduce time and cost required to deliver therapies.
+</p>
+
+<p><b>The bio/acc trinity</b></p>
+
+<p>
+<b>Biotech + AI + Crypto</b> creates a new acceleration engine for science.
+</p>
+
+<p><b>Bio Singularity</b></p>
+
+<p>
+From <b>CRISPR</b> to <b>AI protein design</b> to <b>synthetic ecosystems</b>, biology and computation converge toward a <b>bio singularity</b>.
+</p>
 
 <p><b>Evolve or expire.</b></p>
 
 </div>
+
 
 <h2>community</h2>
 
@@ -226,68 +256,42 @@ bio/acc is a movement accelerating biotechnology.
 
 </div>
 
+
 <script>
 
-let researchLoading=false
-
 async function refreshResearch(){
-
-if(researchLoading) return
-
-researchLoading=true
 
 const feed=document.getElementById("researchFeed")
 const status=document.getElementById("feedStatus")
 
 status.innerText="[scan] refreshing biotech intelligence..."
-feed.innerHTML=""
 
 try{
 
 const res=await fetch("news.json?cache="+Date.now())
-
-if(!res.ok) throw new Error("network")
-
 const data=await res.json()
 
-let i=0
+feed.innerHTML=""
 
-function stream(){
+data.items.forEach(item=>{
 
-if(i>=data.items.length){
+const line=document.createElement("div")
+line.className="feedItem"
+line.innerHTML="> "+item
 
-researchLoading=false
+feed.appendChild(line)
+
+})
+
+feed.scrollTop=feed.scrollHeight
 
 const updated=new Date(data.lastUpdated)
 
 status.innerText="intelligence updated: "+updated.toLocaleString()
 
-return
-}
-
-const line=document.createElement("div")
-
-line.className="feedItem"
-line.innerHTML="> "+data.items[i]
-
-feed.appendChild(line)
-
-feed.scrollTop=feed.scrollHeight
-
-i++
-
-setTimeout(stream,120)
-
-}
-
-stream()
-
 }catch{
 
-researchLoading=false
-
 feed.innerHTML="[error] intelligence network offline"
-
 status.innerText="unable to reach intelligence network"
 
 }
@@ -295,14 +299,7 @@ status.innerText="unable to reach intelligence network"
 }
 
 
-
-let marketLoading=false
-
 async function refreshMarketCap(){
-
-if(marketLoading) return
-
-marketLoading=true
 
 const mc=document.getElementById("marketCap")
 const status=document.getElementById("marketStatus")
@@ -314,8 +311,6 @@ try{
 const res=await fetch(
 "https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw"
 )
-
-if(!res.ok) throw new Error("dex")
 
 const data=await res.json()
 
@@ -331,18 +326,13 @@ status.innerText="market data unavailable"
 
 }
 
-marketLoading=false
-
 }
-
-
 
 refreshResearch()
 refreshMarketCap()
 
 setInterval(refreshResearch,300000)
 setInterval(refreshMarketCap,60000)
-
 
 
 const canvas=document.getElementById("particles")
