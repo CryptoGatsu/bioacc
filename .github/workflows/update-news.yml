@@ -1,0 +1,30 @@
+name: Update Bioacc News
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Fetch biotech news
+        run: |
+          curl -s "https://newsapi.org/v2/everything?q=biotech+OR+crispr+OR+longevity&language=en&sortBy=publishedAt&pageSize=8&apiKey=demo" > newsraw.json
+
+      - name: Convert to simple JSON
+        run: |
+          jq '{items: [.articles[].title]}' newsraw.json > news.json
+
+      - name: Commit update
+        run: |
+          git config --global user.name "bioacc-bot"
+          git config --global user.email "bot@bioacc"
+          git add news.json
+          git commit -m "update biotech intelligence feed" || echo "no changes"
+          git push

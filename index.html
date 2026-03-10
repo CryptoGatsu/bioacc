@@ -288,7 +288,7 @@ async function loadResearch(){
 
 const feed=document.getElementById("researchFeed")
 
-feed.innerHTML="connecting to bio/acc intelligence network..."
+feed.innerHTML="[boot] connecting to bio/acc intelligence network...\n"
 
 try{
 
@@ -298,7 +298,11 @@ const data=await res.json()
 
 feed.innerHTML=""
 
-data.items.forEach(item=>{
+let i=0
+
+function streamLine(){
+
+if(i >= data.items.length) return
 
 const line=document.createElement("div")
 
@@ -306,15 +310,23 @@ line.className="feedItem"
 
 const time=new Date().toLocaleTimeString()
 
-line.innerHTML="["+time+"] "+item
+line.innerHTML="["+time+"] "+data.items[i]
 
 feed.appendChild(line)
 
-})
+feed.scrollTop = feed.scrollHeight
+
+i++
+
+setTimeout(streamLine, 600)
+
+}
+
+streamLine()
 
 }catch{
 
-feed.innerHTML="intelligence network offline"
+feed.innerHTML="[error] intelligence network offline"
 
 }
 
