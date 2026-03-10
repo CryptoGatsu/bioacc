@@ -74,22 +74,18 @@ margin-right:10px;
 display:inline-block;
 }
 
-.news{
-border-left:1px solid #333;
-padding-left:20px;
+.researchFeed{
+background:#050505;
+border:1px solid #222;
+padding:20px;
+height:280px;
+overflow:auto;
+margin-top:30px;
+font-size:14px;
 }
 
-.news-item{
-margin-bottom:25px;
-}
-
-.timeline{
-border-left:1px solid #333;
-padding-left:20px;
-}
-
-.timeline-item{
-margin-bottom:25px;
+.feedItem{
+margin-bottom:12px;
 }
 
 .topic{
@@ -104,7 +100,7 @@ margin-top:10px;
 color:#bbb;
 }
 
-input{
+input,textarea{
 background:#000;
 border:1px solid #333;
 color:white;
@@ -112,6 +108,10 @@ padding:10px;
 width:100%;
 margin-top:10px;
 font-family:inherit;
+}
+
+textarea{
+height:80px;
 }
 
 button{
@@ -134,8 +134,13 @@ padding-top:20px;
 }
 
 .signature{
-margin-bottom:8px;
+margin-bottom:14px;
 color:#aaa;
+}
+
+.counter{
+margin-top:10px;
+font-size:18px;
 }
 
 .links a{
@@ -188,94 +193,13 @@ bio/acc contract
 </div>
 
 
-<h2>what is bio/acc</h2>
+<h2>live biotech research feed</h2>
 
-<p>
+<div class="researchFeed" id="researchFeed">
 
-bio/acc (Biotech Accelerationism) is the belief that humanity should aggressively accelerate biotechnology progress.
-
-as computation becomes the substrate of intelligence, biotechnology becomes the interface for engineering life itself.
-
-dna is the operating system of biology  
-ai is the discovery engine  
-crypto is the funding layer
-
-together they form the infrastructure for accelerating biological innovation.
-
-</p>
-
-
-
-<h2>ai biotech feed</h2>
-
-<div class="news">
-
-<div class="news-item">
-
-<b>ai protein design</b>
-
-<p>ai models are generating proteins never seen in nature.</p>
+loading research feed...
 
 </div>
-
-<div class="news-item">
-
-<b>crispr evolution</b>
-
-<p>next generation gene editing tools enable precision dna engineering.</p>
-
-</div>
-
-<div class="news-item">
-
-<b>decentralized science</b>
-
-<p>crypto communities are funding biotech research outside traditional institutions.</p>
-
-</div>
-
-</div>
-
-
-
-<h2>research timeline</h2>
-
-<div class="timeline">
-
-<div class="timeline-item">
-
-<b>2012</b>
-
-crispr discovered as programmable gene editing.
-
-</div>
-
-<div class="timeline-item">
-
-<b>2020</b>
-
-ai protein folding breakthroughs transform biology.
-
-</div>
-
-<div class="timeline-item">
-
-<b>2023</b>
-
-ai begins designing novel proteins.
-
-</div>
-
-<div class="timeline-item">
-
-<b>2025+</b>
-
-ai + biotech accelerate biological engineering.
-
-</div>
-
-</div>
-
 
 
 <h2>research explorer</h2>
@@ -290,21 +214,8 @@ crispr enables precise dna editing using programmable molecular scissors.
 ai systems can generate new proteins used for drugs and enzymes.
 </div>
 
-<div class="topic" onclick="toggle('longevity')">> longevity biotechnology</div>
-<div id="longevity" class="topic-content">
-gene therapy and cellular reprogramming aim to slow or reverse aging.
-</div>
-
-<div class="topic" onclick="toggle('desci')">> decentralized science</div>
-<div id="desci" class="topic-content">
-desci allows communities to fund biotech research through crypto.
-</div>
-
-
 
 <h2>sign the bio/acc manifesto</h2>
-
-<p>support the biotech acceleration movement by signing the manifesto.</p>
 
 <button class="walletButton" onclick="connectWallet()">connect wallet</button>
 
@@ -312,23 +223,25 @@ desci allows communities to fund biotech research through crypto.
 
 <form id="manifestoForm">
 
-<input placeholder="twitter username (required)" id="twitter" required>
+<input placeholder="twitter handle (optional)" id="twitter">
 
-<input placeholder="first name (optional)" id="name">
-
-<input placeholder="affiliation (optional)" id="affiliation">
+<textarea placeholder="leave a note (optional)" id="note"></textarea>
 
 <button type="submit">sign manifesto</button>
 
 </form>
 
 
-<div class="signatures" id="signatures">
+<div class="counter green" id="signatureCount">
 
-<h3 class="green">signatures</h3>
+0 people have signed the bio/acc manifesto
 
 </div>
 
+
+<div class="signatures" id="signatures">
+
+</div>
 
 
 <h2>community</h2>
@@ -346,7 +259,6 @@ desci allows communities to fund biotech research through crypto.
 </div>
 
 
-
 <footer>
 
 bio/acc is a movement accelerating biotechnology.
@@ -360,6 +272,9 @@ bio/acc is a movement accelerating biotechnology.
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
 
 <script>
+
+localStorage.removeItem("bioacc_signatures")
+let signatures=[]
 
 let walletAddress=null
 
@@ -388,11 +303,7 @@ function toggle(id){
 
 const el=document.getElementById(id)
 
-if(el.style.display==="block"){
-el.style.display="none"
-}else{
-el.style.display="block"
-}
+el.style.display=el.style.display==="block"?"none":"block"
 
 }
 
@@ -400,23 +311,27 @@ el.style.display="block"
 
 const form=document.getElementById("manifestoForm")
 const list=document.getElementById("signatures")
-
-let signatures=JSON.parse(localStorage.getItem("bioacc_signatures"))||[]
+const counter=document.getElementById("signatureCount")
 
 function render(){
 
-list.innerHTML="<h3 class='green'>signatures</h3>"
+list.innerHTML=""
 
 signatures.forEach(s=>{
 
 const div=document.createElement("div")
 div.className="signature"
 
-div.innerText=`@${s.twitter} • ${s.wallet.slice(0,6)}...${s.wallet.slice(-4)}`
+div.innerHTML=
+
+s.wallet.slice(0,6)+"..."+s.wallet.slice(-4)+
+(s.note ? "<br>\""+s.note+"\"" : "")
 
 list.appendChild(div)
 
 })
+
+counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
 
 }
 
@@ -436,6 +351,16 @@ return
 
 }
 
+const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
+
+if(alreadySigned){
+
+alert("this wallet has already signed")
+
+return
+
+}
+
 const message="I support Biotech Accelerationism"
 
 const encoded=new TextEncoder().encode(message)
@@ -444,10 +369,8 @@ const signed=await window.solana.signMessage(encoded,"utf8")
 
 const sig={
 
-twitter:document.getElementById("twitter").value,
-name:document.getElementById("name").value,
-affiliation:document.getElementById("affiliation").value,
 wallet:walletAddress,
+note:document.getElementById("note").value,
 signature:Array.from(signed.signature)
 
 }
@@ -461,6 +384,52 @@ render()
 form.reset()
 
 })
+
+
+
+async function loadResearch(){
+
+const feed=document.getElementById("researchFeed")
+
+try{
+
+const res=await fetch("https://export.arxiv.org/api/query?search_query=biotech+OR+protein+OR+genomics&start=0&max_results=6")
+
+const text=await res.text()
+
+const parser=new DOMParser()
+
+const xml=parser.parseFromString(text,"text/xml")
+
+const entries=xml.getElementsByTagName("entry")
+
+feed.innerHTML=""
+
+for(let i=0;i<entries.length;i++){
+
+const title=entries[i].getElementsByTagName("title")[0].textContent
+
+const item=document.createElement("div")
+
+item.className="feedItem"
+
+item.innerHTML="> "+title
+
+feed.appendChild(item)
+
+}
+
+}catch{
+
+feed.innerHTML="unable to load research feed"
+
+}
+
+}
+
+loadResearch()
+
+setInterval(loadResearch,300000)
 
 
 
