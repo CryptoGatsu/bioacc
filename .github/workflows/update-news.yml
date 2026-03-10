@@ -21,13 +21,16 @@ jobs:
           curl -s "https://news.google.com/rss/search?q=biotech+crispr+longevity+ai+biology&hl=en-US&gl=US&ceid=US:en" > google.xml
           curl -s "https://export.arxiv.org/rss/q-bio" > arxiv.xml
           curl -s "https://www.nature.com/subjects/biotechnology.rss" > nature.xml
+          curl -s "https://longevity.technology/news/feed/" > longevity.xml
 
+          cat google.xml arxiv.xml nature.xml longevity.xml > feed.xml
           cat google.xml arxiv.xml nature.xml > feed.xml
 
       - name: Convert RSS to JSON
         run: |
           sudo apt-get install -y jq
-          titles=$(grep -oP '(?<=<title>).*?(?=</title>)' feed.xml | tail -n +2 | head -n 8)
+
+          titles=$(grep -oP '(?<=<title>).*?(?=</title>)' feed.xml | tail -n +2 | head -n 20)
 
           printf '{\n' > news.json
           printf '  "lastUpdated": "%s",\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> news.json
