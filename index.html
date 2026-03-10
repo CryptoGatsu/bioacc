@@ -78,10 +78,10 @@ display:inline-block;
 background:#050505;
 border:1px solid #222;
 padding:20px;
-height:280px;
+height:320px;
 overflow-y:auto;
 overflow-x:hidden;
-margin-top:30px;
+margin-top:20px;
 font-size:14px;
 }
 
@@ -192,18 +192,13 @@ bio/acc contract
 
 </div>
 
-
-
-<h2>live biotech research terminal</h2>
+<h2>live biotech intelligence terminal</h2>
 
 <div class="researchFeed" id="researchFeed">
 [boot] connecting to bio/acc intelligence network...
 </div>
 
-<div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;">
-
-
-
+<div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
 <h2>research explorer</h2>
 
@@ -222,8 +217,6 @@ ai systems can generate new proteins used for drugs and enzymes.
 gene therapy and cellular reprogramming aim to slow or reverse aging.
 </div>
 
-
-
 <h2>sign the bio/acc manifesto</h2>
 
 <button class="walletButton" onclick="connectWallet()">connect wallet</button>
@@ -240,14 +233,11 @@ gene therapy and cellular reprogramming aim to slow or reverse aging.
 
 </form>
 
-
 <div class="counter green" id="signatureCount">
 0 people have signed the bio/acc manifesto
 </div>
 
 <div class="signatures" id="signatures"></div>
-
-
 
 <h2>community</h2>
 
@@ -269,8 +259,6 @@ bio/acc is a movement accelerating biotechnology.
 
 </div>
 
-
-
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
 
 <script>
@@ -280,41 +268,32 @@ const el=document.getElementById(id)
 el.style.display=el.style.display==="block"?"none":"block"
 }
 
-
-
-/* ---------------------------
-LIVE RESEARCH TERMINAL
---------------------------- */
-
 async function loadResearch(){
 
-const feed = document.getElementById("researchFeed")
-const status = document.getElementById("feedStatus")
+const feed=document.getElementById("researchFeed")
+const status=document.getElementById("feedStatus")
 
 try{
 
-// force fresh fetch (bypass GitHub caching)
-const res = await fetch("news.json?cache=" + Date.now())
+const res=await fetch("news.json?cache="+Date.now())
+const data=await res.json()
 
-const data = await res.json()
+feed.innerHTML=""
 
-feed.innerHTML = ""
-
-let i = 0
+let i=0
 
 function stream(){
 
-if(i >= data.items.length) return
+if(i>=data.items.length) return
 
-const line = document.createElement("div")
+const line=document.createElement("div")
+line.className="feedItem"
 
-line.className = "feedItem"
-
-line.innerHTML = "> " + data.items[i]
+line.innerHTML="> "+data.items[i]
 
 feed.appendChild(line)
 
-feed.scrollTop = feed.scrollHeight
+feed.scrollTop=feed.scrollHeight
 
 i++
 
@@ -324,46 +303,20 @@ setTimeout(stream,500)
 
 stream()
 
-// show last update time
-if(data.lastUpdated){
+const updated=new Date(data.lastUpdated)
+status.innerText="last intelligence update: "+updated.toLocaleString()
 
-const updated = new Date(data.lastUpdated)
+}catch{
 
-status.innerText =
-"last intelligence update: " + updated.toLocaleString()
-
-}else{
-
-status.innerText =
-"last intelligence update: unknown"
-
-}
-
-}catch(e){
-
-feed.innerHTML = "[error] intelligence network offline"
-
-status.innerText = "unable to read intelligence metadata"
+feed.innerHTML="[error] intelligence network offline"
+status.innerText=""
 
 }
 
 }
 
-// load when page opens
 loadResearch()
-
-// refresh every 5 minutes
 setInterval(loadResearch,300000)
-
-
-
-
-
-/* ---------------------------
-MANIFESTO SIGNING
---------------------------- */
-
-localStorage.removeItem("bioacc_signatures")
 
 let signatures=[]
 let walletAddress=null
@@ -385,8 +338,6 @@ alert("install phantom wallet")
 }
 
 }
-
-
 
 const form=document.getElementById("manifestoForm")
 const list=document.getElementById("signatures")
@@ -415,22 +366,24 @@ counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
 
 render()
 
-
-
 form.addEventListener("submit",async e=>{
 
 e.preventDefault()
 
 if(!walletAddress){
+
 alert("connect wallet first")
 return
+
 }
 
 const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
 
 if(alreadySigned){
+
 alert("this wallet has already signed")
 return
+
 }
 
 const message="I support Biotech Accelerationism"
@@ -447,19 +400,11 @@ signature:Array.from(signed.signature)
 
 signatures.push(sig)
 
-localStorage.setItem("bioacc_signatures",JSON.stringify(signatures))
-
 render()
 
 form.reset()
 
 })
-
-
-
-/* ---------------------------
-PARTICLE BACKGROUND
---------------------------- */
 
 const canvas=document.getElementById("particles")
 const ctx=canvas.getContext("2d")
