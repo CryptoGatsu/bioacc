@@ -1,5 +1,8 @@
 name: Update Bioacc Intelligence Feed
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: "0 * * * *"
