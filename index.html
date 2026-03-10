@@ -11,66 +11,51 @@
 
 body{
 margin:0;
-font-family:Arial, Helvetica, sans-serif;
+font-family:Arial;
 background:#021a12;
-color:#8bffb6;
+color:#9cffc7;
 overflow-x:hidden;
 }
 
-h1,h2,h3{
-color:#00ff9c;
-}
-
-a{
-color:#00ff9c;
-text-decoration:none;
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
 }
 
 section{
 max-width:1000px;
 margin:auto;
-padding:80px 30px;
+padding:80px 25px;
+}
+
+h1,h2{
+color:#00ff9c;
 }
 
 .hero{
 text-align:center;
 padding:140px 20px;
-background:radial-gradient(circle at center,#00ff88 0%,#022017 40%,#01120c 100%);
-}
-
-.hero h1{
-font-size:48px;
-letter-spacing:2px;
-}
-
-.hero p{
-font-size:18px;
-max-width:650px;
-margin:auto;
-opacity:.9;
 }
 
 .contract{
-margin-top:30px;
-padding:14px;
-background:#03271c;
-border:1px solid #00ff88;
-border-radius:6px;
+margin-top:20px;
+padding:12px;
+border:1px solid #00ff9c;
 display:inline-block;
-}
-
-.buttons{
-margin-top:30px;
+background:#04261c;
 }
 
 .button{
 display:inline-block;
-margin:8px;
+margin:10px;
 padding:12px 22px;
-background:#00ff88;
-color:#01120c;
+background:#00ff9c;
+color:#00130c;
 font-weight:bold;
-border-radius:5px;
+border-radius:6px;
+text-decoration:none;
 }
 
 .cards{
@@ -81,75 +66,69 @@ margin-top:40px;
 }
 
 .card{
-background:#03271c;
+background:#04261c;
 padding:25px;
 border-radius:10px;
-border:1px solid rgba(0,255,140,.2);
+border:1px solid rgba(0,255,150,.25);
+}
+
+.timeline{
+border-left:2px solid #00ff9c;
+padding-left:25px;
+margin-top:30px;
+}
+
+.timeline-item{
+margin-bottom:30px;
+}
+
+.news{
+margin-top:30px;
+}
+
+.news-item{
+background:#03221a;
+padding:18px;
+margin-bottom:15px;
+border-radius:6px;
 }
 
 .footer{
 text-align:center;
-padding:60px 20px;
-background:#01120c;
-}
-
-.footer a{
-margin:10px;
-display:inline-block;
-}
-
-.bg-words{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-pointer-events:none;
-z-index:-1;
-opacity:.05;
-font-size:32px;
-color:#00ff88;
-display:flex;
-flex-wrap:wrap;
-align-content:center;
-justify-content:center;
-text-align:center;
+padding:60px;
+background:#01110c;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="bg-words">
+<canvas id="particles"></canvas>
 
-DNA • CRISPR • SYNTHETIC BIOLOGY • GENOMICS • AI DRIVEN DISCOVERY • BIOINFORMATICS • PROTEIN DESIGN • LONGEVITY • DECENTRALIZED SCIENCE • BIOHACKING • NEURAL NETWORKS • CRYPTO FUNDING • BIO ACCELERATION
-
-</div>
-
-<div class="hero">
+<section class="hero">
 
 <h1>BIO/ACC ON SOLANA</h1>
 
-<p>
-Accelerating the future of biology through crypto, AI, and open research.
-</p>
+<p>Accelerating biology with AI, crypto, and decentralized research.</p>
 
 <div class="contract">
+
 Contract Address  
 <br>
 <b>CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump</b>
-</div>
-
-<div class="buttons">
-
-<a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw" target="_blank">Buy Token</a>
-
-<a class="button" href="https://bioacc.life" target="_blank">Read Manifesto</a>
 
 </div>
 
-</div>
+<br>
+
+<a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">Buy Token</a>
+
+<a class="button" href="https://bioacc.life">Read Manifesto</a>
+
+</section>
+
 
 
 <section>
@@ -158,28 +137,18 @@ Contract Address
 
 <p>
 
-Bio/acc stands for <b>biological accelerationism</b>.
-
-It is the belief that humanity should aggressively accelerate progress in biology and biotechnology.
-
-Rather than slowing innovation through excessive regulation, bio/acc advocates:
+Bio/acc (biological accelerationism) pushes humanity to aggressively accelerate biotechnology progress using AI and decentralized funding.
 
 </p>
 
 <ul>
-<li>rapid biotech experimentation</li>
-<li>AI driven biological discovery</li>
-<li>open scientific collaboration</li>
-<li>decentralized research funding</li>
+
+<li>AI-driven protein discovery</li>
+<li>CRISPR gene editing</li>
+<li>longevity research</li>
+<li>decentralized biotech startups</li>
+
 </ul>
-
-<p>
-
-Crypto provides the funding rails.  
-AI provides the discovery engine.  
-Biology is the frontier.
-
-</p>
 
 </section>
 
@@ -187,29 +156,84 @@ Biology is the frontier.
 
 <section>
 
-<h2>Featured Bio/acc Breakthroughs</h2>
+<h2>AI Biotech News Feed</h2>
 
-<div class="cards">
+<div class="news">
 
-<div class="card">
-<h3>AI Protein Design</h3>
-<p>
-New AI systems can design completely new proteins, unlocking the potential for entirely new medicines and biological tools.
-</p>
+<div class="news-item">
+
+<b>AI Designed Proteins</b>
+
+<p>New AI systems are creating proteins never seen in nature, enabling faster drug discovery.</p>
+
 </div>
 
-<div class="card">
-<h3>CRISPR Gene Editing</h3>
-<p>
-Precision gene editing technologies allow scientists to modify DNA with increasing accuracy, enabling cures for genetic diseases.
-</p>
+<div class="news-item">
+
+<b>CRISPR Precision Editing</b>
+
+<p>Next generation CRISPR tools allow scientists to edit DNA with unprecedented accuracy.</p>
+
 </div>
 
-<div class="card">
-<h3>Decentralized Biotech</h3>
-<p>
-Bio DAOs and crypto communities are funding experimental biology that traditional institutions often ignore.
-</p>
+<div class="news-item">
+
+<b>AI Drug Discovery</b>
+
+<p>Biotech startups are using machine learning to design drugs in months instead of years.</p>
+
+</div>
+
+<div class="news-item">
+
+<b>Decentralized Science</b>
+
+<p>Bio DAOs are funding experimental research that traditional institutions often ignore.</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<section>
+
+<h2>Biotech Research Timeline</h2>
+
+<div class="timeline">
+
+<div class="timeline-item">
+
+<b>2012</b>
+
+<p>CRISPR gene editing discovered as a programmable DNA editing tool.</p>
+
+</div>
+
+<div class="timeline-item">
+
+<b>2020</b>
+
+<p>AI protein folding breakthroughs revolutionize structural biology.</p>
+
+</div>
+
+<div class="timeline-item">
+
+<b>2023</b>
+
+<p>AI begins generating novel proteins for therapeutics.</p>
+
+</div>
+
+<div class="timeline-item">
+
+<b>2025+</b>
+
+<p>AI and biotech converge to accelerate biological engineering.</p>
+
 </div>
 
 </div>
@@ -222,18 +246,15 @@ Bio DAOs and crypto communities are funding experimental biology that traditiona
 
 <h2>The Bio/acc Coin</h2>
 
-<p>
-
-The Bio/acc coin exists to accelerate biotech progress.
-
-</p>
-
 <ul>
 
-<li>fund early biotech startups</li>
-<li>support experimental research</li>
-<li>buy back supply from the market</li>
-<li>develop tools and infrastructure for the bio/acc ecosystem</li>
+<li>fund biotech startups</li>
+
+<li>buy back supply</li>
+
+<li>support bio/acc development</li>
+
+<li>accelerate open biotech research</li>
 
 </ul>
 
@@ -249,25 +270,25 @@ The Bio/acc coin exists to accelerate biotech progress.
 
 <div class="card">
 
-<h3>Step 1</h3>
+<b>Step 1</b>
 
-Install <b>Phantom Wallet</b>.
-
-</div>
-
-<div class="card">
-
-<h3>Step 2</h3>
-
-Add <b>SOL</b> to your wallet.
+Install Phantom Wallet
 
 </div>
 
 <div class="card">
 
-<h3>Step 3</h3>
+<b>Step 2</b>
 
-Open Dexscreener and swap SOL for BIO/ACC.
+Add SOL to your wallet
+
+</div>
+
+<div class="card">
+
+<b>Step 3</b>
+
+Swap SOL for BIO/ACC on Dexscreener
 
 </div>
 
@@ -275,9 +296,7 @@ Open Dexscreener and swap SOL for BIO/ACC.
 
 <br>
 
-<a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw" target="_blank">
-Open Dexscreener
-</a>
+<a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">Open Dexscreener</a>
 
 </section>
 
@@ -285,17 +304,9 @@ Open Dexscreener
 
 <section>
 
-<h2>The Bio/acc Manifesto</h2>
+<h2>Bio/acc Manifesto</h2>
 
-<p>
-
-The full philosophy behind biological accelerationism can be read here.
-
-</p>
-
-<a class="button" href="https://bioacc.life" target="_blank">
-Read the Manifesto
-</a>
+<a class="button" href="https://bioacc.life">Read the Manifesto</a>
 
 </section>
 
@@ -305,17 +316,67 @@ Read the Manifesto
 
 <h2>Join the Bio/acc Community</h2>
 
-<a href="https://x.com/bioacconsolana?s=21" target="_blank">X Page</a>
+<a href="https://x.com/bioacconsolana?s=21">X Page</a>
 
-<a href="https://x.com/i/communities/2030792349631361266" target="_blank">X Community</a>
+<br><br>
 
-<a href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw" target="_blank">Dexscreener</a>
+<a href="https://x.com/i/communities/2030792349631361266">X Community</a>
 
-<p style="opacity:.6;margin-top:40px">
-Accelerating Biology
-</p>
+<br><br>
+
+<a href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">Dexscreener</a>
 
 </div>
+
+
+
+<script>
+
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+for(let i=0;i<120;i++){
+
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+vx:(Math.random()-.5)*0.5,
+vy:(Math.random()-.5)*0.5
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+particles.forEach(p=>{
+
+p.x+=p.vx
+p.y+=p.vy
+
+if(p.x<0||p.x>canvas.width)p.vx*=-1
+if(p.y<0||p.y>canvas.height)p.vy*=-1
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,2,0,Math.PI*2)
+ctx.fillStyle="#00ff9c"
+ctx.fill()
+
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
+</script>
 
 </body>
 </html>
