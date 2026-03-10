@@ -292,15 +292,17 @@ feed.innerHTML="connecting to biotech research network..."
 
 try{
 
-const rss="https://api.rss2json.com/v1/api.json?rss_url=https://export.arxiv.org/rss/q-bio"
+const url="https://api.crossref.org/works?query=biotech%20crispr%20protein&rows=8"
 
-const res=await fetch(rss)
+const res=await fetch(url)
 
 const data=await res.json()
 
 feed.innerHTML=""
 
-data.items.slice(0,8).forEach(item=>{
+data.message.items.forEach(paper=>{
+
+const title=paper.title[0]
 
 const line=document.createElement("div")
 
@@ -308,7 +310,7 @@ line.className="feedItem"
 
 const time=new Date().toLocaleTimeString()
 
-line.innerHTML="["+time+"] "+item.title.toLowerCase()
+line.innerHTML="["+time+"] "+title.toLowerCase()
 
 feed.appendChild(line)
 
@@ -316,7 +318,9 @@ feed.appendChild(line)
 
 }catch(err){
 
-feed.innerHTML="research network temporarily offline"
+feed.innerHTML="research terminal offline"
+
+console.log(err)
 
 }
 
