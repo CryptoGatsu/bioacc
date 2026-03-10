@@ -228,44 +228,81 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
+let researchLoading=false
+
 async function refreshResearch(){
+
+if(researchLoading) return
+
+researchLoading=true
 
 const feed=document.getElementById("researchFeed")
 const status=document.getElementById("feedStatus")
 
 status.innerText="[scan] refreshing biotech intelligence..."
+feed.innerHTML=""
 
 try{
 
 const res=await fetch("news.json?cache="+Date.now())
+
+if(!res.ok) throw new Error("network")
+
 const data=await res.json()
 
-feed.innerHTML=""
+let i=0
 
-data.items.forEach(item=>{
+function stream(){
+
+if(i>=data.items.length){
+
+researchLoading=false
+
+const updated=new Date(data.lastUpdated)
+
+status.innerText="intelligence updated: "+updated.toLocaleString()
+
+return
+}
 
 const line=document.createElement("div")
-line.className="feedItem"
-line.innerHTML="> "+item
-feed.appendChild(line)
 
-})
+line.className="feedItem"
+line.innerHTML="> "+data.items[i]
+
+feed.appendChild(line)
 
 feed.scrollTop=feed.scrollHeight
 
-const updated=new Date(data.lastUpdated)
-status.innerText="intelligence updated: "+updated.toLocaleString()
+i++
+
+setTimeout(stream,120)
+
+}
+
+stream()
 
 }catch{
 
+researchLoading=false
+
 feed.innerHTML="[error] intelligence network offline"
+
 status.innerText="unable to reach intelligence network"
 
 }
 
 }
 
+
+
+let marketLoading=false
+
 async function refreshMarketCap(){
+
+if(marketLoading) return
+
+marketLoading=true
 
 const mc=document.getElementById("marketCap")
 const status=document.getElementById("marketStatus")
@@ -277,6 +314,8 @@ try{
 const res=await fetch(
 "https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw"
 )
+
+if(!res.ok) throw new Error("dex")
 
 const data=await res.json()
 
@@ -292,13 +331,19 @@ status.innerText="market data unavailable"
 
 }
 
+marketLoading=false
+
 }
+
+
 
 refreshResearch()
 refreshMarketCap()
 
 setInterval(refreshResearch,300000)
 setInterval(refreshMarketCap,60000)
+
+
 
 const canvas=document.getElementById("particles")
 const ctx=canvas.getContext("2d")
