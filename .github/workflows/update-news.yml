@@ -26,22 +26,27 @@ jobs:
           cat google.xml arxiv.xml nature.xml longevity.xml > feed.xml
           cat google.xml arxiv.xml nature.xml > feed.xml
 
-      - name: Convert RSS to JSON
+      - name: Convert RSS feeds to tagged JSON
         run: |
           sudo apt-get install -y jq
 
-          titles=$(grep -oP '(?<=<title>).*?(?=</title>)' feed.xml | tail -n +2 | head -n 20)
+          news=$(grep -oP '(?<=<title>).*?(?=</title>)' google.xml | tail -n +2 | head -n 6 | sed 's/^/[NEWS] /')
+          arxiv=$(grep -oP '(?<=<title>).*?(?=</title>)' arxiv.xml | tail -n +2 | head -n 5 | sed 's/^/[ARXIV] /')
+          nature=$(grep -oP '(?<=<title>).*?(?=</title>)' nature.xml | tail -n +2 | head -n 5 | sed 's/^/[NATURE] /')
+          longevity=$(grep -oP '(?<=<title>).*?(?=</title>)' longevity.xml | tail -n +2 | head -n 4 | sed 's/^/[LONGEVITY] /')
 
           printf '{\n' > news.json
           printf '  "lastUpdated": "%s",\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> news.json
           printf '  "items": [\n' >> news.json
+
+          combined=$(printf "%s\n%s\n%s\n%s" "$news" "$arxiv" "$nature" "$longevity" | head -n 20)
 
           i=0
           while read -r line; do
             if [ $i -gt 0 ]; then printf ",\n" >> news.json; fi
             printf '    "%s"' "$line" >> news.json
             i=$((i+1))
-          done <<< "$titles"
+          done <<< "$combined"
 
           printf '\n  ]\n}' >> news.json
 
