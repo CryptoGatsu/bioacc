@@ -121,6 +121,17 @@ textarea{
 height:120px;
 }
 
+.rules{
+margin-top:20px;
+padding:15px;
+border:1px solid #222;
+background:#050505;
+}
+
+.rules li{
+margin-bottom:8px;
+}
+
 .signatures{
 margin-top:30px;
 border-top:1px solid #222;
@@ -237,9 +248,20 @@ market cap: <span id="marketCap">loading...</span>
 
 <p>
 The <b>bio/acc coin on Solana generates trading fees</b>.
-A portion of these fees can be allocated to support promising biotech,
-longevity, and synthetic biology startups aligned with the bio/acc mission.
+A portion of these fees can be directed toward promising biotech projects aligned with the bio/acc mission.
 </p>
+
+<div class="rules">
+
+<b>Submission Requirements</b>
+
+<ul>
+<li>Must have a <b>public GitHub repository</b></li>
+<li>Project must have been actively worked on for <b>at least 14 days</b></li>
+<li>Must have a <b>public social media profile</b></li>
+</ul>
+
+</div>
 
 <form id="startupForm">
 
@@ -293,116 +315,6 @@ bio/acc is a movement accelerating biotechnology.
 <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
 
 <script>
-
-let walletAddress=null
-
-async function connectWallet(){
-
-if(window.solana){
-
-const resp=await window.solana.connect()
-walletAddress=resp.publicKey.toString()
-document.getElementById("walletStatus").innerText="wallet connected: "+walletAddress
-
-}else{
-
-alert("install phantom wallet")
-
-}
-
-}
-
-document.getElementById("startupForm").addEventListener("submit",async function(e){
-
-e.preventDefault()
-
-if(!walletAddress){
-await connectWallet()
-}
-
-const name=document.getElementById("projectName").value
-const github=document.getElementById("projectGithub").value
-const desc=document.getElementById("projectDescription").value
-
-if(desc.length<120){
-alert("project explanation must be at least 120 characters")
-return
-}
-
-const body=
-`Project Name: ${name}
-
-Github: ${github}
-
-Description:
-${desc}
-
-Wallet:
-${walletAddress}`
-
-window.location.href=
-`mailto:bioaccsolana@outlook.com?subject=Bioacc Startup Submission&body=${encodeURIComponent(body)}`
-
-})
-
-let signatures=[]
-const form=document.getElementById("manifestoForm")
-const list=document.getElementById("signatures")
-const counter=document.getElementById("signatureCount")
-
-function render(){
-
-list.innerHTML=""
-
-signatures.forEach(s=>{
-
-const div=document.createElement("div")
-div.className="signature"
-
-div.innerHTML=
-s.wallet.slice(0,6)+"..."+s.wallet.slice(-4)+
-(s.note ? "<br>\""+s.note+"\"" : "")
-
-list.appendChild(div)
-
-})
-
-counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
-
-}
-
-form.addEventListener("submit",async e=>{
-
-e.preventDefault()
-
-if(!walletAddress){
-alert("connect wallet first")
-return
-}
-
-const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
-
-if(alreadySigned){
-alert("this wallet has already signed")
-return
-}
-
-const message="I support Biotech Accelerationism"
-
-const encoded=new TextEncoder().encode(message)
-
-const signed=await window.solana.signMessage(encoded,"utf8")
-
-signatures.push({
-wallet:walletAddress,
-note:document.getElementById("note").value
-})
-
-render()
-
-form.reset()
-
-})
 
 async function refreshMarketCap(auto=true){
 
