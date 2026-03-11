@@ -93,13 +93,18 @@ font-size:14px;
 margin-bottom:8px;
 }
 
-.refreshButton{
+button{
 background:#7CFF3A;
 border:none;
-padding:8px 14px;
-cursor:pointer;
-margin-top:10px;
+padding:10px 16px;
 font-family:inherit;
+cursor:pointer;
+color:black;
+margin-top:15px;
+}
+
+button:hover{
+opacity:.85;
 }
 
 input,textarea{
@@ -114,14 +119,6 @@ font-family:inherit;
 
 textarea{
 height:80px;
-}
-
-.walletButton{
-margin-bottom:15px;
-background:#7CFF3A;
-border:none;
-padding:10px 16px;
-cursor:pointer;
 }
 
 .signatures{
@@ -192,7 +189,7 @@ market cap: <span id="marketCap">loading...</span>
 
 <br>
 
-<button class="refreshButton" onclick="refreshMarketCap()">refresh market cap</button>
+<button onclick="refreshMarketCap()">refresh market cap</button>
 
 <div id="marketStatus" style="color:#777;font-size:14px;"></div>
 
@@ -206,68 +203,41 @@ market cap: <span id="marketCap">loading...</span>
 [boot] connecting to bio/acc intelligence network...
 </div>
 
-<button class="refreshButton" onclick="refreshResearch()">refresh intelligence</button>
+<button onclick="refreshResearch()">refresh intelligence</button>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
 <h2>bio/acc manifesto</h2>
 
 <p><b>DECENTRALIZE biopower</b></p>
-
-<p>
-Harness decentralized networks for data storage, transactions and fundraising
-to coordinate scientific research outside traditional gatekeepers.
-</p>
+<p>Harness decentralized networks for data storage, fundraising and research coordination.</p>
 
 <p><b>ENGINEER ethical evolution</b></p>
-
-<p>
-Build biosafety and accountability into biotechnology through cryptography,
-smart contracts and community governance.
-</p>
+<p>Build biosafety and accountability directly into biotechnology infrastructure.</p>
 
 <p><b>ALIGN with ecological blueprints</b></p>
-
-<p>
-Engineer biology inspired by nature to restore ecosystems and planetary health.
-</p>
+<p>Design biotechnology compatible with natural ecosystems.</p>
 
 <p><b>HACK health</b></p>
+<p>Empower individuals to explore biology and optimize their minds and bodies.</p>
 
-<p>
-Every human has the right to explore and optimize their biology and cognition.
-</p>
-
-<p><b>OPEN-SOURCE biology</b></p>
-
-<p>
-The code of life should be a global commons accessible to humanity.
-</p>
+<p><b>OPEN-SOURCE the code</b></p>
+<p>Genomes, drug designs and protocols should exist in a global commons.</p>
 
 <p><b>ACCELERATE supply chains</b></p>
-
-<p>
-Decentralized biomanufacturing reduces time and cost to deliver therapies.
-</p>
+<p>Decentralized biotech manufacturing drastically reduces cost and time.</p>
 
 <p><b>The bio/acc trinity</b></p>
-
-<p>
-Biotech + AI + Crypto creates an exponential engine for scientific progress.
-</p>
+<p>Biotech + AI + Crypto create an exponential engine for science.</p>
 
 <p><b>Bio Singularity</b></p>
-
-<p>
-CRISPR, AI protein design, synthetic ecosystems and bio-digital interfaces
-will redefine life itself.
-</p>
+<p>CRISPR, AI protein design and synthetic ecosystems redefine life itself.</p>
 
 <p><b>Evolve or expire.</b></p>
 
 <h2>sign the bio/acc manifesto</h2>
 
-<button class="walletButton" onclick="connectWallet()">connect wallet</button>
+<button onclick="connectWallet()">connect wallet</button>
 
 <p id="walletStatus"></p>
 
@@ -290,11 +260,8 @@ will redefine life itself.
 <div class="links">
 
 <a href="https://bioacc.life">manifesto (ETH)</a>
-
 <a href="https://x.com/bioacconsolana?s=21">x</a>
-
 <a href="https://x.com/i/communities/2030792349631361266">community</a>
-
 <a href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">dexscreener</a>
 
 </div>
@@ -324,13 +291,10 @@ const data=await res.json()
 feed.innerHTML=""
 
 data.items.forEach(item=>{
-
 const line=document.createElement("div")
 line.className="feedItem"
 line.innerHTML="> "+item
-
 feed.appendChild(line)
-
 })
 
 const updated=new Date(data.lastUpdated)
