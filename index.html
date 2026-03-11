@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
@@ -200,7 +201,7 @@ market cap: <span id="marketCap">loading...</span>
 
 <br>
 
-<button onclick="refreshMarketCap(false)">refresh market cap</button>
+<button onclick="refreshMarketCap()">refresh market cap</button>
 
 <div id="marketStatus" style="color:#777;font-size:14px;"></div>
 
@@ -236,19 +237,13 @@ market cap: <span id="marketCap">loading...</span>
 <p><b>ACCELERATE supply chains</b></p>
 <p>Decentralized biotech manufacturing drastically reduces cost and time.</p>
 
-<p><b>The bio/acc trinity</b></p>
-<p>Biotech + AI + Crypto create an exponential engine for science.</p>
-
-<p><b>Bio Singularity</b></p>
-<p>CRISPR, AI protein design and synthetic ecosystems redefine life itself.</p>
-
 <p><b>Evolve or expire.</b></p>
 
 <h2>biotech startup fund seeking</h2>
 
 <p>
 The <b>bio/acc coin on Solana generates trading fees</b>.
-A portion of these fees can be directed toward promising biotech projects aligned with the bio/acc mission.
+A portion of these fees can support promising biotech projects.
 </p>
 
 <div class="rules">
@@ -257,7 +252,7 @@ A portion of these fees can be directed toward promising biotech projects aligne
 
 <ul>
 <li>Must have a <b>public GitHub repository</b></li>
-<li>Project must have been actively worked on for <b>at least 14 days</b></li>
+<li>Must have been working on the project for <b>at least 14 days</b></li>
 <li>Must have a <b>public social media profile</b></li>
 </ul>
 
@@ -316,7 +311,38 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
-async function refreshMarketCap(auto=true){
+async function loadResearch(){
+
+const feed=document.getElementById("researchFeed")
+const status=document.getElementById("feedStatus")
+
+try{
+
+const res=await fetch("news.json?cache="+Date.now())
+const data=await res.json()
+
+feed.innerHTML=""
+
+data.items.forEach(item=>{
+const line=document.createElement("div")
+line.className="feedItem"
+line.innerHTML="> "+item
+feed.appendChild(line)
+})
+
+const updated=new Date(data.lastUpdated)
+
+status.innerText="intelligence updated: "+updated.toLocaleString()
+
+}catch{
+
+feed.innerHTML="[error] intelligence network offline"
+
+}
+
+}
+
+async function refreshMarketCap(){
 
 const mc=document.getElementById("marketCap")
 const status=document.getElementById("marketStatus")
@@ -331,9 +357,7 @@ const cap=data.pair?.fdv || 0
 
 mc.innerText="$"+Number(cap).toLocaleString()
 
-const now=new Date()
-
-status.innerText=(auto?"market cap auto refreshed: ":"market cap updated: ")+now.toLocaleString()
+status.innerText="market cap updated: "+new Date().toLocaleString()
 
 }catch{
 
@@ -343,9 +367,55 @@ status.innerText="market data unavailable"
 
 }
 
-refreshMarketCap(true)
+loadResearch()
+refreshMarketCap()
 
-setInterval(()=>refreshMarketCap(true),60000)
+setInterval(loadResearch,300000)
+setInterval(refreshMarketCap,60000)
+
+const canvas=document.getElementById("particles")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let particles=[]
+
+for(let i=0;i<120;i++){
+
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+vx:(Math.random()-.5)*0.4,
+vy:(Math.random()-.5)*0.4
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+particles.forEach(p=>{
+
+p.x+=p.vx
+p.y+=p.vy
+
+if(p.x<0||p.x>canvas.width)p.vx*=-1
+if(p.y<0||p.y>canvas.height)p.vy*=-1
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,2,0,Math.PI*2)
+ctx.fillStyle="#7CFF3A"
+ctx.fill()
+
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
 
 </script>
 
