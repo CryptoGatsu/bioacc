@@ -118,7 +118,7 @@ font-family:inherit;
 }
 
 textarea{
-height:80px;
+height:120px;
 }
 
 .signatures{
@@ -203,8 +203,6 @@ market cap: <span id="marketCap">loading...</span>
 [boot] connecting to bio/acc intelligence network...
 </div>
 
-<button onclick="refreshResearch(false)">refresh intelligence</button>
-
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
 <h2>bio/acc manifesto</h2>
@@ -235,25 +233,30 @@ market cap: <span id="marketCap">loading...</span>
 
 <p><b>Evolve or expire.</b></p>
 
-<h2>sign the bio/acc manifesto</h2>
+<h2>biotech startup fund seeking</h2>
 
-<button onclick="connectWallet()">connect wallet</button>
+<p>
+The <b>bio/acc coin on Solana generates trading fees</b> from the open market.
+A portion of these fees can be directed toward promising biotech projects
+aligned with the bio/acc movement.
+</p>
 
-<p id="walletStatus"></p>
+<p>
+If you are building a <b>biotech, longevity, AI biology, or synthetic biology project</b>,
+you can submit your project for consideration below.
+</p>
 
-<form id="manifestoForm">
+<form id="startupForm">
 
-<textarea placeholder="leave a note (optional)" id="note"></textarea>
+<input id="projectName" placeholder="project name">
 
-<button type="submit">sign manifesto</button>
+<input id="projectGithub" placeholder="github repository">
+
+<textarea id="projectDescription" placeholder="explain your project (120 characters or more)"></textarea>
+
+<button type="submit">submit project</button>
 
 </form>
-
-<div class="counter green" id="signatureCount">
-0 people have signed the bio/acc manifesto
-</div>
-
-<div class="signatures" id="signatures"></div>
 
 <h2>community</h2>
 
@@ -276,12 +279,65 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
+let walletAddress=null
+
+async function connectWallet(){
+
+if(window.solana){
+
+const resp=await window.solana.connect()
+walletAddress=resp.publicKey.toString()
+
+}else{
+
+alert("install phantom wallet")
+
+}
+
+}
+
+document.getElementById("startupForm").addEventListener("submit",async function(e){
+
+e.preventDefault()
+
+if(!walletAddress){
+
+await connectWallet()
+
+}
+
+const name=document.getElementById("projectName").value
+const github=document.getElementById("projectGithub").value
+const desc=document.getElementById("projectDescription").value
+
+if(desc.length<120){
+
+alert("project explanation must be at least 120 characters")
+
+return
+
+}
+
+const body=
+`Project Name: ${name}
+
+Github: ${github}
+
+Description:
+${desc}
+
+Wallet:
+${walletAddress}`
+
+window.location.href=
+`mailto:bioaccsolana@outlook.com?subject=Bioacc Startup Submission&body=${encodeURIComponent(body)}`
+
+})
+
 async function refreshResearch(auto=true){
 
 const feed=document.getElementById("researchFeed")
 const status=document.getElementById("feedStatus")
-
-status.innerText=auto ? "[auto] refreshing biotech intelligence..." : "[scan] refreshing biotech intelligence..."
 
 try{
 
@@ -298,13 +354,11 @@ feed.appendChild(line)
 })
 
 const now=new Date()
-
-status.innerText=(auto ? "auto intelligence refresh: " : "intelligence updated: ") + now.toLocaleString()
+status.innerText=(auto?"auto intelligence refresh: ":"intelligence updated: ")+now.toLocaleString()
 
 }catch{
 
 feed.innerHTML="[error] intelligence network offline"
-status.innerText=""
 
 }
 
@@ -314,8 +368,6 @@ async function refreshMarketCap(auto=true){
 
 const mc=document.getElementById("marketCap")
 const status=document.getElementById("marketStatus")
-
-status.innerText=auto ? "auto updating market data..." : "updating market data..."
 
 try{
 
@@ -329,7 +381,7 @@ mc.innerText="$"+Number(cap).toLocaleString()
 
 const now=new Date()
 
-status.innerText=(auto ? "market cap auto refreshed: " : "market cap updated: ") + now.toLocaleString()
+status.innerText=(auto?"market cap auto refreshed: ":"market cap updated: ")+now.toLocaleString()
 
 }catch{
 
@@ -344,138 +396,6 @@ refreshMarketCap(true)
 
 setInterval(()=>refreshResearch(true),300000)
 setInterval(()=>refreshMarketCap(true),60000)
-
-let signatures=[]
-let walletAddress=null
-
-async function connectWallet(){
-
-if(window.solana){
-
-const resp=await window.solana.connect()
-
-walletAddress=resp.publicKey.toString()
-
-document.getElementById("walletStatus").innerText="wallet connected: "+walletAddress
-
-}else{
-
-alert("install phantom wallet")
-
-}
-
-}
-
-const form=document.getElementById("manifestoForm")
-const list=document.getElementById("signatures")
-const counter=document.getElementById("signatureCount")
-
-function render(){
-
-list.innerHTML=""
-
-signatures.forEach(s=>{
-
-const div=document.createElement("div")
-div.className="signature"
-
-div.innerHTML=
-s.wallet.slice(0,6)+"..."+s.wallet.slice(-4)+
-(s.note ? "<br>\""+s.note+"\"" : "")
-
-list.appendChild(div)
-
-})
-
-counter.innerText=signatures.length+" people have signed the bio/acc manifesto"
-
-}
-
-render()
-
-form.addEventListener("submit",async e=>{
-
-e.preventDefault()
-
-if(!walletAddress){
-
-alert("connect wallet first")
-return
-
-}
-
-const alreadySigned=signatures.some(s=>s.wallet===walletAddress)
-
-if(alreadySigned){
-
-alert("this wallet has already signed")
-return
-
-}
-
-const message="I support Biotech Accelerationism"
-
-const encoded=new TextEncoder().encode(message)
-
-const signed=await window.solana.signMessage(encoded,"utf8")
-
-const sig={
-wallet:walletAddress,
-note:document.getElementById("note").value,
-signature:Array.from(signed.signature)
-}
-
-signatures.push(sig)
-
-render()
-
-form.reset()
-
-})
-
-const canvas=document.getElementById("particles")
-const ctx=canvas.getContext("2d")
-
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight
-
-let particles=[]
-
-for(let i=0;i<120;i++){
-
-particles.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-vx:(Math.random()-.5)*0.4,
-vy:(Math.random()-.5)*0.4
-})
-
-}
-
-function draw(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height)
-
-particles.forEach(p=>{
-
-p.x+=p.vx
-p.y+=p.vy
-
-if(p.x<0||p.x>canvas.width)p.vx*=-1
-if(p.y<0||p.y>canvas.height)p.vy*=-1
-
-ctx.beginPath()
-ctx.arc(p.x,p.y,2,0,Math.PI*2)
-ctx.fillStyle="#7CFF3A"
-ctx.fill()
-
-})
-
-requestAnimationFrame(draw)
-
-}
-
-draw()
 
 </script>
 
