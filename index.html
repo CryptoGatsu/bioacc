@@ -189,7 +189,7 @@ market cap: <span id="marketCap">loading...</span>
 
 <br>
 
-<button onclick="refreshMarketCap()">refresh market cap</button>
+<button onclick="refreshMarketCap(false)">refresh market cap</button>
 
 <div id="marketStatus" style="color:#777;font-size:14px;"></div>
 
@@ -203,7 +203,7 @@ market cap: <span id="marketCap">loading...</span>
 [boot] connecting to bio/acc intelligence network...
 </div>
 
-<button onclick="refreshResearch()">refresh intelligence</button>
+<button onclick="refreshResearch(false)">refresh intelligence</button>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
@@ -276,12 +276,12 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
-async function refreshResearch(){
+async function refreshResearch(auto=true){
 
 const feed=document.getElementById("researchFeed")
 const status=document.getElementById("feedStatus")
 
-status.innerText="[scan] refreshing biotech intelligence..."
+status.innerText=auto ? "[auto] refreshing biotech intelligence..." : "[scan] refreshing biotech intelligence..."
 
 try{
 
@@ -297,8 +297,9 @@ line.innerHTML="> "+item
 feed.appendChild(line)
 })
 
-const updated=new Date(data.lastUpdated)
-status.innerText="intelligence updated: "+updated.toLocaleString()
+const now=new Date()
+
+status.innerText=(auto ? "auto intelligence refresh: " : "intelligence updated: ") + now.toLocaleString()
 
 }catch{
 
@@ -309,18 +310,16 @@ status.innerText=""
 
 }
 
-async function refreshMarketCap(){
+async function refreshMarketCap(auto=true){
 
 const mc=document.getElementById("marketCap")
 const status=document.getElementById("marketStatus")
 
-status.innerText="updating market data..."
+status.innerText=auto ? "auto updating market data..." : "updating market data..."
 
 try{
 
-const res=await fetch(
-"https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw"
-)
+const res=await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw")
 
 const data=await res.json()
 
@@ -328,7 +327,9 @@ const cap=data.pair?.fdv || 0
 
 mc.innerText="$"+Number(cap).toLocaleString()
 
-status.innerText="market data updated"
+const now=new Date()
+
+status.innerText=(auto ? "market cap auto refreshed: " : "market cap updated: ") + now.toLocaleString()
 
 }catch{
 
@@ -338,11 +339,11 @@ status.innerText="market data unavailable"
 
 }
 
-refreshResearch()
-refreshMarketCap()
+refreshResearch(true)
+refreshMarketCap(true)
 
-setInterval(refreshResearch,300000)
-setInterval(refreshMarketCap,60000)
+setInterval(()=>refreshResearch(true),300000)
+setInterval(()=>refreshMarketCap(true),60000)
 
 let signatures=[]
 let walletAddress=null
