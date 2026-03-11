@@ -16,25 +16,28 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Generate intelligence feed
+      - name: Fetch biotech intelligence
         run: |
+
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          cat <<EOF > news.json
-          {
-            "lastUpdated": "$NOW",
-            "items": [
-              "[NEWS] AI biotech startup raises $50m for protein design",
-              "[NEWS] CRISPR therapy shows promise in human trials",
-              "[NEWS] longevity biotech funding hits record levels",
-              "[NEWS] desci project launches open genome dataset",
-              "[NEWS] protein llm models accelerate drug discovery",
-              "[NEWS] synthetic biology company engineers new enzymes",
-              "[NEWS] ai drug discovery cuts research time dramatically",
-              "[NEWS] biotech venture funding surges in 2026"
-            ]
-          }
-          EOF
+          GOOGLE=$(curl -s "https://news.google.com/rss/search?q=biotech&hl=en-US&gl=US&ceid=US:en" | grep "<title>" | sed -n '2,5p' | sed 's/<[^>]*>//g')
+
+          ARXIV=$(curl -s "https://export.arxiv.org/rss/q-bio" | grep "<title>" | sed -n '2,4p' | sed 's/<[^>]*>//g')
+
+          LONGEVITY=$(curl -s "https://news.google.com/rss/search?q=longevity+biotech&hl=en-US&gl=US&ceid=US:en" | grep "<title>" | sed -n '2,3p' | sed 's/<[^>]*>//g')
+
+          echo "{" > news.json
+          echo "\"lastUpdated\":\"$NOW\"," >> news.json
+          echo "\"items\":[" >> news.json
+
+          echo "$GOOGLE" | sed 's/^/\"[NEWS] /;s/$/\",/' >> news.json
+          echo "$LONGEVITY" | sed 's/^/\"[LONGEVITY] /;s/$/\",/' >> news.json
+          echo "$ARXIV" | sed 's/^/\"[ARXIV] /;s/$/\",/' >> news.json
+
+          sed -i '$ s/,$//' news.json
+
+          echo "]}" >> news.json
 
       - name: Commit update
         run: |
@@ -42,7 +45,5 @@ jobs:
           git config --global user.email "bot@bioacc"
 
           git add news.json
-
           git commit -m "update biotech intelligence feed" || echo "no changes"
-
           git push
