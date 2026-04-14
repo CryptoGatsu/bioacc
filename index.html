@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>bio/acc on solana</title>
+
+<style>
+
+body{
+margin:0;
+background:#000;
+color:#cfcfcf;
+font-family:Courier New, monospace;
+line-height:1.7;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+opacity:.35;
+pointer-events:none;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:60px 25px;
+}
+
+.hero{
+text-align:center;
+margin-bottom:80px;
+}
+
+.hero img{
+width:260px;
+margin-bottom:30px;
+}
+
+h1{
+color:white;
+font-weight:normal;
+font-size:36px;
+}
+
+h2{
+color:white;
+font-weight:normal;
+margin-top:70px;
+}
+
+.green{
+color:#7CFF3A;
+}
+
+.contract{
+border-top:1px solid #222;
+border-bottom:1px solid #222;
+padding:20px 0;
+margin:40px 0;
+font-size:18px;
+text-align:center;
+}
+
+.button{
+background:#7CFF3A;
+color:black;
+padding:10px 18px;
+text-decoration:none;
+display:inline-block;
+}
+
+.market{
+margin-top:20px;
+}
+
+.researchFeed{
+background:#050505;
+border:1px solid #222;
+padding:20px;
+height:320px;
+overflow-y:auto;
+margin-top:20px;
+font-size:14px;
+}
+
+.feedItem{
+margin-bottom:8px;
+}
+
+button{
+background:#7CFF3A;
+border:none;
+padding:10px 16px;
+font-family:inherit;
+cursor:pointer;
+color:black;
+margin-top:15px;
+}
+
+button:hover{
+opacity:.85;
+}
+
+input,textarea{
+background:#000;
+border:1px solid #333;
+color:white;
+padding:10px;
+width:100%;
+margin-top:10px;
+font-family:inherit;
+}
+
+textarea{
+height:120px;
+}
+
+.rules{
+margin-top:20px;
+padding:15px;
+border:1px solid #222;
+background:#050505;
+}
+
+.rules li{
+margin-bottom:8px;
+}
+
+.signatures{
+margin-top:30px;
+border-top:1px solid #222;
+padding-top:20px;
+}
+
+.signature{
+margin-bottom:14px;
+color:#aaa;
+}
+
+.counter{
+margin-top:10px;
+font-size:18px;
+}
+
+.links a{
+color:#7CFF3A;
+margin-right:20px;
+text-decoration:none;
+}
+
+footer{
+margin-top:120px;
+border-top:1px solid #222;
+padding-top:30px;
+font-size:14px;
+color:#777;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="container">
+
+<div class="hero">
+
+<img src="heart.png">
+
+<h1>bio/acc on solana</h1>
+
+<p class="green">biotech accelerationism</p>
+
+</div>
+
+<div class="contract">
+
+bio/acc contract
+
+<br><br>
+
+<b>CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump</b>
+
+<br><br>
+
+<a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">buy</a>
+
+<div class="market">
+
+market cap: <span id="marketCap">loading...</span>
+
+<br>
+
+<button onclick="refreshMarketCap()">refresh market cap</button>
+
+<div id="marketStatus" style="color:#777;font-size:14px;"></div>
+
+</div>
+
+</div>
+
+<h2>live biotech intelligence terminal</h2>
+
+<div class="researchFeed" id="researchFeed">
+[boot] connecting to bio/acc intelligence network...
+</div>
+
+<div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
+
+<h2>bio/acc manifesto</h2>
+
+<p><b>DECENTRALIZE biopower</b></p>
+<p>Harness decentralized networks for data storage, fundraising and research coordination.</p>
+
+<p><b>ENGINEER ethical evolution</b></p>
+<p>Build biosafety and accountability directly into biotechnology infrastructure.</p>
+
+<p><b>ALIGN with ecological blueprints</b></p>
+<p>Design biotechnology compatible with natural ecosystems.</p>
+
+<p><b>HACK health</b></p>
+<p>Empower individuals to explore biology and optimize their minds and bodies.</p>
+
+<p><b>OPEN-SOURCE the code</b></p>
+<p>Genomes, drug designs and protocols should exist in a global commons.</p>
+
+<p><b>ACCELERATE supply chains</b></p>
+<p>Decentralized biotech manufacturing drastically reduces cost and time.</p>
+
+<p><b>Evolve or expire.</b></p>
+
+<h2>sign the bio/acc manifesto</h2>
+
+<button onclick="connectWallet()">connect wallet</button>
+
+<p id="walletStatus"></p>
+
+<form id="manifestoForm">
+
+<textarea placeholder="leave a note (optional)" id="note"></textarea>
+
+<button type="submit">sign manifesto</button>
+
+</form>
+
+<div class="counter green" id="signatureCount">
+0 people have signed the bio/acc manifesto
+</div>
+
+<div class="signatures" id="signatures"></div>
+
+<h2>biotech startup fund seeking</h2>
+
+<p>
+The <b>bio/acc coin on Solana generates trading fees</b>.
+A portion of these fees can support promising biotech projects.
+</p>
+
+<div class="rules">
+
+<b>Submission Requirements</b>
+
+<ul>
+<li>Must have a <b>public GitHub repository</b></li>
+<li>Must have been working on the project for <b>at least 14 days</b></li>
+<li>Must have a <b>public social media profile</b></li>
+</ul>
+
+</div>
+
+<form id="startupForm">
+
+<input id="projectName" placeholder="project name">
+
+<input id="projectGithub" placeholder="github repository">
+
+<textarea id="projectDescription" placeholder="explain your project (120 characters or more)"></textarea>
+
+<button type="submit">submit project</button>
+
+</form>
+
+<h2>community</h2>
+
+<div class="links">
+
+<a href="https://bioacc.life">manifesto (ETH)</a>
+<a href="https://x.com/bioacconsolana?s=21">x</a>
+<a href="https://x.com/i/communities/2030792349631361266">community</a>
+<a href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">dexscreener</a>
+
+</div>
+
+<footer>
+bio/acc is a movement accelerating biotechnology.
+</footer>
+
+</div>
+
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+
+<script>
+
+async function loadResearch(){
+
+const feed=document.getElementById("researchFeed")
+const status=document.getElementById("feedStatus")
+
+try{
+
+const res=await fetch("news.json?cache="+Date.now())
+const data=await res.json()
+
+feed.innerHTML=""
+
+data.items.forEach(item=>{
+const line=document.createElement("div")
+line.className="feedItem"
+line.innerHTML="> "+item
+feed.appendChild(line)
+})
+
+const updated=new Date(data.lastUpdated)
+
+status.innerText="intelligence updated: "+updated.toLocaleString()
+
+}catch{
+
+feed.innerHTML="[error] intelligence network offline"
+
+}
+
+}
+
+async function refreshMarketCap(){
+
+const mc=document.getElementById("marketCap")
+const status=document.getElementById("marketStatus")
+
+try{
+
+const res=await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw")
+
+const data=await res.json()
+
+const cap=data.pair?.fdv || 0
+
+mc.innerText="$"+Number(cap).toLocaleString()
+
+status.innerText="market cap updated: "+new Date().toLocaleString()
+
+}catch{
+
+status.innerText="market data unavailable"
+
+}
+
+}
+
+loadResearch()
+refreshMarketCap()
+
+setInterval(loadResearch,300000)
+setInterval(refreshMarketCap,60000)
+
+const canvas=document.getElementById("particles")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let particles=[]
+
+for(let i=0;i<120;i++){
+
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+vx:(Math.random()-.5)*0.4,
+vy:(Math.random()-.5)*0.4
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+particles.forEach(p=>{
+
+p.x+=p.vx
+p.y+=p.vy
+
+if(p.x<0||p.x>canvas.width)p.vx*=-1
+if(p.y<0||p.y>canvas.height)p.vy*=-1
+
+ctx.beginPath()
+ctx.arc(p.x,p.y,2,0,Math.PI*2)
+ctx.fillStyle="#7CFF3A"
+ctx.fill()
+
+})
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
+
+</script>
+
+</body>
+</html>
