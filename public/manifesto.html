@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>bio/acc manifesto</title>
+
+<style>
+
+body{
+margin:0;
+background:#000;
+color:#cfcfcf;
+font-family:Courier New, monospace;
+line-height:1.8;
+}
+
+/* NAV */
+.nav{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+padding:15px 25px;
+background:rgba(0,0,0,0.9);
+border-bottom:1px solid #111;
+display:flex;
+justify-content:space-between;
+z-index:10;
+}
+
+.nav a{
+color:#7CFF3A;
+text-decoration:none;
+margin-left:20px;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+padding:100px 25px 60px;
+}
+
+h1{
+color:white;
+font-weight:normal;
+font-size:34px;
+text-align:center;
+margin-bottom:40px;
+}
+
+h2{
+color:#7CFF3A;
+font-weight:normal;
+margin-top:50px;
+}
+
+p{
+margin-top:10px;
+}
+
+.green{
+color:#7CFF3A;
+}
+
+.section{
+margin-bottom:40px;
+}
+
+button{
+background:#7CFF3A;
+border:none;
+padding:10px 16px;
+font-family:inherit;
+cursor:pointer;
+color:black;
+margin-top:15px;
+}
+
+textarea{
+background:#000;
+border:1px solid #333;
+color:white;
+padding:10px;
+width:100%;
+margin-top:10px;
+font-family:inherit;
+height:120px;
+}
+
+.signatures{
+margin-top:40px;
+border-top:1px solid #222;
+padding-top:20px;
+}
+
+.signature{
+margin-bottom:12px;
+color:#aaa;
+}
+
+.counter{
+margin-top:15px;
+font-size:18px;
+}
+
+footer{
+margin-top:80px;
+border-top:1px solid #222;
+padding-top:30px;
+font-size:14px;
+color:#777;
+text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAV -->
+<div class="nav">
+<div>bio/acc manifesto</div>
+<div>
+<a href="index.html">← home</a>
+</div>
+</div>
+
+<div class="container">
+
+<h1>the bio/acc manifesto</h1>
+
+<div class="section">
+<h2>1. decentralize biopower</h2>
+<p>
+Biotechnology must not remain locked within institutions.
+We distribute research, funding, and infrastructure across open networks.
+No gatekeepers. No permission.
+</p>
+</div>
+
+<div class="section">
+<h2>2. engineer ethical evolution</h2>
+<p>
+Acceleration without alignment leads to collapse.
+We embed biosafety, transparency, and accountability into every system we build.
+</p>
+</div>
+
+<div class="section">
+<h2>3. align with ecological intelligence</h2>
+<p>
+Nature is not a constraint — it is the blueprint.
+We design systems that cooperate with biological reality rather than override it.
+</p>
+</div>
+
+<div class="section">
+<h2>4. hack health</h2>
+<p>
+Biology is programmable.
+Individuals should have access to tools that allow them to understand and improve their bodies and minds.
+</p>
+</div>
+
+<div class="section">
+<h2>5. open-source the code of life</h2>
+<p>
+Genomes, therapies, and protocols belong in the commons.
+Closed systems slow progress. Open systems accelerate it.
+</p>
+</div>
+
+<div class="section">
+<h2>6. accelerate biotech infrastructure</h2>
+<p>
+From lab automation to decentralized manufacturing,
+we reduce the time between discovery and deployment.
+</p>
+</div>
+
+<div class="section">
+<h2>7. build in public</h2>
+<p>
+Transparency creates trust.
+We document, share, and iterate openly so others can build with us.
+</p>
+</div>
+
+<div class="section">
+<h2>8. evolve or expire</h2>
+<p class="green">
+The future will not wait.
+We either accelerate biotechnology responsibly —
+or fall behind those who will.
+</p>
+</div>
+
+<!-- SIGN SECTION -->
+<h2>sign the manifesto</h2>
+
+<button onclick="connectWallet()">connect wallet</button>
+<p id="walletStatus"></p>
+
+<form id="manifestoForm">
+<textarea placeholder="leave a note (optional)" id="note"></textarea>
+<button type="submit">sign manifesto</button>
+</form>
+
+<div class="counter green" id="signatureCount">
+0 people have signed the bio/acc manifesto
+</div>
+
+<div class="signatures" id="signatures"></div>
+
+<footer>
+bio/acc is a decentralized movement accelerating biotechnology.
+</footer>
+
+</div>
+
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+
+<script>
+
+// SIMPLE LOCAL SIGNATURE SYSTEM (can upgrade later)
+
+let signatures = JSON.parse(localStorage.getItem("bioacc_signatures") || "[]")
+
+const list = document.getElementById("signatures")
+const count = document.getElementById("signatureCount")
+
+function render(){
+list.innerHTML=""
+signatures.forEach(sig=>{
+const el=document.createElement("div")
+el.className="signature"
+el.innerText="> "+sig
+list.appendChild(el)
+})
+count.innerText=signatures.length+" people have signed the bio/acc manifesto"
+}
+
+render()
+
+document.getElementById("manifestoForm").addEventListener("submit", e=>{
+e.preventDefault()
+const note=document.getElementById("note").value || "signed anonymously"
+signatures.unshift(note)
+localStorage.setItem("bioacc_signatures", JSON.stringify(signatures))
+document.getElementById("note").value=""
+render()
+})
+
+</script>
+
+</body>
+</html>
