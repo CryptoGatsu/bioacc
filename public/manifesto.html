@@ -229,7 +229,47 @@ bio/acc is a decentralized movement accelerating biotechnology.
 
 <script>
 
-// SIMPLE LOCAL SIGNATURE SYSTEM (can upgrade later)
+// WALLET STATE
+let walletAddress = null
+
+// CONNECT WALLET
+async function connectWallet(){
+try{
+const provider = window.solana
+
+if (!provider || !provider.isPhantom){
+alert("Phantom wallet not found. Install it to continue.")
+return
+}
+
+const res = await provider.connect()
+walletAddress = res.publicKey.toString()
+
+// DISPLAY SHORT ADDRESS
+const short = walletAddress.slice(0,4) + "..." + walletAddress.slice(-4)
+document.getElementById("walletStatus").innerText = "connected: " + short
+
+}catch(err){
+console.log(err)
+}
+}
+
+// AUTO RECONNECT (OPTIONAL NICE TOUCH)
+window.addEventListener("load", async () => {
+const provider = window.solana
+if (provider && provider.isPhantom){
+try{
+const res = await provider.connect({ onlyIfTrusted: true })
+walletAddress = res.publicKey.toString()
+
+const short = walletAddress.slice(0,4) + "..." + walletAddress.slice(-4)
+document.getElementById("walletStatus").innerText = "connected: " + short
+
+}catch{}
+}
+})
+
+// SIGNATURE SYSTEM (UPDATED TO INCLUDE WALLET)
 
 let signatures = JSON.parse(localStorage.getItem("bioacc_signatures") || "[]")
 
@@ -251,9 +291,22 @@ render()
 
 document.getElementById("manifestoForm").addEventListener("submit", e=>{
 e.preventDefault()
-const note=document.getElementById("note").value || "signed anonymously"
-signatures.unshift(note)
+
+if(!walletAddress){
+alert("connect wallet first")
+return
+}
+
+const note = document.getElementById("note").value || "signed"
+
+const short = walletAddress.slice(0,4) + "..." + walletAddress.slice(-4)
+
+// SAVE WITH WALLET
+const entry = short + " — " + note
+
+signatures.unshift(entry)
 localStorage.setItem("bioacc_signatures", JSON.stringify(signatures))
+
 document.getElementById("note").value=""
 render()
 })
