@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
@@ -18,7 +17,7 @@ font-family:Courier New, monospace;
 line-height:1.8;
 }
 
-/* NAV */
+/* NAV FIXED */
 .nav{
 position:fixed;
 top:0;
@@ -37,7 +36,6 @@ box-sizing:border-box;
 .nav a{
 color:#7CFF3A;
 text-decoration:none;
-margin-left:20px;
 }
 
 .container{
@@ -58,14 +56,6 @@ h2{
 color:#7CFF3A;
 font-weight:normal;
 margin-top:50px;
-}
-
-p{
-margin-top:10px;
-}
-
-.green{
-color:#7CFF3A;
 }
 
 .section{
@@ -107,6 +97,7 @@ color:#aaa;
 .counter{
 margin-top:15px;
 font-size:18px;
+color:#7CFF3A;
 }
 
 footer{
@@ -127,9 +118,7 @@ text-align:center;
 <!-- NAV -->
 <div class="nav">
 <div>bio/acc manifesto</div>
-<div>
 <a href="index.html">← home</a>
-</div>
 </div>
 
 <div class="container">
@@ -138,82 +127,55 @@ text-align:center;
 
 <div class="section">
 <h2>1. decentralize biopower</h2>
-<p>
-Biotechnology must not remain locked within institutions.
-We distribute research, funding, and infrastructure across open networks.
-No gatekeepers. No permission.
-</p>
+<p>Biotechnology must not remain locked within institutions. We distribute research, funding, and infrastructure across open networks. No gatekeepers. No permission.</p>
 </div>
 
 <div class="section">
 <h2>2. engineer ethical evolution</h2>
-<p>
-Acceleration without alignment leads to collapse.
-We embed biosafety, transparency, and accountability into every system we build.
-</p>
+<p>Acceleration without alignment leads to collapse. We embed biosafety, transparency, and accountability into every system we build.</p>
 </div>
 
 <div class="section">
 <h2>3. align with ecological intelligence</h2>
-<p>
-Nature is not a constraint — it is the blueprint.
-We design systems that cooperate with biological reality rather than override it.
-</p>
+<p>Nature is not a constraint — it is the blueprint. We design systems that cooperate with biological reality rather than override it.</p>
 </div>
 
 <div class="section">
 <h2>4. hack health</h2>
-<p>
-Biology is programmable.
-Individuals should have access to tools that allow them to understand and improve their bodies and minds.
-</p>
+<p>Biology is programmable. Individuals should have access to tools that allow them to understand and improve their bodies and minds.</p>
 </div>
 
 <div class="section">
 <h2>5. open-source the code of life</h2>
-<p>
-Genomes, therapies, and protocols belong in the commons.
-Closed systems slow progress. Open systems accelerate it.
-</p>
+<p>Genomes, therapies, and protocols belong in the commons. Closed systems slow progress. Open systems accelerate it.</p>
 </div>
 
 <div class="section">
 <h2>6. accelerate biotech infrastructure</h2>
-<p>
-From lab automation to decentralized manufacturing,
-we reduce the time between discovery and deployment.
-</p>
+<p>From lab automation to decentralized manufacturing, we reduce the time between discovery and deployment.</p>
 </div>
 
 <div class="section">
 <h2>7. build in public</h2>
-<p>
-Transparency creates trust.
-We document, share, and iterate openly so others can build with us.
-</p>
+<p>Transparency creates trust. We document, share, and iterate openly so others can build with us.</p>
 </div>
 
 <div class="section">
 <h2>8. evolve or expire</h2>
-<p class="green">
-The future will not wait.
-We either accelerate biotechnology responsibly —
-or fall behind those who will.
-</p>
+<p>The future will not wait. We either accelerate biotechnology responsibly — or fall behind those who will.</p>
 </div>
 
-<!-- SIGN SECTION -->
 <h2>sign the manifesto</h2>
 
 <button onclick="connectWallet()">connect wallet</button>
 <p id="walletStatus"></p>
 
 <form id="manifestoForm">
-<textarea placeholder="leave a note (optional)" id="note"></textarea>
+<textarea id="note" placeholder="leave a note (optional)"></textarea>
 <button type="submit">sign manifesto</button>
 </form>
 
-<div class="counter green" id="signatureCount">
+<div class="counter" id="signatureCount">
 0 people have signed the bio/acc manifesto
 </div>
 
@@ -232,9 +194,7 @@ bio/acc is a decentralized movement accelerating biotechnology.
 let walletAddress = null
 let provider = null
 
-// CONNECT WALLET
 async function connectWallet(){
-try{
 provider = window.solana
 
 if (!provider || !provider.isPhantom){
@@ -247,29 +207,9 @@ walletAddress = res.publicKey.toString()
 
 const short = walletAddress.slice(0,4) + "..." + walletAddress.slice(-4)
 document.getElementById("walletStatus").innerText = "connected: " + short
-
-}catch(err){
-console.log(err)
-}
 }
 
-// AUTO CONNECT
-window.addEventListener("load", async () => {
-provider = window.solana
-if (provider && provider.isPhantom){
-try{
-const res = await provider.connect({ onlyIfTrusted: true })
-walletAddress = res.publicKey.toString()
-
-const short = walletAddress.slice(0,4) + "..." + walletAddress.slice(-4)
-document.getElementById("walletStatus").innerText = "connected: " + short
-
-}catch{}
-}
-})
-
-
-// SIGNATURE STORAGE
+// STORAGE
 let signatures = JSON.parse(localStorage.getItem("bioacc_signatures") || "[]")
 
 const list = document.getElementById("signatures")
@@ -281,9 +221,7 @@ list.innerHTML=""
 signatures.forEach(sig=>{
 const el=document.createElement("div")
 el.className="signature"
-
 el.innerText = `> ${sig.wallet.slice(0,4)}...${sig.wallet.slice(-4)} — ${sig.note}`
-
 list.appendChild(el)
 })
 
@@ -292,9 +230,12 @@ count.innerText = signatures.length + " people have signed the bio/acc manifesto
 
 render()
 
+// FIXED SUBMIT HANDLER
+window.addEventListener("load", () => {
 
-// 🔐 SIGN MANIFESTO (VERIFIED)
-document.getElementById("manifestoForm").addEventListener("submit", async (e)=>{
+const form = document.getElementById("manifestoForm")
+
+form.addEventListener("submit", async (e)=>{
 e.preventDefault()
 
 if(!provider || !walletAddress){
@@ -306,16 +247,12 @@ try{
 
 const note = document.getElementById("note").value || "signed manifesto"
 
-// MESSAGE TO SIGN
 const message = `bio/acc manifesto signature:\n${walletAddress}\n${Date.now()}\n${note}`
 
-// ENCODE MESSAGE
 const encodedMessage = new TextEncoder().encode(message)
 
-// REQUEST SIGNATURE
 const signed = await provider.signMessage(encodedMessage, "utf8")
 
-// SAVE VERIFIED SIGNATURE
 const entry = {
 wallet: walletAddress,
 note: note,
@@ -328,13 +265,13 @@ signatures.unshift(entry)
 localStorage.setItem("bioacc_signatures", JSON.stringify(signatures))
 
 document.getElementById("note").value=""
-
 render()
 
 }catch(err){
-console.log(err)
 alert("signature rejected")
 }
+
+})
 
 })
 
