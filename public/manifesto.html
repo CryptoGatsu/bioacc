@@ -229,23 +229,22 @@ bio/acc is a decentralized movement accelerating biotechnology.
 
 <script>
 
-// WALLET STATE
 let walletAddress = null
+let provider = null
 
 // CONNECT WALLET
 async function connectWallet(){
 try{
-const provider = window.solana
+provider = window.solana
 
 if (!provider || !provider.isPhantom){
-alert("Phantom wallet not found. Install it to continue.")
+alert("Phantom wallet not found.")
 return
 }
 
 const res = await provider.connect()
 walletAddress = res.publicKey.toString()
 
-// DISPLAY SHORT ADDRESS
 const short = walletAddress.slice(0,4) + "..." + walletAddress.slice(-4)
 document.getElementById("walletStatus").innerText = "connected: " + short
 
@@ -254,9 +253,9 @@ console.log(err)
 }
 }
 
-// AUTO RECONNECT (OPTIONAL NICE TOUCH)
+// AUTO CONNECT
 window.addEventListener("load", async () => {
-const provider = window.solana
+provider = window.solana
 if (provider && provider.isPhantom){
 try{
 const res = await provider.connect({ onlyIfTrusted: true })
@@ -269,8 +268,8 @@ document.getElementById("walletStatus").innerText = "connected: " + short
 }
 })
 
-// SIGNATURE SYSTEM (UPDATED TO INCLUDE WALLET)
 
+// SIGNATURE STORAGE
 let signatures = JSON.parse(localStorage.getItem("bioacc_signatures") || "[]")
 
 const list = document.getElementById("signatures")
@@ -278,37 +277,65 @@ const count = document.getElementById("signatureCount")
 
 function render(){
 list.innerHTML=""
+
 signatures.forEach(sig=>{
 const el=document.createElement("div")
 el.className="signature"
-el.innerText="> "+sig
+
+el.innerText = `> ${sig.wallet.slice(0,4)}...${sig.wallet.slice(-4)} — ${sig.note}`
+
 list.appendChild(el)
 })
-count.innerText=signatures.length+" people have signed the bio/acc manifesto"
+
+count.innerText = signatures.length + " people have signed the bio/acc manifesto"
 }
 
 render()
 
-document.getElementById("manifestoForm").addEventListener("submit", e=>{
+
+// 🔐 SIGN MANIFESTO (VERIFIED)
+document.getElementById("manifestoForm").addEventListener("submit", async (e)=>{
 e.preventDefault()
 
-if(!walletAddress){
+if(!provider || !walletAddress){
 alert("connect wallet first")
 return
 }
 
-const note = document.getElementById("note").value || "signed"
+try{
 
-const short = walletAddress.slice(0,4) + "..." + walletAddress.slice(-4)
+const note = document.getElementById("note").value || "signed manifesto"
 
-// SAVE WITH WALLET
-const entry = short + " — " + note
+// MESSAGE TO SIGN
+const message = `bio/acc manifesto signature:\n${walletAddress}\n${Date.now()}\n${note}`
+
+// ENCODE MESSAGE
+const encodedMessage = new TextEncoder().encode(message)
+
+// REQUEST SIGNATURE
+const signed = await provider.signMessage(encodedMessage, "utf8")
+
+// SAVE VERIFIED SIGNATURE
+const entry = {
+wallet: walletAddress,
+note: note,
+signature: Array.from(signed.signature),
+message: message,
+timestamp: Date.now()
+}
 
 signatures.unshift(entry)
 localStorage.setItem("bioacc_signatures", JSON.stringify(signatures))
 
 document.getElementById("note").value=""
+
 render()
+
+}catch(err){
+console.log(err)
+alert("signature rejected")
+}
+
 })
 
 </script>
