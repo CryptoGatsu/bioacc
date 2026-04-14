@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
@@ -18,24 +17,31 @@ font-family:Courier New, monospace;
 line-height:1.7;
 }
 
-/* NAV BAR */
+/* NAV FIXED */
 .nav{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 padding:15px 25px;
-background:rgba(0,0,0,0.85);
+background:rgba(0,0,0,0.9);
 border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
 z-index:10;
+box-sizing:border-box;
 }
 
 .nav a{
 color:#7CFF3A;
 text-decoration:none;
-margin-left:20px;
+}
+
+/* FIX CONTENT OFFSET */
+.container{
+max-width:900px;
+margin:auto;
+padding:100px 25px 60px;
 }
 
 canvas{
@@ -45,12 +51,6 @@ left:0;
 z-index:-1;
 opacity:.35;
 pointer-events:none;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:100px 25px 60px;
 }
 
 .hero{
@@ -100,6 +100,7 @@ display:inline-block;
 margin-top:20px;
 }
 
+/* TERMINAL */
 .researchFeed{
 background:#050505;
 border:1px solid #222;
@@ -110,8 +111,19 @@ margin-top:20px;
 font-size:14px;
 }
 
-.feedItem{
-margin-bottom:8px;
+/* CLEAN INPUTS (MATCH MANIFESTO) */
+input, textarea{
+background:#000;
+border:1px solid #333;
+color:white;
+padding:10px;
+width:100%;
+margin-top:10px;
+font-family:inherit;
+}
+
+textarea{
+height:120px;
 }
 
 button{
@@ -131,6 +143,13 @@ border:1px solid #222;
 background:#050505;
 }
 
+.cta{
+margin-top:40px;
+padding:25px;
+border:1px solid #222;
+text-align:center;
+}
+
 .links a{
 color:#7CFF3A;
 margin-right:20px;
@@ -145,13 +164,6 @@ font-size:14px;
 color:#777;
 }
 
-.cta{
-margin-top:30px;
-padding:20px;
-border:1px solid #222;
-text-align:center;
-}
-
 </style>
 
 </head>
@@ -161,9 +173,7 @@ text-align:center;
 <!-- NAV -->
 <div class="nav">
 <div>bio/acc</div>
-<div>
 <a href="manifesto.html">manifesto</a>
-</div>
 </div>
 
 <canvas id="particles"></canvas>
@@ -216,13 +226,12 @@ A portion of these fees can support promising biotech projects.
 </div>
 
 <form id="startupForm">
-<input id="projectName" placeholder="project name">
-<input id="projectGithub" placeholder="github repository">
-<textarea id="projectDescription" placeholder="explain your project (120 characters or more)"></textarea>
+<input placeholder="project name">
+<input placeholder="github repository">
+<textarea placeholder="explain your project (120 characters or more)"></textarea>
 <button type="submit">submit project</button>
 </form>
 
-<!-- CTA TO MANIFESTO -->
 <div class="cta">
 <h2>enter the bio/acc movement</h2>
 <p>Read the full manifesto and sign your alignment.</p>
@@ -248,7 +257,55 @@ bio/acc is a movement accelerating biotechnology.
 
 <script>
 
-// KEEP YOUR EXISTING JS (UNCHANGED)
+// 🔥 RESTORED FUNCTIONS
+
+async function loadResearch(){
+const feed=document.getElementById("researchFeed")
+const status=document.getElementById("feedStatus")
+
+try{
+const res=await fetch("news.json?cache="+Date.now())
+const data=await res.json()
+
+feed.innerHTML=""
+
+data.items.forEach(item=>{
+const line=document.createElement("div")
+line.innerHTML="> "+item
+feed.appendChild(line)
+})
+
+const updated=new Date(data.lastUpdated)
+status.innerText="intelligence updated: "+updated.toLocaleString()
+
+}catch{
+feed.innerHTML="[error] intelligence network offline"
+}
+}
+
+async function refreshMarketCap(){
+const mc=document.getElementById("marketCap")
+const status=document.getElementById("marketStatus")
+
+try{
+const res=await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw")
+const data=await res.json()
+
+const cap=data.pair?.fdv || 0
+mc.innerText="$"+Number(cap).toLocaleString()
+
+status.innerText="market cap updated: "+new Date().toLocaleString()
+
+}catch{
+status.innerText="market data unavailable"
+}
+}
+
+loadResearch()
+refreshMarketCap()
+
+setInterval(loadResearch,300000)
+setInterval(refreshMarketCap,60000)
 
 </script>
 
