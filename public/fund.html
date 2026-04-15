@@ -14,36 +14,55 @@ margin:0;
 background:#000;
 color:#cfcfcf;
 font-family:Courier New, monospace;
+line-height:1.7;
 }
 
+/* NAV */
 .nav{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 padding:15px 25px;
-background:#000;
+background:rgba(0,0,0,0.9);
 border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
+align-items:center;
+box-sizing:border-box;
+z-index:10;
 }
 
 .nav a{
 color:#7CFF3A;
-margin-left:20px;
 text-decoration:none;
+margin-left:20px;
 }
 
+.nav a.active{
+opacity:0.6;
+pointer-events:none;
+}
+
+/* LAYOUT */
 .container{
 max-width:800px;
 margin:auto;
-padding:100px 25px;
+padding:100px 25px 60px;
 text-align:center;
 }
 
-h1{color:white;}
-h2{color:#7CFF3A;margin-top:60px;}
+h1{
+color:white;
+font-weight:normal;
+}
 
+h2{
+color:#7CFF3A;
+margin-top:60px;
+}
+
+/* BOX */
 .box{
 border:1px solid #222;
 padding:25px;
@@ -51,6 +70,7 @@ margin-top:20px;
 text-align:left;
 }
 
+/* FORM */
 input, textarea{
 width:100%;
 background:#050505;
@@ -58,17 +78,36 @@ border:1px solid #222;
 color:#cfcfcf;
 padding:10px;
 margin-top:10px;
+font-family:inherit;
 }
 
+textarea{
+height:120px;
+resize:none;
+}
+
+/* BUTTON */
 .button{
 background:#7CFF3A;
 color:black;
-padding:10px 15px;
+padding:12px 20px;
+display:inline-block;
+margin-top:15px;
 cursor:pointer;
 border:none;
-margin-top:15px;
+font-family:inherit;
 }
 
+/* STATUS */
+.status{
+margin-top:10px;
+font-size:14px;
+}
+
+.success{color:#7CFF3A;}
+.error{color:#ff4d4d;}
+
+/* FEED */
 .project{
 border-bottom:1px solid #222;
 padding:15px 0;
@@ -81,18 +120,24 @@ margin-top:10px;
 display:inline-block;
 }
 
+.project a{
+color:#7CFF3A;
+text-decoration:none;
+}
+
 </style>
 
 </head>
 
 <body>
 
+<!-- NAV -->
 <div class="nav">
 <div>bio/acc fund</div>
 <div>
 <a href="index.html">home</a>
 <a href="manifesto.html">manifesto</a>
-<a href="fund.html">fund</a>
+<a href="fund.html" class="active">fund</a>
 </div>
 </div>
 
@@ -100,9 +145,20 @@ display:inline-block;
 
 <h1>biotech startup fund</h1>
 
+<!-- WALLET -->
 <button class="button" onclick="connectWallet()">connect wallet</button>
-<div id="walletStatus"></div>
+<div id="walletStatus" style="margin-top:10px;color:#777;"></div>
 
+<!-- REQUIREMENTS -->
+<h2>submission requirements</h2>
+
+<div class="box">
+• Must have a <b>public GitHub repository</b><br>
+• Must have been building for <b>at least 14 days</b><br>
+• Must have a <b>public social media profile</b>
+</div>
+
+<!-- FORM -->
 <h2>submit project</h2>
 
 <div class="box">
@@ -110,13 +166,21 @@ display:inline-block;
 <input id="name" placeholder="project name">
 <input id="github" placeholder="github link">
 <input id="social" placeholder="social link">
+
 <textarea id="desc" placeholder="description"></textarea>
 
+<label style="margin-top:10px;display:block;">
+<input type="checkbox" id="confirm">
+ I confirm this project has been worked on for 14+ days
+</label>
+
 <button class="button" onclick="submitProject()">submit</button>
-<div id="status"></div>
+
+<div id="status" class="status"></div>
 
 </div>
 
+<!-- LEADERBOARD -->
 <h2>leaderboard</h2>
 
 <div class="box" id="feed"></div>
@@ -131,9 +195,10 @@ async function connectWallet(){
 if(window.solana){
 const res=await window.solana.connect()
 wallet=res.publicKey.toString()
-document.getElementById("walletStatus").innerText="connected: "+wallet.slice(0,4)+"..."+wallet.slice(-4)
+document.getElementById("walletStatus").innerText=
+"connected: "+wallet.slice(0,4)+"..."+wallet.slice(-4)
 }else{
-alert("install phantom")
+alert("install phantom wallet")
 }
 }
 
@@ -145,25 +210,43 @@ alert("connect wallet first")
 return
 }
 
-let submissions=JSON.parse(localStorage.getItem("projects")||"[]")
+const name=document.getElementById("name").value.trim()
+const github=document.getElementById("github").value.trim()
+const social=document.getElementById("social").value.trim()
+const desc=document.getElementById("desc").value.trim()
+const confirm=document.getElementById("confirm").checked
+const status=document.getElementById("status")
 
-// prevent duplicate submission
+if(!name || !github || !social || !desc){
+status.innerHTML="<span class='error'>fill all fields</span>"
+return
+}
+
+if(!github.includes("github.com")){
+status.innerHTML="<span class='error'>invalid github link</span>"
+return
+}
+
+if(!confirm){
+status.innerHTML="<span class='error'>confirm 14+ days</span>"
+return
+}
+
+let submissions=JSON.parse(localStorage.getItem("projects")||[])
+
+// prevent duplicate
 if(submissions.find(p=>p.wallet===wallet)){
 alert("wallet already submitted")
 return
 }
 
-const project={
-name:document.getElementById("name").value,
-github:document.getElementById("github").value,
-social:document.getElementById("social").value,
-desc:document.getElementById("desc").value,
-wallet,
-votes:0
-}
+submissions.push({
+name,github,social,desc,wallet,votes:0
+})
 
-submissions.push(project)
 localStorage.setItem("projects",JSON.stringify(submissions))
+
+status.innerHTML="<span class='success'>submitted</span>"
 
 render()
 
@@ -177,14 +260,14 @@ alert("connect wallet")
 return
 }
 
-let votes=JSON.parse(localStorage.getItem("votes")||"{}")
+let votes=JSON.parse(localStorage.getItem("votes")||{})
 
 if(votes[wallet]?.includes(index)){
 alert("already voted")
 return
 }
 
-let submissions=JSON.parse(localStorage.getItem("projects")||"[]")
+let submissions=JSON.parse(localStorage.getItem("projects")||[])
 
 submissions[index].votes++
 
@@ -202,7 +285,12 @@ render()
 // RENDER
 function render(){
 
-let submissions=JSON.parse(localStorage.getItem("projects")||"[]")
+let submissions=JSON.parse(localStorage.getItem("projects")||[])
+
+if(submissions.length===0){
+document.getElementById("feed").innerHTML="[no projects yet]"
+return
+}
 
 submissions.sort((a,b)=>b.votes-a.votes)
 
@@ -214,8 +302,8 @@ html+=`
 <div class="project">
 > #${i+1} ${p.name} (${p.votes} votes)
 
-github: ${p.github}
-social: ${p.social}
+github: <a href="${p.github}" target="_blank">${p.github}</a>
+social: <a href="${p.social}" target="_blank">${p.social}</a>
 
 ${p.desc}
 
@@ -224,7 +312,7 @@ ${p.desc}
 `
 })
 
-document.getElementById("feed").innerHTML=html || "[no projects]"
+document.getElementById("feed").innerHTML=html
 
 }
 
