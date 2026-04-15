@@ -38,61 +38,81 @@ text-decoration:none;
 margin-left:20px;
 }
 
+.nav a.active{
+opacity:0.6;
+pointer-events:none;
+}
+
+/* LAYOUT */
 .container{
-max-width:900px;
+max-width:800px;
 margin:auto;
 padding:100px 25px 60px;
+text-align:center;
 }
 
 h1{
 color:white;
-text-align:center;
 font-weight:normal;
 }
 
 h2{
 color:#7CFF3A;
 margin-top:60px;
-font-weight:normal;
 }
 
-.rules{
-margin-top:20px;
-padding:20px;
+/* BOX */
+.box{
 border:1px solid #222;
-background:#050505;
+padding:25px;
+margin-top:20px;
+text-align:left;
 }
 
+/* FORM */
 input, textarea{
-background:#000;
-border:1px solid #333;
-color:white;
-padding:10px;
 width:100%;
+background:#050505;
+border:1px solid #222;
+color:#cfcfcf;
+padding:10px;
 margin-top:10px;
 font-family:inherit;
 }
 
 textarea{
 height:120px;
+resize:none;
 }
 
-button{
+/* BUTTON */
+.button{
 background:#7CFF3A;
-border:none;
-padding:10px 16px;
-margin-top:15px;
-cursor:pointer;
 color:black;
+padding:12px 20px;
+display:inline-block;
+margin-top:20px;
+cursor:pointer;
+border:none;
 font-family:inherit;
 }
 
-footer{
-margin-top:100px;
-border-top:1px solid #222;
-padding-top:30px;
-color:#777;
-text-align:center;
+/* STATUS */
+.status{
+margin-top:15px;
+font-size:14px;
+}
+
+.success{
+color:#7CFF3A;
+}
+
+.error{
+color:#ff4d4d;
+}
+
+.checkbox{
+margin-top:15px;
 }
 
 </style>
@@ -106,6 +126,7 @@ text-align:center;
 <div>
 <a href="index.html">home</a>
 <a href="manifesto.html">manifesto</a>
+<a href="fund.html" class="active">fund</a>
 </div>
 </div>
 
@@ -114,33 +135,95 @@ text-align:center;
 <h1>biotech startup fund</h1>
 
 <p>
-The <b>bio/acc coin on Solana generates trading fees</b>.
-A portion of these fees can support promising biotech projects building in public.
+The bio/acc ecosystem supports founders building in public.
+Apply below to get visibility and potential funding.
 </p>
 
 <h2>submission requirements</h2>
 
-<div class="rules">
-<ul>
-<li>Must have a <b>public GitHub repository</b></li>
-<li>Must have been building for <b>at least 14 days</b></li>
-<li>Must have a <b>public social media profile</b></li>
-</ul>
+<div class="box">
+• Must have a <b>public GitHub repository</b><br>
+• Must have been building for <b>at least 14 days</b><br>
+• Must have a <b>public social media profile</b>
 </div>
 
 <h2>submit your project</h2>
 
-<input placeholder="project name">
-<input placeholder="github repository">
-<textarea placeholder="explain your project (120+ characters)"></textarea>
+<div class="box">
 
-<button>submit project</button>
+<input id="name" placeholder="project name">
+<input id="github" placeholder="github link">
+<input id="social" placeholder="social link (twitter, etc)">
 
-<footer>
-bio/acc funds builders accelerating biotechnology.
-</footer>
+<textarea id="desc" placeholder="what are you building?"></textarea>
+
+<div class="checkbox">
+<label>
+<input type="checkbox" id="confirm">
+ I confirm this project has been worked on for 14+ days
+</label>
+</div>
+
+<button class="button" onclick="submitProject()">submit application</button>
+
+<div id="status" class="status"></div>
 
 </div>
+
+</div>
+
+<script>
+
+function submitProject(){
+
+const name=document.getElementById("name").value.trim()
+const github=document.getElementById("github").value.trim()
+const social=document.getElementById("social").value.trim()
+const desc=document.getElementById("desc").value.trim()
+const confirm=document.getElementById("confirm").checked
+const status=document.getElementById("status")
+
+// validation
+if(!name || !github || !social || !desc){
+status.innerHTML="<span class='error'>fill all fields</span>"
+return
+}
+
+if(!github.includes("github.com")){
+status.innerHTML="<span class='error'>invalid github link</span>"
+return
+}
+
+if(!confirm){
+status.innerHTML="<span class='error'>must confirm 14+ days</span>"
+return
+}
+
+// store locally (temporary system)
+const submissions=JSON.parse(localStorage.getItem("bioacc_submissions") || "[]")
+
+submissions.push({
+name,
+github,
+social,
+desc,
+time:new Date().toISOString()
+})
+
+localStorage.setItem("bioacc_submissions", JSON.stringify(submissions))
+
+status.innerHTML="<span class='success'>application submitted</span>"
+
+// clear form
+document.getElementById("name").value=""
+document.getElementById("github").value=""
+document.getElementById("social").value=""
+document.getElementById("desc").value=""
+document.getElementById("confirm").checked=false
+
+}
+
+</script>
 
 </body>
 </html>
