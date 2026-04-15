@@ -163,7 +163,10 @@ async function loadProjects(){
 try {
 
 const res = await fetch(
-"https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?cache=" + Date.now()
+"https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?nocache=" + Date.now(),
+{
+cache: "no-store"
+}
 )
 
 const data = await res.json()
@@ -175,10 +178,10 @@ feed.innerHTML = "[no projects yet]"
 return
 }
 
-// OPTIONAL: sort by votes
-data.projects.sort((a,b) => (b.votes || 0) - (a.votes || 0))
+// sort by newest first (already unshift, but safe)
+data.projects.sort((a,b) => new Date(b.lastUpdated || 0) - new Date(a.lastUpdated || 0))
 
-feed.innerHTML = data.projects.map((p, i) => `
+feed.innerHTML = data.projects.map(p => `
 <div style="margin-bottom:20px">
 <b>${p.name}</b><br/>
 <a href="${p.github}" target="_blank">github</a><br/>
@@ -188,9 +191,11 @@ votes: ${p.votes || 0}
 `).join("")
 
 } catch (err){
-console.error("LOAD ERROR:", err)
-document.getElementById("feed").innerText = "error loading projects"
+console.error(err)
+document.getElementById("feed").innerText = "error loading"
 }
+
+setInterval(loadProjects, 5000)
 
 }
 

@@ -2,12 +2,12 @@ export default async function handler(req, res) {
 
 try {
 
-  // ✅ ONLY allow POST
+  // ONLY POST
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "method not allowed", method: req.method })
+    return res.status(405).json({ error: "method not allowed" })
   }
 
-  // ✅ ROBUST BODY PARSING (fixes your issue)
+  // --- BODY PARSING (ROBUST) ---
   let body = req.body
 
   if (!body) {
@@ -25,10 +25,9 @@ try {
 
   const { action, data, index } = body
 
-  console.log("BODY RECEIVED:", body)
   console.log("ACTION:", action)
+  console.log("DATA:", data)
 
-  // ✅ ENV
   const token = process.env.GITHUB_TOKEN
   const owner = process.env.GITHUB_OWNER
   const repo = process.env.GITHUB_REPO
@@ -38,33 +37,73 @@ try {
     return res.status(500).json({ error: "missing env variables" })
   }
 
-  // ✅ GET CURRENT FILE
-  const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json"
-    }
-  })
+  // --- HELPER: GET LATEST FILE ---
+  async function getFile() {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json"
+      }
+    })
 
-  const file = await getRes.json()
+    const file = await res.json()
 
-  if (!file.content) {
-    return res.status(500).json({ error: "failed to fetch file from github", file })
+    const content = JSON.parse(
+      Buffer.from(file.content, "base64").toString("utf8")
+    )
+
+    return { file, content }
   }
 
-  const content = JSON.parse(
-    Buffer.from(file.content, "base64").toString("utf8")
-  )
+  // --- HELPER: UPDATE WITH RETRY ---
+  async function updateGitHub(content, retry = 0) {
 
-  // ✅ ENSURE STRUCTURE
+    const { file } = await getFile()
+
+    const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json"
+      },
+      body: JSON.stringify({
+        message: "update submissions",
+        content: Buffer.from(JSON.stringify(content, null, 2)).toString("base64"),
+        sha: file.sha
+      })
+    })
+
+    const result = await updateRes.json()
+
+    // RETRY ON SHA CONFLICT
+    if (result.message && result.message.includes("sha") && retry < 3) {
+      console.log("Retrying...", retry + 1)
+      await new Promise(r => setTimeout(r, 300))
+      return updateGitHub(content, retry + 1)
+    }
+
+    return result
+  }
+
+  // --- ALWAYS GET LATEST BEFORE MODIFY ---
+  const { content } = await getFile()
+
   if (!content.projects) {
     content.projects = []
   }
 
-  // ✅ HANDLE ACTIONS
+  // --- ACTIONS ---
   if (action === "submit") {
-    console.log("ADDING PROJECT:", data)
-    content.projects.unshift(data)
+
+    // prevent duplicate exact submissions (optional safety)
+    const exists = content.projects.some(p =>
+      p.name === data.name && p.github === data.github
+    )
+
+    if (!exists) {
+      content.projects.unshift(data)
+    }
+
   }
 
   if (action === "vote") {
@@ -75,25 +114,11 @@ try {
 
   content.lastUpdated = new Date().toISOString()
 
-  // ✅ UPDATE FILE ON GITHUB
-  const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json"
-    },
-    body: JSON.stringify({
-      message: "update submissions",
-      content: Buffer.from(JSON.stringify(content, null, 2)).toString("base64"),
-      sha: file.sha
-    })
-  })
+  const result = await updateGitHub(content)
 
-  const result = await updateRes.json()
+  console.log("GITHUB RESULT:", result)
 
-  console.log("GITHUB RESPONSE:", result)
-
-  return res.status(200).json({ success: true, result })
+  return res.status(200).json({ success: true })
 
 } catch (err) {
 
