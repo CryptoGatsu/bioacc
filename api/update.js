@@ -2,80 +2,106 @@ export default async function handler(req, res) {
 
 try {
 
-if (req.method !== "POST") {
-return res.status(405).json({ error: "method not allowed", method: req.method })
-}
+  // ✅ ONLY allow POST
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "method not allowed", method: req.method })
+  }
 
-// parse body safely
-let body = req.body
+  // ✅ ROBUST BODY PARSING (fixes your issue)
+  let body = req.body
 
-if (typeof body === "string") {
-body = JSON.parse(body)
-}
+  if (!body) {
+    const buffers = []
+    for await (const chunk of req) {
+      buffers.push(chunk)
+    }
+    const raw = Buffer.concat(buffers).toString()
+    body = JSON.parse(raw)
+  }
 
-const { action, data, index } = body
+  if (typeof body === "string") {
+    body = JSON.parse(body)
+  }
 
-const token = process.env.GITHUB_TOKEN
-const owner = process.env.GITHUB_OWNER
-const repo = process.env.GITHUB_REPO
-const path = "submissions.json"
+  const { action, data, index } = body
 
-// GET FILE
-const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-headers: {
-Authorization: `Bearer ${token}`,
-Accept: "application/vnd.github+json"
-}
-})
+  console.log("BODY RECEIVED:", body)
+  console.log("ACTION:", action)
 
-const file = await getRes.json()
+  // ✅ ENV
+  const token = process.env.GITHUB_TOKEN
+  const owner = process.env.GITHUB_OWNER
+  const repo = process.env.GITHUB_REPO
+  const path = "submissions.json"
 
-const content = JSON.parse(
-Buffer.from(file.content, "base64").toString("utf8")
-)
+  if (!token || !owner || !repo) {
+    return res.status(500).json({ error: "missing env variables" })
+  }
 
-// HANDLE ACTIONS
-if (action === "submit") {
+  // ✅ GET CURRENT FILE
+  const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json"
+    }
+  })
 
-content.projects.unshift(data)
+  const file = await getRes.json()
 
-}
+  if (!file.content) {
+    return res.status(500).json({ error: "failed to fetch file from github", file })
+  }
 
-if (action === "vote") {
+  const content = JSON.parse(
+    Buffer.from(file.content, "base64").toString("utf8")
+  )
 
-if (content.projects[index]) {
-content.projects[index].votes += 1
-}
+  // ✅ ENSURE STRUCTURE
+  if (!content.projects) {
+    content.projects = []
+  }
 
-}
+  // ✅ HANDLE ACTIONS
+  if (action === "submit") {
+    console.log("ADDING PROJECT:", data)
+    content.projects.unshift(data)
+  }
 
-content.lastUpdated = new Date().toISOString()
+  if (action === "vote") {
+    if (content.projects[index]) {
+      content.projects[index].votes = (content.projects[index].votes || 0) + 1
+    }
+  }
 
-// UPDATE FILE
-const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-method: "PUT",
-headers: {
-Authorization: `Bearer ${token}`,
-Accept: "application/vnd.github+json"
-},
-body: JSON.stringify({
-message: "update submissions",
-content: Buffer.from(JSON.stringify(content, null, 2)).toString("base64"),
-sha: file.sha
-})
-})
+  content.lastUpdated = new Date().toISOString()
 
-const result = await updateRes.json()
+  // ✅ UPDATE FILE ON GITHUB
+  const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json"
+    },
+    body: JSON.stringify({
+      message: "update submissions",
+      content: Buffer.from(JSON.stringify(content, null, 2)).toString("base64"),
+      sha: file.sha
+    })
+  })
 
-return res.status(200).json({ success: true, result })
+  const result = await updateRes.json()
+
+  console.log("GITHUB RESPONSE:", result)
+
+  return res.status(200).json({ success: true, result })
 
 } catch (err) {
 
-console.error("API ERROR:", err)
+  console.error("API ERROR:", err)
 
-return res.status(500).json({
-error: err.message
-})
+  return res.status(500).json({
+    error: err.message
+  })
 
 }
 }
