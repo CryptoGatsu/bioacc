@@ -1,6 +1,22 @@
 {
   "projects": [
     {
+      "name": "i am a test AGAIN!",
+      "github": "https://github.com/CryptoGatsu/bioacc",
+      "social": "https://github.com/CryptoGatsu/bioacc",
+      "desc": "im just a test i promise!!!!!!! lol",
+      "votes": 0,
+      "wallet": "8zP2kxNWbgJP6BVYqwnPz8rQTUu2s7WpvuY1coTV8KJ2"
+    },
+    {
+      "name": "i am a test",
+      "github": "https://github.com/CryptoGatsu/bioacc",
+      "social": "https://github.com/CryptoGatsu/bioacc",
+      "desc": "im just a test i promise",
+      "votes": 0,
+      "wallet": "8zP2kxNWbgJP6BVYqwnPz8rQTUu2s7WpvuY1coTV8KJ2"
+    },
+    {
       "name": "test test test test again",
       "github": "https://github.com/CryptoGatsu/bioacc",
       "social": "https://github.com/CryptoGatsu/bioacc",
@@ -29,9 +45,9 @@
       "github": "https://github.com/CryptoGatsu/bioacc",
       "social": "https://github.com/CryptoGatsu/bioacc",
       "desc": "test",
-      "votes": 0,
+      "votes": 3,
       "wallet": "8zP2kxNWbgJP6BVYqwnPz8rQTUu2s7WpvuY1coTV8KJ2"
     }
   ],
-  "lastUpdated": "2026-04-15T20:46:07.567Z"
+  "lastUpdated": "2026-04-15T20:55:46.570Z"
 }
