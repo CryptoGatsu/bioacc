@@ -232,7 +232,7 @@ status.innerHTML="<span class='error'>confirm 14+ days</span>"
 return
 }
 
-let submissions=JSON.parse(localStorage.getItem("projects")||[])
+let submissions=JSON.parse(localStorage.getItem("projects") || "[]")
 
 // prevent duplicate
 if(submissions.find(p=>p.wallet===wallet)){
