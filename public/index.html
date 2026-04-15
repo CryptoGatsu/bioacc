@@ -29,7 +29,6 @@ border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
 align-items:center;
-box-sizing:border-box;
 z-index:10;
 }
 
@@ -92,10 +91,7 @@ color:black;
 padding:10px 18px;
 text-decoration:none;
 display:inline-block;
-}
-
-.market{
-margin-top:20px;
+cursor:pointer;
 }
 
 /* TERMINAL */
@@ -191,12 +187,14 @@ bio/acc contract
 
 <a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">buy</a>
 
-<div class="market">
+<br><br>
+
 market cap: <span id="marketCap">loading...</span>
-<br>
-<button onclick="refreshMarketCap()">refresh market cap</button>
-<div id="marketStatus" style="color:#777;font-size:14px;"></div>
-</div>
+<br><br>
+
+<a class="button" onclick="refreshMarketCap()">refresh market cap</a>
+
+<div id="marketStatus" style="color:#777;font-size:14px;margin-top:10px;"></div>
 
 </div>
 
@@ -208,7 +206,7 @@ market cap: <span id="marketCap">loading...</span>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
-<!-- CTA SECTION -->
+<!-- CTA -->
 <div class="cta">
 <h2>enter the bio/acc movement</h2>
 <p>Read the manifesto and align with the future of biotech.</p>
@@ -263,15 +261,17 @@ status.innerText="market data unavailable"
 
 }
 
-// TERMINAL FUNCTIONS
+// DELAY
 function delay(ms){
 return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// TYPE LINE
 async function typeLine(container, text){
 
 const line=document.createElement("div")
 line.className="new-line"
+
 container.appendChild(line)
 
 let i=0
@@ -279,10 +279,17 @@ let i=0
 while(i<text.length){
 line.innerHTML=text.slice(0,i)+'<span class="cursor"></span>'
 i++
-await delay(10)
+await delay(8)
 }
 
 line.innerHTML=text
+
+// glow flash
+line.style.color="#7CFF3A"
+setTimeout(()=>{
+line.style.color="#cfcfcf"
+},400)
+
 }
 
 // LOAD FEED
@@ -299,11 +306,18 @@ const data=await res.json()
 feed.innerHTML=""
 
 await typeLine(feed,"[sync] connecting to bio/acc intelligence network...")
-await delay(300)
+await delay(200)
+
+await typeLine(feed,"[pulse] syncing external sources...")
+await delay(200)
 
 for(const item of data.items){
 
+const randomDelay=50+Math.random()*120
+await delay(randomDelay)
+
 await typeLine(feed,"> "+item)
+
 feed.scrollTop=feed.scrollHeight
 
 }
