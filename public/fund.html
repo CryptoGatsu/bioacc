@@ -29,7 +29,6 @@ border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
 align-items:center;
-box-sizing:border-box;
 z-index:10;
 }
 
@@ -55,7 +54,6 @@ text-align:center;
 h1{color:white;font-weight:normal;}
 h2{color:#7CFF3A;margin-top:60px;}
 
-/* BOX */
 .box{
 border:1px solid #222;
 padding:25px;
@@ -63,7 +61,6 @@ margin-top:20px;
 text-align:left;
 }
 
-/* FORM */
 input, textarea{
 width:100%;
 background:#050505;
@@ -74,48 +71,21 @@ margin-top:10px;
 font-family:inherit;
 }
 
-textarea{
-height:120px;
-resize:none;
-}
+textarea{height:120px;resize:none;}
 
-/* BUTTON */
 .button{
 background:#7CFF3A;
 color:black;
 padding:12px 20px;
-display:inline-block;
 margin-top:15px;
 cursor:pointer;
 border:none;
-font-family:inherit;
 }
 
-/* STATUS */
-.status{
-margin-top:10px;
-font-size:14px;
-}
-.success{color:#7CFF3A;}
-.error{color:#ff4d4d;}
-
-/* PROJECTS */
-.project{
-border-bottom:1px solid #222;
-padding:15px 0;
-}
-
-.vote{
-color:#7CFF3A;
-cursor:pointer;
-margin-top:10px;
-display:inline-block;
-}
-
-.project a{
-color:#7CFF3A;
-text-decoration:none;
-}
+.status{margin-top:10px;}
+.project{border-bottom:1px solid #222;padding:15px 0;}
+.vote{color:#7CFF3A;cursor:pointer;margin-top:10px;}
+a{color:#7CFF3A;}
 
 </style>
 
@@ -123,7 +93,6 @@ text-decoration:none;
 
 <body>
 
-<!-- NAV -->
 <div class="nav">
 <div>bio/acc fund</div>
 <div>
@@ -137,45 +106,36 @@ text-decoration:none;
 
 <h1>biotech startup fund</h1>
 
-<!-- WALLET -->
 <button class="button" onclick="connectWallet()">connect wallet</button>
-<div id="walletStatus" style="margin-top:10px;color:#777;"></div>
+<div id="walletStatus"></div>
 
-<!-- REQUIREMENTS -->
-<h2>submission requirements</h2>
-
+<h2>requirements</h2>
 <div class="box">
-• Must have a <b>public GitHub repository</b><br>
-• Must have been building for <b>at least 14 days</b><br>
-• Must have a <b>public social media profile</b>
+• public github<br>
+• 14+ days building<br>
+• social presence
 </div>
 
-<!-- FORM -->
 <h2>submit project</h2>
-
 <div class="box">
 
 <input id="name" placeholder="project name">
 <input id="github" placeholder="github link">
 <input id="social" placeholder="social link">
-
 <textarea id="desc" placeholder="description"></textarea>
 
-<label style="margin-top:10px;display:block;">
+<label>
 <input type="checkbox" id="confirm">
- I confirm this project has been worked on for 14+ days
+ confirm 14+ days
 </label>
 
 <button class="button" onclick="submitProject()">submit</button>
-
-<div id="status" class="status"></div>
+<div id="status"></div>
 
 </div>
 
-<!-- LEADERBOARD -->
 <h2>leaderboard</h2>
-
-<div class="box" id="feed">[loading projects...]</div>
+<div class="box" id="feed">[loading...]</div>
 
 </div>
 
@@ -183,9 +143,9 @@ text-decoration:none;
 
 let wallet = null
 
-const GITHUB_URL = "https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json"
+const DATA_URL = "https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json"
 
-// CONNECT WALLET
+// WALLET
 async function connectWallet(){
 if(window.solana){
 const res = await window.solana.connect()
@@ -193,7 +153,7 @@ wallet = res.publicKey.toString()
 document.getElementById("walletStatus").innerText =
 "connected: " + wallet.slice(0,4) + "..." + wallet.slice(-4)
 }else{
-alert("install phantom wallet")
+alert("install phantom")
 }
 }
 
@@ -204,44 +164,35 @@ const feed = document.getElementById("feed")
 
 try{
 
-const res = await fetch(GITHUB_URL + "?cache=" + Date.now(), {
-cache: "no-store"
-})
+const res = await fetch(DATA_URL + "?t=" + Date.now())
+
+if(!res.ok) throw new Error("fetch failed")
 
 const data = await res.json()
 
-let projects = data.projects || []
-
-if(projects.length === 0){
+if(!data.projects || data.projects.length === 0){
 feed.innerHTML = "[no projects yet]"
 return
 }
 
-// sort by votes
-projects.sort((a,b)=>b.votes - a.votes)
+const sorted = data.projects.sort((a,b)=>b.votes - a.votes)
 
-let html = ""
-
-projects.forEach((p,i)=>{
-
-html += `
+feed.innerHTML = sorted.map((p,i)=>`
 <div class="project">
-> #${i+1} ${p.name} (${p.votes} votes)
+> #${i+1} ${p.name} (${p.votes || 0})
 
-github: <a href="${p.github}" target="_blank">${p.github}</a>
-social: <a href="${p.social}" target="_blank">${p.social}</a>
+<a href="${p.github}" target="_blank">github</a><br/>
+<a href="${p.social}" target="_blank">social</a><br/><br/>
 
 ${p.desc}
 
 <div class="vote" onclick="vote(${i})">↑ upvote</div>
 </div>
-`
-})
+`).join("")
 
-feed.innerHTML = html
-
-}catch{
-feed.innerHTML = "[error loading projects]"
+}catch(e){
+console.error(e)
+feed.innerHTML = "[error loading]"
 }
 
 }
@@ -249,107 +200,66 @@ feed.innerHTML = "[error loading projects]"
 // SUBMIT
 async function submitProject(){
 
-console.log("STEP 1: function fired")
+try{
 
-try {
+if(!wallet) return alert("connect wallet")
 
-if(!wallet){
-alert("connect wallet first")
-return
+if(!document.getElementById("confirm").checked){
+return alert("must confirm 14+ days")
 }
 
-const status = document.getElementById("status")
-
-console.log("STEP 2: getting inputs")
-
-const nameInput = document.getElementById("name")
-const githubInput = document.getElementById("github")
-const socialInput = document.getElementById("social")
-const descInput = document.getElementById("desc")
-
-console.log("STEP 3:", nameInput, githubInput, socialInput, descInput)
-
-// HARD FAIL CHECK
-if(!nameInput || !githubInput || !socialInput || !descInput){
-throw new Error("Missing input fields (IDs wrong)")
-}
-
-console.log("STEP 4: values", nameInput.value)
-
-console.log("STEP 5: sending fetch")
-
-const res = await fetch("/api/update", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({
-action: "submit",
-data: {
-name: nameInput.value,
-github: githubInput.value,
-social: socialInput.value,
-desc: descInput.value,
-wallet: wallet,
+const data = {
+name: document.getElementById("name").value,
+github: document.getElementById("github").value,
+social: document.getElementById("social").value,
+desc: document.getElementById("desc").value,
+wallet,
 votes: 0,
 time: Date.now()
 }
-})
-})
 
-console.log("STEP 6: response received")
+const res = await fetch("/api/update", {
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body: JSON.stringify({ action:"submit", data })
+})
 
 const result = await res.json()
 
-console.log("STEP 7:", result)
+if(!res.ok) throw new Error(result.error)
 
-if(!res.ok){
-throw new Error(result.error || "submit failed")
+document.getElementById("status").innerHTML = "submitted ✅"
+
+setTimeout(loadProjects, 1500)
+
+}catch(e){
+console.error(e)
+alert(e.message)
 }
 
-status.innerHTML = "<span style='color:#5CFF5C'>submitted</span>"
-
-loadProjects()
-
-} catch(err){
-
-console.error("🔥 ERROR:", err)
-alert(err.message)
-
-}
 }
 
 // VOTE
 async function vote(index){
 
-if(!wallet){
-alert("connect wallet")
-return
-}
-
-try{
+if(!wallet) return alert("connect wallet")
 
 await fetch("/api/update", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
+method:"POST",
+headers:{"Content-Type":"application/json"},
 body: JSON.stringify({
-action: "vote",
+action:"vote",
 index,
 wallet
 })
 })
 
 loadProjects()
-
-}catch{
-alert("vote failed")
-}
-
 }
 
 // INIT
 loadProjects()
-setInterval(loadProjects, 60000)
+setInterval(loadProjects, 30000)
 
 </script>
 
