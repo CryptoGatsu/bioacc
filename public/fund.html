@@ -143,7 +143,7 @@ a{color:#7CFF3A;}
 
 let wallet = null
 
-const DATA_URL = "https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json"
+const DATA_URL = "api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json"
 
 // WALLET
 async function connectWallet(){
@@ -163,13 +163,19 @@ async function loadProjects(){
 try {
 
 const res = await fetch(
-"https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?nocache=" + Date.now(),
+"https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json",
 {
-cache: "no-store"
+headers: {
+"Accept": "application/vnd.github.v3+json"
+}
 }
 )
 
-const data = await res.json()
+const file = await res.json()
+
+const data = JSON.parse(
+atob(file.content)
+)
 
 const feed = document.getElementById("feed")
 
@@ -178,10 +184,7 @@ feed.innerHTML = "[no projects yet]"
 return
 }
 
-// sort by newest first (already unshift, but safe)
-data.projects.sort((a,b) => new Date(b.lastUpdated || 0) - new Date(a.lastUpdated || 0))
-
-feed.innerHTML = data.projects.map(p => `
+feed.innerHTML = data.projects.map((p, i) => `
 <div style="margin-bottom:20px">
 <b>${p.name}</b><br/>
 <a href="${p.github}" target="_blank">github</a><br/>
@@ -194,8 +197,6 @@ votes: ${p.votes || 0}
 console.error(err)
 document.getElementById("feed").innerText = "error loading"
 }
-
-setInterval(loadProjects, 5000)
 
 }
 
