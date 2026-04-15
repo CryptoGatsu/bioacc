@@ -8,75 +8,68 @@
 <title>bio/acc fund</title>
 
 <style>
+
 body{
 margin:0;
 background:#000;
 color:#cfcfcf;
 font-family:Courier New, monospace;
-line-height:1.7;
 }
 
 .nav{
 position:fixed;
 top:0;
-left:0;
 width:100%;
 padding:15px 25px;
-background:rgba(0,0,0,0.9);
-border-bottom:1px solid #111;
+background:#000;
 display:flex;
 justify-content:space-between;
-align-items:center;
-z-index:10;
+border-bottom:1px solid #111;
 }
 
-.nav a{
-color:#7CFF3A;
-text-decoration:none;
-margin-left:20px;
-}
-
-.nav a.active{
-opacity:0.6;
-pointer-events:none;
-}
+.nav a{color:#7CFF3A;text-decoration:none;margin-left:20px;}
 
 .container{
 max-width:800px;
 margin:auto;
-padding:100px 25px 60px;
+padding:100px 25px;
 text-align:center;
 }
 
-h1{color:white;font-weight:normal;}
-h2{color:#7CFF3A;margin-top:60px;}
-
 .box{
 border:1px solid #222;
-padding:25px;
+padding:20px;
 margin-top:20px;
 text-align:left;
 }
 
-input, textarea{
+input,textarea{
 width:100%;
+margin-top:10px;
+padding:10px;
 background:#050505;
 border:1px solid #222;
-color:#cfcfcf;
-padding:10px;
-margin-top:10px;
-font-family:inherit;
+color:white;
 }
-
-textarea{height:120px;resize:none;}
 
 .button{
 background:#7CFF3A;
 color:black;
-padding:12px 20px;
+padding:10px;
 margin-top:15px;
 cursor:pointer;
 border:none;
+}
+
+/* ANIMATION */
+.project{
+opacity:0;
+transform:translateY(10px);
+animation:fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn{
+to{opacity:1;transform:translateY(0);}
 }
 
 .vote{
@@ -85,7 +78,6 @@ cursor:pointer;
 margin-top:10px;
 }
 
-a{color:#7CFF3A;}
 </style>
 
 </head>
@@ -97,7 +89,6 @@ a{color:#7CFF3A;}
 <div>
 <a href="index.html">home</a>
 <a href="manifesto.html">manifesto</a>
-<a href="fund.html" class="active">fund</a>
 </div>
 </div>
 
@@ -108,16 +99,7 @@ a{color:#7CFF3A;}
 <button class="button" onclick="connectWallet()">connect wallet</button>
 <div id="walletStatus"></div>
 
-<h2>requirements</h2>
 <div class="box">
-• public github<br>
-• 14+ days building<br>
-• social presence
-</div>
-
-<h2>submit project</h2>
-<div class="box">
-
 <input id="name" placeholder="project name">
 <input id="github" placeholder="github link">
 <input id="social" placeholder="social link">
@@ -130,138 +112,97 @@ a{color:#7CFF3A;}
 
 <button class="button" onclick="submitProject()">submit</button>
 <div id="status"></div>
-
 </div>
 
 <h2>leaderboard</h2>
-<div class="box" id="feed">[loading...]</div>
+<div id="feed"></div>
 
 </div>
+
+<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
 
 <script>
 
 let wallet = null
+const TOKEN_MINT = "CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump"
 
 // WALLET
 async function connectWallet(){
-if(window.solana){
 const res = await window.solana.connect()
 wallet = res.publicKey.toString()
-document.getElementById("walletStatus").innerText =
-"connected: " + wallet.slice(0,4) + "..." + wallet.slice(-4)
-}else{
-alert("install phantom")
-}
+walletStatus.innerText = wallet.slice(0,4)+"..."+wallet.slice(-4)
 }
 
-// LOAD PROJECTS (FIXED)
+// TOKEN BALANCE
+async function getTokenBalance(address){
+
+const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com")
+const owner = new solanaWeb3.PublicKey(address)
+const mint = new solanaWeb3.PublicKey(TOKEN_MINT)
+
+const accounts = await connection.getParsedTokenAccountsByOwner(owner,{mint})
+
+if(accounts.value.length === 0) return 0
+
+return accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount
+}
+
+// LOAD PROJECTS
 async function loadProjects(){
 
-try {
-
 const res = await fetch(
-`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?cache=${Date.now()}`,
-{
-headers: {
-"Accept": "application/vnd.github.v3+json"
-},
-cache: "no-store"
-}
+`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?${Date.now()}`
 )
 
 const file = await res.json()
-
 const data = JSON.parse(atob(file.content))
 
-const feed = document.getElementById("feed")
+feed.innerHTML = ""
 
-if(!data.projects || data.projects.length === 0){
-feed.innerHTML = "[no projects yet]"
-return
-}
+data.projects.forEach((p,i)=>{
 
-// SORT newest first (important)
-data.projects = data.projects.reverse()
+const div = document.createElement("div")
+div.className="project"
 
-feed.innerHTML = data.projects.map((p, i) => `
-<div class="project">
+div.innerHTML=`
 <b>${p.name}</b><br/>
 <a href="${p.github}" target="_blank">github</a><br/>
 ${p.desc}<br/>
-votes: ${p.votes || 0}
-<div class="vote" onclick="vote(${data.projects.length - 1 - i})">↑ vote</div>
-</div>
-`).join("")
+votes: ${p.votes||0}
+<div class="vote" onclick="vote(${i})">↑ vote</div>
+`
 
-} catch (err){
-console.error(err)
-document.getElementById("feed").innerText = "error loading"
-}
+feed.appendChild(div)
+
+})
 
 }
 
-// SUBMIT (FIXED DELAY)
+// SUBMIT
 async function submitProject(){
 
-try {
+if(!wallet) return alert("connect wallet")
 
-if(!wallet){
-alert("connect wallet first")
-return
-}
-
-if(!document.getElementById("confirm").checked){
-alert("confirm 14+ days")
-return
-}
-
-const name = document.getElementById("name").value
-const github = document.getElementById("github").value
-const social = document.getElementById("social").value
-const desc = document.getElementById("desc").value
-
-if(!name || !github || !desc){
-alert("fill required fields")
-return
-}
-
-const payload = {
-action: "submit",
-data: {
-name,
-github,
-social,
-desc,
-votes: 0,
+const payload={
+action:"submit",
+data:{
+name:name.value,
+github:github.value,
+social:social.value,
+desc:desc.value,
+votes:0,
 wallet
 }
 }
 
-const res = await fetch("/api/update", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(payload)
+const res=await fetch("/api/update",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(payload)
 })
 
-const result = await res.json()
-
-console.log("SUBMIT RESULT:", result)
-
-if(result.success){
-
-document.getElementById("status").innerText = "submitted ✅"
-
-// 🔥 WAIT FOR GITHUB TO PROPAGATE
-setTimeout(loadProjects, 1500)
-
-} else {
-alert("error submitting")
-}
-
-} catch (err){
-console.error(err)
-alert("submit failed")
-}
+status.innerText="submitted ✅"
+setTimeout(loadProjects,1500)
 
 }
 
@@ -270,24 +211,43 @@ async function vote(index){
 
 if(!wallet) return alert("connect wallet")
 
-await fetch("/api/update", {
+let voted = JSON.parse(localStorage.getItem("votes")||"{}")
+
+if(voted[wallet]?.includes(index)){
+alert("already voted")
+return
+}
+
+const balance = await getTokenBalance(wallet)
+
+if(balance <= 0){
+alert("must hold token")
+return
+}
+
+const weight = Math.floor(balance)
+
+await fetch("/api/update",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body: JSON.stringify({
+body:JSON.stringify({
 action:"vote",
 index,
-wallet
+wallet,
+weight
 })
 })
 
-// small delay for GitHub update
-setTimeout(loadProjects, 1000)
+if(!voted[wallet]) voted[wallet]=[]
+voted[wallet].push(index)
+localStorage.setItem("votes",JSON.stringify(voted))
+
+setTimeout(loadProjects,1000)
 
 }
 
-// INIT
 loadProjects()
-setInterval(loadProjects, 10000)
+setInterval(loadProjects,5000)
 
 </script>
 

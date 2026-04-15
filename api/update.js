@@ -106,11 +106,12 @@ try {
 
   }
 
-  if (action === "vote") {
-    if (content.projects[index]) {
-      content.projects[index].votes = (content.projects[index].votes || 0) + 1
-    }
+if (action === "vote") {
+  if (content.projects[index]) {
+    content.projects[index].votes =
+      (content.projects[index].votes || 0) + (body.weight || 1)
   }
+}
 
   content.lastUpdated = new Date().toISOString()
 
