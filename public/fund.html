@@ -8,7 +8,6 @@
 <title>bio/acc fund</title>
 
 <style>
-
 body{
 margin:0;
 background:#000;
@@ -17,7 +16,6 @@ font-family:Courier New, monospace;
 line-height:1.7;
 }
 
-/* NAV */
 .nav{
 position:fixed;
 top:0;
@@ -43,7 +41,6 @@ opacity:0.6;
 pointer-events:none;
 }
 
-/* LAYOUT */
 .container{
 max-width:800px;
 margin:auto;
@@ -82,11 +79,13 @@ cursor:pointer;
 border:none;
 }
 
-.status{margin-top:10px;}
-.project{border-bottom:1px solid #222;padding:15px 0;}
-.vote{color:#7CFF3A;cursor:pointer;margin-top:10px;}
-a{color:#7CFF3A;}
+.vote{
+color:#7CFF3A;
+cursor:pointer;
+margin-top:10px;
+}
 
+a{color:#7CFF3A;}
 </style>
 
 </head>
@@ -143,8 +142,6 @@ a{color:#7CFF3A;}
 
 let wallet = null
 
-const DATA_URL = "api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json"
-
 // WALLET
 async function connectWallet(){
 if(window.solana){
@@ -157,25 +154,24 @@ alert("install phantom")
 }
 }
 
-// LOAD PROJECTS
+// LOAD PROJECTS (FIXED)
 async function loadProjects(){
 
 try {
 
 const res = await fetch(
-"https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json",
+`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?cache=${Date.now()}`,
 {
 headers: {
 "Accept": "application/vnd.github.v3+json"
-}
+},
+cache: "no-store"
 }
 )
 
 const file = await res.json()
 
-const data = JSON.parse(
-atob(file.content)
-)
+const data = JSON.parse(atob(file.content))
 
 const feed = document.getElementById("feed")
 
@@ -184,12 +180,16 @@ feed.innerHTML = "[no projects yet]"
 return
 }
 
+// SORT newest first (important)
+data.projects = data.projects.reverse()
+
 feed.innerHTML = data.projects.map((p, i) => `
-<div style="margin-bottom:20px">
+<div class="project">
 <b>${p.name}</b><br/>
 <a href="${p.github}" target="_blank">github</a><br/>
 ${p.desc}<br/>
 votes: ${p.votes || 0}
+<div class="vote" onclick="vote(${data.projects.length - 1 - i})">↑ vote</div>
 </div>
 `).join("")
 
@@ -200,13 +200,18 @@ document.getElementById("feed").innerText = "error loading"
 
 }
 
-// SUBMIT
+// SUBMIT (FIXED DELAY)
 async function submitProject(){
 
 try {
 
 if(!wallet){
 alert("connect wallet first")
+return
+}
+
+if(!document.getElementById("confirm").checked){
+alert("confirm 14+ days")
 return
 }
 
@@ -243,8 +248,12 @@ const result = await res.json()
 console.log("SUBMIT RESULT:", result)
 
 if(result.success){
+
 document.getElementById("status").innerText = "submitted ✅"
-loadProjects()
+
+// 🔥 WAIT FOR GITHUB TO PROPAGATE
+setTimeout(loadProjects, 1500)
+
 } else {
 alert("error submitting")
 }
@@ -271,12 +280,14 @@ wallet
 })
 })
 
-loadProjects()
+// small delay for GitHub update
+setTimeout(loadProjects, 1000)
+
 }
 
 // INIT
 loadProjects()
-setInterval(loadProjects, 30000)
+setInterval(loadProjects, 10000)
 
 </script>
 
