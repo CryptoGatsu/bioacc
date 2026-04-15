@@ -160,7 +160,11 @@ alert("install phantom")
 // LOAD PROJECTS
 async function loadProjects(){
 
-const res = await fetch("https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json")
+try {
+
+const res = await fetch(
+"https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?cache=" + Date.now()
+)
 
 const data = await res.json()
 
@@ -171,6 +175,9 @@ feed.innerHTML = "[no projects yet]"
 return
 }
 
+// OPTIONAL: sort by votes
+data.projects.sort((a,b) => (b.votes || 0) - (a.votes || 0))
+
 feed.innerHTML = data.projects.map((p, i) => `
 <div style="margin-bottom:20px">
 <b>${p.name}</b><br/>
@@ -179,6 +186,12 @@ ${p.desc}<br/>
 votes: ${p.votes || 0}
 </div>
 `).join("")
+
+} catch (err){
+console.error("LOAD ERROR:", err)
+document.getElementById("feed").innerText = "error loading projects"
+}
+
 }
 
 // SUBMIT
