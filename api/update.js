@@ -1,27 +1,26 @@
 export default async function handler(req, res) {
 
-if (req.method !== "POST") {
-return res.status(405).json({ error: "method not allowed" })
-}
-
 try {
 
-const body = typeof req.body === "string"
-? JSON.parse(req.body)
-: req.body
-
-const { action, data } = body
-
-if (action !== "submit") {
-return res.status(400).json({ error: "invalid action" })
+if (req.method !== "POST") {
+return res.status(405).json({ error: "method not allowed", method: req.method })
 }
+
+// parse body safely
+let body = req.body
+
+if (typeof body === "string") {
+body = JSON.parse(body)
+}
+
+const { action, data, index } = body
 
 const token = process.env.GITHUB_TOKEN
 const owner = process.env.GITHUB_OWNER
 const repo = process.env.GITHUB_REPO
 const path = "submissions.json"
 
-// 1. GET current file
+// GET FILE
 const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
 headers: {
 Authorization: `Bearer ${token}`,
@@ -35,11 +34,24 @@ const content = JSON.parse(
 Buffer.from(file.content, "base64").toString("utf8")
 )
 
-// 2. UPDATE data
+// HANDLE ACTIONS
+if (action === "submit") {
+
 content.projects.unshift(data)
+
+}
+
+if (action === "vote") {
+
+if (content.projects[index]) {
+content.projects[index].votes += 1
+}
+
+}
+
 content.lastUpdated = new Date().toISOString()
 
-// 3. PUSH update
+// UPDATE FILE
 const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
 method: "PUT",
 headers: {
@@ -47,7 +59,7 @@ Authorization: `Bearer ${token}`,
 Accept: "application/vnd.github+json"
 },
 body: JSON.stringify({
-message: "new submission",
+message: "update submissions",
 content: Buffer.from(JSON.stringify(content, null, 2)).toString("base64"),
 sha: file.sha
 })
