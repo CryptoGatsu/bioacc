@@ -248,7 +248,8 @@ feed.innerHTML = "[error loading projects]"
 
 // SUBMIT
 async function submitProject(){
-    console.log("SUBMIT FIRED")
+
+console.log("SUBMIT FIRED")
 
 if(!wallet){
 alert("connect wallet first")
@@ -256,6 +257,11 @@ return
 }
 
 const status = document.getElementById("status")
+
+const name = document.getElementById("name")
+const github = document.getElementById("github")
+const social = document.getElementById("social")
+const desc = document.getElementById("desc")
 
 try{
 
@@ -267,10 +273,10 @@ headers: {
 body: JSON.stringify({
 action: "submit",
 data: {
-name: document.getElementById("name").value,
-github: document.getElementById("github").value,
-social: document.getElementById("social").value,
-desc: document.getElementById("desc").value,
+name: name.value,
+github: github.value,
+social: social.value,
+desc: desc.value,
 wallet: wallet,
 votes: 0,
 time: Date.now()
@@ -290,7 +296,7 @@ loadProjects()
 
 }catch(err){
 
-console.error(err)
+console.error("ERROR:", err)
 status.innerHTML = "<span style='color:red'>"+err.message+"</span>"
 
 }
