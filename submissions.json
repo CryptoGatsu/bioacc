@@ -1,6 +1,14 @@
 {
   "projects": [
     {
+      "name": "i am a test",
+      "github": "https://github.com/CryptoGatsu/bioacc",
+      "social": "https://github.com/CryptoGatsu/bioacc",
+      "desc": "im just a test i promise",
+      "votes": 0,
+      "wallet": "8zP2kxNWbgJP6BVYqwnPz8rQTUu2s7WpvuY1coTV8KJ2"
+    },
+    {
       "name": "test test test test again",
       "github": "https://github.com/CryptoGatsu/bioacc",
       "social": "https://github.com/CryptoGatsu/bioacc",
@@ -33,5 +41,5 @@
       "wallet": "8zP2kxNWbgJP6BVYqwnPz8rQTUu2s7WpvuY1coTV8KJ2"
     }
   ],
-  "lastUpdated": "2026-04-15T20:46:07.567Z"
+  "lastUpdated": "2026-04-15T20:55:15.135Z"
 }
