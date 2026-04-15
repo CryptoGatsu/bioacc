@@ -14,55 +14,36 @@ margin:0;
 background:#000;
 color:#cfcfcf;
 font-family:Courier New, monospace;
-line-height:1.7;
 }
 
-/* NAV */
 .nav{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 padding:15px 25px;
-background:rgba(0,0,0,0.9);
+background:#000;
 border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
-align-items:center;
-box-sizing:border-box;
-z-index:10;
 }
 
 .nav a{
 color:#7CFF3A;
-text-decoration:none;
 margin-left:20px;
+text-decoration:none;
 }
 
-.nav a.active{
-opacity:0.6;
-pointer-events:none;
-}
-
-/* LAYOUT */
 .container{
 max-width:800px;
 margin:auto;
-padding:100px 25px 60px;
+padding:100px 25px;
 text-align:center;
 }
 
-h1{
-color:white;
-font-weight:normal;
-}
+h1{color:white;}
+h2{color:#7CFF3A;margin-top:60px;}
 
-h2{
-color:#7CFF3A;
-margin-top:60px;
-}
-
-/* BOX */
 .box{
 border:1px solid #222;
 padding:25px;
@@ -70,7 +51,6 @@ margin-top:20px;
 text-align:left;
 }
 
-/* FORM */
 input, textarea{
 width:100%;
 background:#050505;
@@ -78,55 +58,27 @@ border:1px solid #222;
 color:#cfcfcf;
 padding:10px;
 margin-top:10px;
-font-family:inherit;
 }
 
-textarea{
-height:120px;
-resize:none;
-}
-
-/* BUTTON */
 .button{
 background:#7CFF3A;
 color:black;
-padding:12px 20px;
-display:inline-block;
-margin-top:20px;
+padding:10px 15px;
 cursor:pointer;
 border:none;
-font-family:inherit;
-}
-
-/* STATUS */
-.status{
 margin-top:15px;
-font-size:14px;
-}
-
-.success{
-color:#7CFF3A;
-}
-
-.error{
-color:#ff4d4d;
-}
-
-/* FEED */
-#startupFeed{
-font-size:14px;
-white-space:pre-wrap;
 }
 
 .project{
-margin-bottom:20px;
 border-bottom:1px solid #222;
-padding-bottom:10px;
+padding:15px 0;
 }
 
-.project a{
+.vote{
 color:#7CFF3A;
-text-decoration:none;
+cursor:pointer;
+margin-top:10px;
+display:inline-block;
 }
 
 </style>
@@ -135,13 +87,12 @@ text-decoration:none;
 
 <body>
 
-<!-- NAV -->
 <div class="nav">
 <div>bio/acc fund</div>
 <div>
 <a href="index.html">home</a>
 <a href="manifesto.html">manifesto</a>
-<a href="fund.html" class="active">fund</a>
+<a href="fund.html">fund</a>
 </div>
 </div>
 
@@ -149,137 +100,135 @@ text-decoration:none;
 
 <h1>biotech startup fund</h1>
 
-<p>
-The bio/acc ecosystem supports founders building in public.
-Apply below to get visibility and potential funding.
-</p>
+<button class="button" onclick="connectWallet()">connect wallet</button>
+<div id="walletStatus"></div>
 
-<h2>submission requirements</h2>
-
-<div class="box">
-• Must have a <b>public GitHub repository</b><br>
-• Must have been building for <b>at least 14 days</b><br>
-• Must have a <b>public social media profile</b>
-</div>
-
-<h2>submit your project</h2>
+<h2>submit project</h2>
 
 <div class="box">
 
 <input id="name" placeholder="project name">
 <input id="github" placeholder="github link">
-<input id="social" placeholder="social link (twitter, etc)">
-<textarea id="desc" placeholder="what are you building?"></textarea>
+<input id="social" placeholder="social link">
+<textarea id="desc" placeholder="description"></textarea>
 
-<label style="margin-top:10px;display:block;">
-<input type="checkbox" id="confirm">
- I confirm this project has been worked on for 14+ days
-</label>
-
-<button class="button" onclick="submitProject()">submit application</button>
-
-<div id="status" class="status"></div>
+<button class="button" onclick="submitProject()">submit</button>
+<div id="status"></div>
 
 </div>
 
-<h2>live startup feed</h2>
+<h2>leaderboard</h2>
 
-<div class="box" id="startupFeed">
-[loading submissions...]
-</div>
+<div class="box" id="feed"></div>
 
 </div>
 
 <script>
 
+let wallet=null
+
+async function connectWallet(){
+if(window.solana){
+const res=await window.solana.connect()
+wallet=res.publicKey.toString()
+document.getElementById("walletStatus").innerText="connected: "+wallet.slice(0,4)+"..."+wallet.slice(-4)
+}else{
+alert("install phantom")
+}
+}
+
 // SUBMIT
 function submitProject(){
 
-const name=document.getElementById("name").value.trim()
-const github=document.getElementById("github").value.trim()
-const social=document.getElementById("social").value.trim()
-const desc=document.getElementById("desc").value.trim()
-const confirm=document.getElementById("confirm").checked
-const status=document.getElementById("status")
-
-if(!name || !github || !social || !desc){
-status.innerHTML="<span class='error'>fill all fields</span>"
+if(!wallet){
+alert("connect wallet first")
 return
 }
 
-if(!github.includes("github.com")){
-status.innerHTML="<span class='error'>invalid github link</span>"
+let submissions=JSON.parse(localStorage.getItem("projects")||"[]")
+
+// prevent duplicate submission
+if(submissions.find(p=>p.wallet===wallet)){
+alert("wallet already submitted")
 return
 }
 
-if(!confirm){
-status.innerHTML="<span class='error'>must confirm 14+ days</span>"
+const project={
+name:document.getElementById("name").value,
+github:document.getElementById("github").value,
+social:document.getElementById("social").value,
+desc:document.getElementById("desc").value,
+wallet,
+votes:0
+}
+
+submissions.push(project)
+localStorage.setItem("projects",JSON.stringify(submissions))
+
+render()
+
+}
+
+// VOTE
+function vote(index){
+
+if(!wallet){
+alert("connect wallet")
 return
 }
 
-const submissions=JSON.parse(localStorage.getItem("bioacc_submissions") || "[]")
+let votes=JSON.parse(localStorage.getItem("votes")||"{}")
 
-submissions.push({
-name,
-github,
-social,
-desc,
-time:Date.now()
-})
-
-localStorage.setItem("bioacc_submissions", JSON.stringify(submissions))
-
-status.innerHTML="<span class='success'>application submitted</span>"
-
-renderSubmissions()
-
-// clear form
-document.getElementById("name").value=""
-document.getElementById("github").value=""
-document.getElementById("social").value=""
-document.getElementById("desc").value=""
-document.getElementById("confirm").checked=false
-
+if(votes[wallet]?.includes(index)){
+alert("already voted")
+return
 }
 
+let submissions=JSON.parse(localStorage.getItem("projects")||"[]")
+
+submissions[index].votes++
+
+localStorage.setItem("projects",JSON.stringify(submissions))
+
+if(!votes[wallet]) votes[wallet]=[]
+votes[wallet].push(index)
+
+localStorage.setItem("votes",JSON.stringify(votes))
+
+render()
+
+}
 
 // RENDER
-function renderSubmissions(){
+function render(){
 
-const feed=document.getElementById("startupFeed")
-let submissions=JSON.parse(localStorage.getItem("bioacc_submissions") || "[]")
+let submissions=JSON.parse(localStorage.getItem("projects")||"[]")
 
-if(submissions.length === 0){
-feed.innerHTML="[no startups yet]"
-return
-}
-
-// newest first
-submissions.sort((a,b)=>b.time-a.time)
+submissions.sort((a,b)=>b.votes-a.votes)
 
 let html=""
 
 submissions.forEach((p,i)=>{
 
-html += `
+html+=`
 <div class="project">
-> #${i+1} ${p.name}
+> #${i+1} ${p.name} (${p.votes} votes)
 
-github: <a href="${p.github}" target="_blank">${p.github}</a>
-social: <a href="${p.social}" target="_blank">${p.social}</a>
+github: ${p.github}
+social: ${p.social}
 
 ${p.desc}
+
+<div class="vote" onclick="vote(${i})">↑ upvote</div>
 </div>
 `
-
 })
 
-feed.innerHTML = html
+document.getElementById("feed").innerHTML=html || "[no projects]"
 
 }
 
-// INIT
-renderSubmissions()
+render()
 
 </script>
 
