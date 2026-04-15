@@ -232,7 +232,7 @@ render()
 // SIGN FUNCTION (NO FORM = NO BUG)
 async function signManifesto(){
 
-if(!provider || !walletAddress){
+if(!window.solana || !walletAddress){
 alert("connect wallet first")
 return
 }
@@ -241,19 +241,31 @@ try{
 
 const note = document.getElementById("note").value || "signed manifesto"
 
-const message = `bio/acc manifesto signature:\n${walletAddress}\n${Date.now()}\n${note}`
+const message = `bio/acc manifesto signature:
+${walletAddress}
+${Date.now()}
+${note}`
 
+// ✅ IMPORTANT: encode properly
 const encodedMessage = new TextEncoder().encode(message)
 
 // ✅ CORRECT PHANTOM CALL
-const signed = await provider.signMessage(encodedMessage)
+const signed = await window.solana.signMessage(encodedMessage, "utf8")
 
-// 🛑 STOP if no signature (user rejected)
+// 🛑 If user cancels
 if(!signed || !signed.signature){
-throw new Error("No signature returned")
+throw new Error("Signature missing")
 }
 
-// ✅ ONLY SAVE AFTER SUCCESS
+// ✅ Prevent duplicates
+const alreadySigned = signatures.some(sig => sig.wallet === walletAddress)
+
+if(alreadySigned){
+alert("wallet already signed")
+return
+}
+
+// ✅ Save only AFTER success
 const entry = {
 wallet: walletAddress,
 note: note,
@@ -269,10 +281,8 @@ document.getElementById("note").value=""
 render()
 
 }catch(err){
-console.log(err)
+console.log("SIGN ERROR:", err)
 alert("signature rejected")
-
-// ✅ IMPORTANT: DO NOTHING ELSE
 return
 }
 
