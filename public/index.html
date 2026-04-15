@@ -300,9 +300,10 @@ const status=document.getElementById("feedStatus")
 
 try{
 
-const res = await fetch("news.json?cache=" + Date.now(), {
-cache: "no-store"
-})
+const res = await fetch(
+  "https://raw.githubusercontent.com/cryptogatsu/bioacc/main/news.json?cache=" + Date.now(),
+  { cache: "no-store" }
+)
 const data=await res.json()
 
 feed.innerHTML=""
