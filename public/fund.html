@@ -30,6 +30,7 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 box-sizing:border-box;
+z-index:10;
 }
 
 .nav a{
@@ -111,8 +112,21 @@ color:#7CFF3A;
 color:#ff4d4d;
 }
 
-.checkbox{
-margin-top:15px;
+/* FEED */
+#startupFeed{
+font-size:14px;
+white-space:pre-wrap;
+}
+
+.project{
+margin-bottom:20px;
+border-bottom:1px solid #222;
+padding-bottom:10px;
+}
+
+.project a{
+color:#7CFF3A;
+text-decoration:none;
 }
 
 </style>
@@ -121,6 +135,7 @@ margin-top:15px;
 
 <body>
 
+<!-- NAV -->
 <div class="nav">
 <div>bio/acc fund</div>
 <div>
@@ -154,15 +169,12 @@ Apply below to get visibility and potential funding.
 <input id="name" placeholder="project name">
 <input id="github" placeholder="github link">
 <input id="social" placeholder="social link (twitter, etc)">
-
 <textarea id="desc" placeholder="what are you building?"></textarea>
 
-<div class="checkbox">
-<label>
+<label style="margin-top:10px;display:block;">
 <input type="checkbox" id="confirm">
  I confirm this project has been worked on for 14+ days
 </label>
-</div>
 
 <button class="button" onclick="submitProject()">submit application</button>
 
@@ -170,10 +182,17 @@ Apply below to get visibility and potential funding.
 
 </div>
 
+<h2>live startup feed</h2>
+
+<div class="box" id="startupFeed">
+[loading submissions...]
+</div>
+
 </div>
 
 <script>
 
+// SUBMIT
 function submitProject(){
 
 const name=document.getElementById("name").value.trim()
@@ -183,7 +202,6 @@ const desc=document.getElementById("desc").value.trim()
 const confirm=document.getElementById("confirm").checked
 const status=document.getElementById("status")
 
-// validation
 if(!name || !github || !social || !desc){
 status.innerHTML="<span class='error'>fill all fields</span>"
 return
@@ -199,7 +217,6 @@ status.innerHTML="<span class='error'>must confirm 14+ days</span>"
 return
 }
 
-// store locally (temporary system)
 const submissions=JSON.parse(localStorage.getItem("bioacc_submissions") || "[]")
 
 submissions.push({
@@ -207,12 +224,14 @@ name,
 github,
 social,
 desc,
-time:new Date().toISOString()
+time:Date.now()
 })
 
 localStorage.setItem("bioacc_submissions", JSON.stringify(submissions))
 
 status.innerHTML="<span class='success'>application submitted</span>"
+
+renderSubmissions()
 
 // clear form
 document.getElementById("name").value=""
@@ -222,6 +241,45 @@ document.getElementById("desc").value=""
 document.getElementById("confirm").checked=false
 
 }
+
+
+// RENDER
+function renderSubmissions(){
+
+const feed=document.getElementById("startupFeed")
+let submissions=JSON.parse(localStorage.getItem("bioacc_submissions") || "[]")
+
+if(submissions.length === 0){
+feed.innerHTML="[no startups yet]"
+return
+}
+
+// newest first
+submissions.sort((a,b)=>b.time-a.time)
+
+let html=""
+
+submissions.forEach((p,i)=>{
+
+html += `
+<div class="project">
+> #${i+1} ${p.name}
+
+github: <a href="${p.github}" target="_blank">${p.github}</a>
+social: <a href="${p.social}" target="_blank">${p.social}</a>
+
+${p.desc}
+</div>
+`
+
+})
+
+feed.innerHTML = html
+
+}
+
+// INIT
+renderSubmissions()
 
 </script>
 
