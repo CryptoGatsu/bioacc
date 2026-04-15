@@ -16,26 +16,37 @@ color:#cfcfcf;
 font-family:Courier New, monospace;
 }
 
+/* NAV FIX */
 .nav{
 position:fixed;
 top:0;
+left:0;
 width:100%;
 padding:15px 25px;
 background:#000;
+border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
-border-bottom:1px solid #111;
+align-items:center;
+z-index:100;
+box-sizing:border-box;
 }
 
-.nav a{color:#7CFF3A;text-decoration:none;margin-left:20px;}
+.nav a{
+color:#7CFF3A;
+text-decoration:none;
+margin-left:20px;
+}
 
+/* LAYOUT */
 .container{
 max-width:800px;
 margin:auto;
-padding:100px 25px;
+padding:120px 25px 60px;
 text-align:center;
 }
 
+/* BOX */
 .box{
 border:1px solid #222;
 padding:20px;
@@ -43,7 +54,8 @@ margin-top:20px;
 text-align:left;
 }
 
-input,textarea{
+/* INPUTS */
+input, textarea{
 width:100%;
 margin-top:10px;
 padding:10px;
@@ -52,6 +64,7 @@ border:1px solid #222;
 color:white;
 }
 
+/* BUTTON */
 .button{
 background:#7CFF3A;
 color:black;
@@ -68,13 +81,12 @@ padding:15px;
 margin-bottom:20px;
 background:#050505;
 border-radius:6px;
-opacity:0;
-transform:translateY(10px);
-animation:fadeIn 0.4s ease forwards;
+animation:fadeIn 0.4s ease;
 }
 
 @keyframes fadeIn{
-to{opacity:1;transform:translateY(0);}
+from{opacity:0; transform:translateY(10px);}
+to{opacity:1; transform:translateY(0);}
 }
 
 .vote{
@@ -110,6 +122,7 @@ font-size:12px;
 <div id="walletStatus"></div>
 
 <div class="box">
+
 <input id="name" placeholder="project name">
 <input id="github" placeholder="github link">
 <input id="social" placeholder="social link">
@@ -122,10 +135,11 @@ font-size:12px;
 
 <button class="button" onclick="submitProject()">submit</button>
 <div id="status"></div>
+
 </div>
 
 <h2>leaderboard</h2>
-<div id="feed"></div>
+<div id="feed">loading...</div>
 
 </div>
 
@@ -135,28 +149,31 @@ font-size:12px;
 
 let wallet = null
 
-// 🔥 YOUR HELIUS RPC (WORKING)
 const connection = new solanaWeb3.Connection(
 "https://mainnet.helius-rpc.com/?api-key=abe30281-08a6-4f68-921b-4da93db84835"
 )
 
-// 🔥 REPLACE THIS WITH YOUR TOKEN MINT
+// 🔥 PUT YOUR REAL TOKEN MINT HERE
 const TOKEN_MINT = "CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump"
 
 // WALLET
 async function connectWallet(){
-if(!window.solana) return alert("install phantom")
+
+if(!window.solana){
+alert("install phantom")
+return
+}
 
 const res = await window.solana.connect()
 wallet = res.publicKey.toString()
 
 const bal = await getTokenBalance(wallet)
 
-walletStatus.innerText =
+document.getElementById("walletStatus").innerText =
 `connected: ${wallet.slice(0,4)}...${wallet.slice(-4)} (${bal} tokens)`
 }
 
-// TOKEN BALANCE (FIXED)
+// TOKEN BALANCE
 async function getTokenBalance(address){
 
 try {
@@ -177,18 +194,31 @@ return 0
 
 }
 
-// LOAD PROJECTS
+// LOAD PROJECTS (FIXED)
 async function loadProjects(){
 
+try {
+
 const res = await fetch(
-`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?${Date.now()}`,
-{ cache: "no-store" }
+`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?${Date.now()}`
 )
 
 const file = await res.json()
+
+if(!file.content){
+document.getElementById("feed").innerText = "error loading"
+return
+}
+
 const data = JSON.parse(atob(file.content))
 
+const feed = document.getElementById("feed")
 feed.innerHTML = ""
+
+if(!data.projects || data.projects.length === 0){
+feed.innerText = "[no projects yet]"
+return
+}
 
 data.projects.forEach((p,i)=>{
 
@@ -196,13 +226,10 @@ const div = document.createElement("div")
 div.className="project"
 
 div.innerHTML=`
-<b style="font-size:18px">${p.name}</b><br/><br/>
+<b>${p.name}</b><br/><br/>
 <a href="${p.github}" target="_blank">github</a><br/><br/>
 ${p.desc}<br/><br/>
-
-votes: ${p.votes || 0}<br/>
-<div class="small">last vote weight: ${p.lastWeight || 0}</div>
-
+votes: ${p.votes || 0}
 <div class="vote" onclick="vote(${i})">↑ vote</div>
 `
 
@@ -210,22 +237,34 @@ feed.appendChild(div)
 
 })
 
+} catch(err){
+console.error("LOAD ERROR:", err)
+document.getElementById("feed").innerText = "failed to load"
 }
 
-// SUBMIT
+}
+
+// SUBMIT (FIXED CHECKBOX BUG)
 async function submitProject(){
 
-if(!wallet) return alert("connect wallet")
+if(!wallet){
+alert("connect wallet first")
+return
+}
 
-if(!confirm.checked) return alert("confirm 14+ days")
+// 🔥 FIXED THIS LINE
+if(!document.getElementById("confirm").checked){
+alert("confirm 14+ days")
+return
+}
 
-const payload={
+const payload = {
 action:"submit",
 data:{
-name:name.value,
-github:github.value,
-social:social.value,
-desc:desc.value,
+name:document.getElementById("name").value,
+github:document.getElementById("github").value,
+social:document.getElementById("social").value,
+desc:document.getElementById("desc").value,
 votes:0,
 wallet
 }
@@ -237,29 +276,18 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify(payload)
 })
 
-status.innerText="submitted ✅"
+document.getElementById("status").innerText = "submitted ✅"
 
 setTimeout(loadProjects,1500)
 
 }
 
-// VOTE (FIXED + DEBUG)
+// VOTE
 async function vote(index){
 
 if(!wallet) return alert("connect wallet")
 
-let voted = JSON.parse(localStorage.getItem("votes")||"{}")
-
-if(voted[wallet]?.includes(index)){
-alert("already voted")
-return
-}
-
-console.log("checking token balance...")
-
 const balance = await getTokenBalance(wallet)
-
-console.log("balance:", balance)
 
 if(balance <= 0){
 alert("no tokens detected")
@@ -278,11 +306,6 @@ wallet,
 weight
 })
 })
-
-// store vote locally
-if(!voted[wallet]) voted[wallet]=[]
-voted[wallet].push(index)
-localStorage.setItem("votes",JSON.stringify(voted))
 
 setTimeout(loadProjects,1000)
 
