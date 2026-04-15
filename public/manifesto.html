@@ -170,10 +170,8 @@ text-align:center;
 <button onclick="connectWallet()">connect wallet</button>
 <p id="walletStatus"></p>
 
-<form id="manifestoForm">
 <textarea id="note" placeholder="leave a note (optional)"></textarea>
-<button type="submit">sign manifesto</button>
-</form>
+<button onclick="signManifesto()">sign manifesto</button>
 
 <div class="counter" id="signatureCount">
 0 people have signed the bio/acc manifesto
@@ -194,6 +192,7 @@ bio/acc is a decentralized movement accelerating biotechnology.
 let walletAddress = null
 let provider = null
 
+// CONNECT WALLET
 async function connectWallet(){
 provider = window.solana
 
@@ -230,13 +229,8 @@ count.innerText = signatures.length + " people have signed the bio/acc manifesto
 
 render()
 
-// FIXED SUBMIT HANDLER
-window.addEventListener("load", () => {
-
-const form = document.getElementById("manifestoForm")
-
-form.addEventListener("submit", async (e)=>{
-e.preventDefault()
+// SIGN FUNCTION (NO FORM = NO BUG)
+async function signManifesto(){
 
 if(!provider || !walletAddress){
 alert("connect wallet first")
@@ -271,9 +265,7 @@ render()
 alert("signature rejected")
 }
 
-})
-
-})
+}
 
 </script>
 
