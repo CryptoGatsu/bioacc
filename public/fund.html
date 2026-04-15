@@ -189,116 +189,47 @@ text-decoration:none;
 
 <script>
 
-let wallet=null
+let wallet = null
 
+const GITHUB_URL = "https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json"
+
+// CONNECT WALLET
 async function connectWallet(){
 if(window.solana){
-const res=await window.solana.connect()
-wallet=res.publicKey.toString()
-document.getElementById("walletStatus").innerText=
-"connected: "+wallet.slice(0,4)+"..."+wallet.slice(-4)
+const res = await window.solana.connect()
+wallet = res.publicKey.toString()
+document.getElementById("walletStatus").innerText =
+"connected: " + wallet.slice(0,4) + "..." + wallet.slice(-4)
 }else{
-alert("install phantom wallet")
+alert("install phantom")
 }
 }
 
-// SUBMIT
-function submitProject(){
+// LOAD GLOBAL PROJECTS
+async function loadProjects(){
 
-if(!wallet){
-alert("connect wallet first")
+const feed = document.getElementById("feed")
+
+try{
+
+const res = await fetch(GITHUB_URL + "?cache=" + Date.now())
+const data = await res.json()
+
+let projects = data.projects || []
+
+if(projects.length === 0){
+feed.innerHTML = "[no projects yet]"
 return
 }
 
-const name=document.getElementById("name").value.trim()
-const github=document.getElementById("github").value.trim()
-const social=document.getElementById("social").value.trim()
-const desc=document.getElementById("desc").value.trim()
-const confirm=document.getElementById("confirm").checked
-const status=document.getElementById("status")
+// sort by votes
+projects.sort((a,b)=>b.votes - a.votes)
 
-if(!name || !github || !social || !desc){
-status.innerHTML="<span class='error'>fill all fields</span>"
-return
-}
+let html = ""
 
-if(!github.includes("github.com")){
-status.innerHTML="<span class='error'>invalid github link</span>"
-return
-}
+projects.forEach((p,i)=>{
 
-if(!confirm){
-status.innerHTML="<span class='error'>confirm 14+ days</span>"
-return
-}
-
-let submissions=JSON.parse(localStorage.getItem("projects") || "[]")
-
-// prevent duplicate
-if(submissions.find(p=>p.wallet===wallet)){
-alert("wallet already submitted")
-return
-}
-
-submissions.push({
-name,github,social,desc,wallet,votes:0
-})
-
-localStorage.setItem("projects",JSON.stringify(submissions))
-
-status.innerHTML="<span class='success'>submitted</span>"
-
-render()
-
-}
-
-// VOTE
-function vote(index){
-
-if(!wallet){
-alert("connect wallet")
-return
-}
-
-let votes=JSON.parse(localStorage.getItem("votes") || "{}")
-
-if(votes[wallet]?.includes(index)){
-alert("already voted")
-return
-}
-
-let submissions=JSON.parse(localStorage.getItem("projects")||[])
-
-submissions[index].votes++
-
-localStorage.setItem("projects",JSON.stringify(submissions))
-
-if(!votes[wallet]) votes[wallet]=[]
-votes[wallet].push(index)
-
-localStorage.setItem("votes",JSON.stringify(votes))
-
-render()
-
-}
-
-// RENDER
-function render(){
-
-let submissions=JSON.parse(localStorage.getItem("projects")||[])
-
-if(submissions.length===0){
-document.getElementById("feed").innerHTML="[no projects yet]"
-return
-}
-
-submissions.sort((a,b)=>b.votes-a.votes)
-
-let html=""
-
-submissions.forEach((p,i)=>{
-
-html+=`
+html += `
 <div class="project">
 > #${i+1} ${p.name} (${p.votes} votes)
 
@@ -306,17 +237,61 @@ github: <a href="${p.github}" target="_blank">${p.github}</a>
 social: <a href="${p.social}" target="_blank">${p.social}</a>
 
 ${p.desc}
-
-<div class="vote" onclick="vote(${i})">↑ upvote</div>
 </div>
 `
 })
 
-document.getElementById("feed").innerHTML=html
+feed.innerHTML = html
+
+}catch{
+
+feed.innerHTML = "[error loading projects]"
 
 }
 
-render()
+}
+
+// SUBMIT (TEMP SYSTEM)
+function submitProject(){
+
+if(!wallet){
+alert("connect wallet first")
+return
+}
+
+const name = document.getElementById("name").value.trim()
+const github = document.getElementById("github").value.trim()
+const social = document.getElementById("social").value.trim()
+const desc = document.getElementById("desc").value.trim()
+const confirm = document.getElementById("confirm").checked
+
+if(!name || !github || !social || !desc){
+alert("fill all fields")
+return
+}
+
+if(!confirm){
+alert("confirm 14+ days")
+return
+}
+
+// FOR NOW: copy output manually
+const submission = {
+name, github, social, desc,
+wallet,
+votes: 0,
+time: Date.now()
+}
+
+console.log("SUBMIT THIS TO GITHUB:", submission)
+
+alert("copied to console → paste into submissions.json")
+
+}
+
+// INIT
+loadProjects()
+setInterval(loadProjects, 60000)
 
 </script>
 
