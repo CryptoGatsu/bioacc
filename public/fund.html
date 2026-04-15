@@ -52,15 +52,8 @@ padding:100px 25px 60px;
 text-align:center;
 }
 
-h1{
-color:white;
-font-weight:normal;
-}
-
-h2{
-color:#7CFF3A;
-margin-top:60px;
-}
+h1{color:white;font-weight:normal;}
+h2{color:#7CFF3A;margin-top:60px;}
 
 /* BOX */
 .box{
@@ -103,11 +96,10 @@ font-family:inherit;
 margin-top:10px;
 font-size:14px;
 }
-
 .success{color:#7CFF3A;}
 .error{color:#ff4d4d;}
 
-/* FEED */
+/* PROJECTS */
 .project{
 border-bottom:1px solid #222;
 padding:15px 0;
@@ -183,7 +175,7 @@ text-decoration:none;
 <!-- LEADERBOARD -->
 <h2>leaderboard</h2>
 
-<div class="box" id="feed"></div>
+<div class="box" id="feed">[loading projects...]</div>
 
 </div>
 
@@ -201,18 +193,21 @@ wallet = res.publicKey.toString()
 document.getElementById("walletStatus").innerText =
 "connected: " + wallet.slice(0,4) + "..." + wallet.slice(-4)
 }else{
-alert("install phantom")
+alert("install phantom wallet")
 }
 }
 
-// LOAD GLOBAL PROJECTS
+// LOAD PROJECTS
 async function loadProjects(){
 
 const feed = document.getElementById("feed")
 
 try{
 
-const res = await fetch(GITHUB_URL + "?cache=" + Date.now())
+const res = await fetch(GITHUB_URL + "?cache=" + Date.now(), {
+cache: "no-store"
+})
+
 const data = await res.json()
 
 let projects = data.projects || []
@@ -237,6 +232,8 @@ github: <a href="${p.github}" target="_blank">${p.github}</a>
 social: <a href="${p.social}" target="_blank">${p.social}</a>
 
 ${p.desc}
+
+<div class="vote" onclick="vote(${i})">↑ upvote</div>
 </div>
 `
 })
@@ -244,15 +241,13 @@ ${p.desc}
 feed.innerHTML = html
 
 }catch{
-
 feed.innerHTML = "[error loading projects]"
-
 }
 
 }
 
-// SUBMIT (TEMP SYSTEM)
-function submitProject(){
+// SUBMIT
+async function submitProject(){
 
 if(!wallet){
 alert("connect wallet first")
@@ -264,28 +259,74 @@ const github = document.getElementById("github").value.trim()
 const social = document.getElementById("social").value.trim()
 const desc = document.getElementById("desc").value.trim()
 const confirm = document.getElementById("confirm").checked
+const status = document.getElementById("status")
 
 if(!name || !github || !social || !desc){
-alert("fill all fields")
+status.innerHTML = "<span class='error'>fill all fields</span>"
+return
+}
+
+if(!github.includes("github.com")){
+status.innerHTML = "<span class='error'>invalid github link</span>"
 return
 }
 
 if(!confirm){
-alert("confirm 14+ days")
+status.innerHTML = "<span class='error'>confirm 14+ days</span>"
 return
 }
 
-// FOR NOW: copy output manually
-const submission = {
+try{
+
+await fetch("/api/update", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+action: "submit",
+data: {
 name, github, social, desc,
 wallet,
 votes: 0,
 time: Date.now()
 }
+})
+})
 
-console.log("SUBMIT THIS TO GITHUB:", submission)
+status.innerHTML = "<span class='success'>submitted</span>"
 
-alert("copied to console → paste into submissions.json")
+loadProjects()
+
+}catch{
+status.innerHTML = "<span class='error'>submission failed</span>"
+}
+
+}
+
+// VOTE
+async function vote(index){
+
+if(!wallet){
+alert("connect wallet")
+return
+}
+
+try{
+
+await fetch("/api/update", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+action: "vote",
+index,
+wallet
+})
+})
+
+loadProjects()
+
+}catch{
+alert("vote failed")
+}
 
 }
 
