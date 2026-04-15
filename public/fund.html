@@ -249,7 +249,9 @@ feed.innerHTML = "[error loading projects]"
 // SUBMIT
 async function submitProject(){
 
-console.log("SUBMIT FIRED")
+console.log("STEP 1: function fired")
+
+try {
 
 if(!wallet){
 alert("connect wallet first")
@@ -258,19 +260,23 @@ return
 
 const status = document.getElementById("status")
 
+console.log("STEP 2: getting inputs")
+
 const nameInput = document.getElementById("name")
 const githubInput = document.getElementById("github")
 const socialInput = document.getElementById("social")
 const descInput = document.getElementById("desc")
 
-// 🔴 SAFETY CHECK
+console.log("STEP 3:", nameInput, githubInput, socialInput, descInput)
+
+// HARD FAIL CHECK
 if(!nameInput || !githubInput || !socialInput || !descInput){
-console.error("Missing input fields")
-status.innerHTML = "<span style='color:red'>form error</span>"
-return
+throw new Error("Missing input fields (IDs wrong)")
 }
 
-try{
+console.log("STEP 4: values", nameInput.value)
+
+console.log("STEP 5: sending fetch")
 
 const res = await fetch("/api/update", {
 method: "POST",
@@ -291,7 +297,11 @@ time: Date.now()
 })
 })
 
+console.log("STEP 6: response received")
+
 const result = await res.json()
+
+console.log("STEP 7:", result)
 
 if(!res.ok){
 throw new Error(result.error || "submit failed")
@@ -301,10 +311,10 @@ status.innerHTML = "<span style='color:#5CFF5C'>submitted</span>"
 
 loadProjects()
 
-}catch(err){
+} catch(err){
 
-console.error("ERROR:", err)
-status.innerHTML = "<span style='color:red'>"+err.message+"</span>"
+console.error("🔥 ERROR:", err)
+alert(err.message)
 
 }
 }
