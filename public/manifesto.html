@@ -237,8 +237,6 @@ alert("connect wallet first")
 return
 }
 
-try{
-
 const note = document.getElementById("note").value || "signed manifesto"
 
 const message = `bio/acc manifesto signature:
@@ -246,18 +244,32 @@ ${walletAddress}
 ${Date.now()}
 ${note}`
 
-// ✅ IMPORTANT: encode properly
 const encodedMessage = new TextEncoder().encode(message)
 
-// ✅ CORRECT PHANTOM CALL
-const signed = await window.solana.signMessage(encodedMessage, "utf8")
+let signed = null
 
-// 🛑 If user cancels
-if(!signed || !signed.signature){
-throw new Error("Signature missing")
+try{
+
+// ✅ Attempt signature
+signed = await window.solana.signMessage(encodedMessage, "utf8")
+
+}catch(err){
+console.log("Phantom error:", err)
+
+// ❗ IMPORTANT: ignore error IF signature actually exists
+if(!signed){
+alert("signature rejected")
+return
+}
 }
 
-// ✅ Prevent duplicates
+// ✅ If still no signature → real failure
+if(!signed || !signed.signature){
+alert("signature rejected")
+return
+}
+
+// ✅ Prevent duplicate wallets
 const alreadySigned = signatures.some(sig => sig.wallet === walletAddress)
 
 if(alreadySigned){
@@ -265,7 +277,7 @@ alert("wallet already signed")
 return
 }
 
-// ✅ Save only AFTER success
+// ✅ Save ONLY after confirmed signature
 const entry = {
 wallet: walletAddress,
 note: note,
@@ -279,12 +291,6 @@ localStorage.setItem("bioacc_signatures", JSON.stringify(signatures))
 
 document.getElementById("note").value=""
 render()
-
-}catch(err){
-console.log("SIGN ERROR:", err)
-alert("signature rejected")
-return
-}
 
 }
 
