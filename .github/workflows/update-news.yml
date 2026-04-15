@@ -24,63 +24,62 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install dependencies
+        run: pip install requests
+
       - name: Fetch biotech intelligence
         run: |
-          python <<EOF
-import requests
-import xml.etree.ElementTree as ET
-from datetime import datetime
-import json
+          cat << 'EOF' > script.py
+          import requests
+          import xml.etree.ElementTree as ET
+          from datetime import datetime
+          import json
 
-def fetch_rss(url, label, limit=3):
-    try:
-        res = requests.get(url, timeout=10)
-        root = ET.fromstring(res.content)
+          def fetch_rss(url, label, limit=3):
+              try:
+                  res = requests.get(url, timeout=10)
+                  root = ET.fromstring(res.content)
 
-        items = []
-        for item in root.findall(".//item")[:limit]:
-            title = item.find("title").text.strip()
-            items.append(f"[{label}] {title}")
+                  items = []
+                  for item in root.findall(".//item")[:limit]:
+                      title = item.find("title").text.strip()
+                      items.append(f"[{label}] {title}")
 
-        return items
+                  return items
 
-    except Exception as e:
-        return [f"[{label}] error fetching data"]
+              except Exception:
+                  return [f"[{label}] error fetching data"]
 
-# SOURCES
-google_biotech = fetch_rss(
-    "https://news.google.com/rss/search?q=biotech&hl=en-US&gl=US&ceid=US:en",
-    "NEWS",
-    4
-)
+          google_biotech = fetch_rss(
+              "https://news.google.com/rss/search?q=biotech&hl=en-US&gl=US&ceid=US:en",
+              "NEWS",
+              4
+          )
 
-google_longevity = fetch_rss(
-    "https://news.google.com/rss/search?q=longevity+biotech&hl=en-US&gl=US&ceid=US:en",
-    "LONGEVITY",
-    3
-)
+          google_longevity = fetch_rss(
+              "https://news.google.com/rss/search?q=longevity+biotech&hl=en-US&gl=US&ceid=US:en",
+              "LONGEVITY",
+              3
+          )
 
-arxiv = fetch_rss(
-    "https://export.arxiv.org/rss/q-bio",
-    "ARXIV",
-    3
-)
+          arxiv = fetch_rss(
+              "https://export.arxiv.org/rss/q-bio",
+              "ARXIV",
+              3
+          )
 
-# COMBINE
-all_items = google_biotech + google_longevity + arxiv
+          data = {
+              "lastUpdated": datetime.utcnow().isoformat() + "Z",
+              "items": google_biotech + google_longevity + arxiv
+          }
 
-# TIMESTAMP
-data = {
-    "lastUpdated": datetime.utcnow().isoformat() + "Z",
-    "items": all_items
-}
+          with open("news.json", "w") as f:
+              json.dump(data, f, indent=2)
 
-# WRITE FILE
-with open("news.json", "w") as f:
-    json.dump(data, f, indent=2)
+          print("Updated news.json successfully")
+          EOF
 
-print("Updated news.json successfully")
-EOF
+          python script.py
 
       - name: Commit update
         run: |
