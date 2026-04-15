@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>bio/acc on solana</title>
+<title>bio/acc</title>
 
 <style>
 
@@ -17,7 +17,7 @@ font-family:Courier New, monospace;
 line-height:1.7;
 }
 
-/* NAV FIXED */
+/* NAV */
 .nav{
 position:fixed;
 top:0;
@@ -28,29 +28,27 @@ background:rgba(0,0,0,0.9);
 border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
-z-index:10;
+align-items:center;
 box-sizing:border-box;
+z-index:10;
 }
 
 .nav a{
 color:#7CFF3A;
 text-decoration:none;
+margin-left:20px;
 }
 
-/* FIX CONTENT OFFSET */
+.nav a.active{
+opacity:0.6;
+pointer-events:none;
+}
+
+/* LAYOUT */
 .container{
 max-width:900px;
 margin:auto;
 padding:100px 25px 60px;
-}
-
-canvas{
-position:fixed;
-top:0;
-left:0;
-z-index:-1;
-opacity:.35;
-pointer-events:none;
 }
 
 .hero{
@@ -79,12 +77,12 @@ margin-top:70px;
 color:#7CFF3A;
 }
 
+/* CONTRACT */
 .contract{
 border-top:1px solid #222;
 border-bottom:1px solid #222;
 padding:20px 0;
 margin:40px 0;
-font-size:18px;
 text-align:center;
 }
 
@@ -109,40 +107,32 @@ height:320px;
 overflow-y:auto;
 margin-top:20px;
 font-size:14px;
+scroll-behavior:smooth;
 }
 
-/* CLEAN INPUTS (MATCH MANIFESTO) */
-input, textarea{
-background:#000;
-border:1px solid #333;
-color:white;
-padding:10px;
-width:100%;
-margin-top:10px;
-font-family:inherit;
-}
-
-textarea{
-height:120px;
-}
-
-button{
+.cursor{
+display:inline-block;
+width:8px;
 background:#7CFF3A;
-border:none;
-padding:10px 16px;
-font-family:inherit;
-cursor:pointer;
-color:black;
-margin-top:15px;
+margin-left:5px;
+animation:blink 1s infinite;
 }
 
-.rules{
-margin-top:20px;
-padding:15px;
-border:1px solid #222;
-background:#050505;
+@keyframes blink{
+0%,100%{opacity:1;}
+50%{opacity:0;}
 }
 
+.new-line{
+animation:fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn{
+from{opacity:0;}
+to{opacity:1;}
+}
+
+/* CTA */
 .cta{
 margin-top:40px;
 padding:25px;
@@ -154,6 +144,7 @@ text-align:center;
 margin-top:20px;
 }
 
+/* LINKS */
 .links a{
 color:#7CFF3A;
 margin-right:20px;
@@ -178,13 +169,11 @@ color:#777;
 <div class="nav">
 <div>bio/acc</div>
 <div>
-<a href="index.html">home</a>
+<a href="index.html" class="active">home</a>
 <a href="manifesto.html">manifesto</a>
 <a href="fund.html">fund</a>
 </div>
 </div>
-
-<canvas id="particles"></canvas>
 
 <div class="container">
 
@@ -199,6 +188,7 @@ bio/acc contract
 <br><br>
 <b>CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump</b>
 <br><br>
+
 <a class="button" href="https://dexscreener.com/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw">buy</a>
 
 <div class="market">
@@ -207,25 +197,27 @@ market cap: <span id="marketCap">loading...</span>
 <button onclick="refreshMarketCap()">refresh market cap</button>
 <div id="marketStatus" style="color:#777;font-size:14px;"></div>
 </div>
+
 </div>
 
 <h2>live biotech intelligence terminal</h2>
 
 <div class="researchFeed" id="researchFeed">
-[boot] connecting to bio/acc intelligence network...
+[boot] initializing...
 </div>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
+<!-- CTA SECTION -->
 <div class="cta">
 <h2>enter the bio/acc movement</h2>
-<p>Read the full manifesto and sign your alignment.</p>
+<p>Read the manifesto and align with the future of biotech.</p>
 <a class="button" href="manifesto.html">read manifesto →</a>
 </div>
 
 <div class="cta">
 <h2>build with bio/acc</h2>
-<p>Submit your biotech startup and get visibility + funding.</p>
+<p>Submit your startup and get visibility + potential funding.</p>
 <a class="button" href="fund.html">enter fund →</a>
 </div>
 
@@ -244,58 +236,94 @@ bio/acc is a movement accelerating biotechnology.
 
 </div>
 
-<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-
 <script>
 
-// 🔥 RESTORED FUNCTIONS
-
-async function loadResearch(){
-const feed=document.getElementById("researchFeed")
-const status=document.getElementById("feedStatus")
-
-try{
-const res=await fetch("news.json?cache="+Date.now())
-const data=await res.json()
-
-feed.innerHTML=""
-
-data.items.forEach(item=>{
-const line=document.createElement("div")
-line.innerHTML="> "+item
-feed.appendChild(line)
-})
-
-const updated=new Date(data.lastUpdated)
-status.innerText="intelligence updated: "+updated.toLocaleString()
-
-}catch{
-feed.innerHTML="[error] intelligence network offline"
-}
-}
-
+// MARKET CAP
 async function refreshMarketCap(){
+
 const mc=document.getElementById("marketCap")
 const status=document.getElementById("marketStatus")
 
 try{
+
 const res=await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw")
 const data=await res.json()
 
 const cap=data.pair?.fdv || 0
+
 mc.innerText="$"+Number(cap).toLocaleString()
 
 status.innerText="market cap updated: "+new Date().toLocaleString()
 
 }catch{
+
 status.innerText="market data unavailable"
-}
+
 }
 
+}
+
+// TERMINAL FUNCTIONS
+function delay(ms){
+return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function typeLine(container, text){
+
+const line=document.createElement("div")
+line.className="new-line"
+container.appendChild(line)
+
+let i=0
+
+while(i<text.length){
+line.innerHTML=text.slice(0,i)+'<span class="cursor"></span>'
+i++
+await delay(10)
+}
+
+line.innerHTML=text
+}
+
+// LOAD FEED
+async function loadResearch(){
+
+const feed=document.getElementById("researchFeed")
+const status=document.getElementById("feedStatus")
+
+try{
+
+const res=await fetch("news.json?cache="+Date.now())
+const data=await res.json()
+
+feed.innerHTML=""
+
+await typeLine(feed,"[sync] connecting to bio/acc intelligence network...")
+await delay(300)
+
+for(const item of data.items){
+
+await typeLine(feed,"> "+item)
+feed.scrollTop=feed.scrollHeight
+
+}
+
+const updated=new Date(data.lastUpdated)
+status.innerText="intelligence updated: "+updated.toLocaleString()
+
+}catch{
+
+feed.innerHTML="[error] intelligence network offline"
+
+}
+
+}
+
+// INIT
 loadResearch()
 refreshMarketCap()
 
-setInterval(loadResearch,300000)
+setInterval(loadResearch,180000)
 setInterval(refreshMarketCap,60000)
 
 </script>
