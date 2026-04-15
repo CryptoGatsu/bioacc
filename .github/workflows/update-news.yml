@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   update-feed:
@@ -38,6 +41,8 @@ jobs:
           sed -i '$ s/,$//' news.json
 
           echo "]}" >> news.json
+
+          echo "Running update at $(date)"
 
       - name: Commit update
         run: |
