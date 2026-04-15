@@ -184,41 +184,55 @@ votes: ${p.votes || 0}
 // SUBMIT
 async function submitProject(){
 
-try{
+try {
 
-if(!wallet) return alert("connect wallet")
-
-if(!document.getElementById("confirm").checked){
-return alert("must confirm 14+ days")
+if(!wallet){
+alert("connect wallet first")
+return
 }
 
-const data = {
-name: document.getElementById("name").value,
-github: document.getElementById("github").value,
-social: document.getElementById("social").value,
-desc: document.getElementById("desc").value,
-wallet,
+const name = document.getElementById("name").value
+const github = document.getElementById("github").value
+const social = document.getElementById("social").value
+const desc = document.getElementById("desc").value
+
+if(!name || !github || !desc){
+alert("fill required fields")
+return
+}
+
+const payload = {
+action: "submit",
+data: {
+name,
+github,
+social,
+desc,
 votes: 0,
-time: Date.now()
+wallet
+}
 }
 
 const res = await fetch("/api/update", {
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body: JSON.stringify({ action:"submit", data })
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify(payload)
 })
 
 const result = await res.json()
 
-if(!res.ok) throw new Error(result.error)
+console.log("SUBMIT RESULT:", result)
 
-document.getElementById("status").innerHTML = "submitted ✅"
+if(result.success){
+document.getElementById("status").innerText = "submitted ✅"
+loadProjects()
+} else {
+alert("error submitting")
+}
 
-setTimeout(loadProjects, 1500)
-
-}catch(e){
-console.error(e)
-alert(e.message)
+} catch (err){
+console.error(err)
+alert("submit failed")
 }
 
 }
