@@ -260,7 +260,7 @@ alert("connect wallet")
 return
 }
 
-let votes=JSON.parse(localStorage.getItem("votes")||{})
+let votes=JSON.parse(localStorage.getItem("votes") || "{}")
 
 if(votes[wallet]?.includes(index)){
 alert("already voted")
