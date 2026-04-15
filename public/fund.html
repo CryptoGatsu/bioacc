@@ -254,52 +254,45 @@ alert("connect wallet first")
 return
 }
 
-const name = document.getElementById("name").value.trim()
-const github = document.getElementById("github").value.trim()
-const social = document.getElementById("social").value.trim()
-const desc = document.getElementById("desc").value.trim()
-const confirm = document.getElementById("confirm").checked
 const status = document.getElementById("status")
-
-if(!name || !github || !social || !desc){
-status.innerHTML = "<span class='error'>fill all fields</span>"
-return
-}
-
-if(!github.includes("github.com")){
-status.innerHTML = "<span class='error'>invalid github link</span>"
-return
-}
-
-if(!confirm){
-status.innerHTML = "<span class='error'>confirm 14+ days</span>"
-return
-}
 
 try{
 
-await fetch("/api/update", {
+const res = await fetch("/api/update", {
 method: "POST",
-headers: { "Content-Type": "application/json" },
+headers: {
+"Content-Type": "application/json"
+},
 body: JSON.stringify({
 action: "submit",
 data: {
-name, github, social, desc,
-wallet,
+name: document.getElementById("name").value,
+github: document.getElementById("github").value,
+social: document.getElementById("social").value,
+desc: document.getElementById("desc").value,
+wallet: wallet,
 votes: 0,
 time: Date.now()
 }
 })
 })
 
-status.innerHTML = "<span class='success'>submitted</span>"
+const result = await res.json()
+
+if(!res.ok){
+throw new Error(result.error || "submit failed")
+}
+
+status.innerHTML = "<span style='color:#5CFF5C'>submitted</span>"
 
 loadProjects()
 
-}catch{
-status.innerHTML = "<span class='error'>submission failed</span>"
-}
+}catch(err){
 
+console.error(err)
+status.innerHTML = "<span style='color:red'>"+err.message+"</span>"
+
+}
 }
 
 // VOTE
