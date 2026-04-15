@@ -61,8 +61,13 @@ cursor:pointer;
 border:none;
 }
 
-/* ANIMATION */
+/* PROJECT CARDS */
 .project{
+border:1px solid #222;
+padding:15px;
+margin-bottom:20px;
+background:#050505;
+border-radius:6px;
 opacity:0;
 transform:translateY(10px);
 animation:fadeIn 0.4s ease forwards;
@@ -76,6 +81,11 @@ to{opacity:1;transform:translateY(0);}
 color:#7CFF3A;
 cursor:pointer;
 margin-top:10px;
+}
+
+.small{
+color:#777;
+font-size:12px;
 }
 
 </style>
@@ -124,19 +134,33 @@ margin-top:10px;
 <script>
 
 let wallet = null
+
+// 🔥 YOUR HELIUS RPC (WORKING)
+const connection = new solanaWeb3.Connection(
+"https://mainnet.helius-rpc.com/?api-key=abe30281-08a6-4f68-921b-4da93db84835"
+)
+
+// 🔥 REPLACE THIS WITH YOUR TOKEN MINT
 const TOKEN_MINT = "CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump"
 
 // WALLET
 async function connectWallet(){
+if(!window.solana) return alert("install phantom")
+
 const res = await window.solana.connect()
 wallet = res.publicKey.toString()
-walletStatus.innerText = wallet.slice(0,4)+"..."+wallet.slice(-4)
+
+const bal = await getTokenBalance(wallet)
+
+walletStatus.innerText =
+`connected: ${wallet.slice(0,4)}...${wallet.slice(-4)} (${bal} tokens)`
 }
 
-// TOKEN BALANCE
+// TOKEN BALANCE (FIXED)
 async function getTokenBalance(address){
 
-const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com")
+try {
+
 const owner = new solanaWeb3.PublicKey(address)
 const mint = new solanaWeb3.PublicKey(TOKEN_MINT)
 
@@ -145,13 +169,20 @@ const accounts = await connection.getParsedTokenAccountsByOwner(owner,{mint})
 if(accounts.value.length === 0) return 0
 
 return accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount
+
+} catch(err){
+console.error("TOKEN ERROR:", err)
+return 0
+}
+
 }
 
 // LOAD PROJECTS
 async function loadProjects(){
 
 const res = await fetch(
-`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?${Date.now()}`
+`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?${Date.now()}`,
+{ cache: "no-store" }
 )
 
 const file = await res.json()
@@ -165,10 +196,13 @@ const div = document.createElement("div")
 div.className="project"
 
 div.innerHTML=`
-<b>${p.name}</b><br/>
-<a href="${p.github}" target="_blank">github</a><br/>
-${p.desc}<br/>
-votes: ${p.votes||0}
+<b style="font-size:18px">${p.name}</b><br/><br/>
+<a href="${p.github}" target="_blank">github</a><br/><br/>
+${p.desc}<br/><br/>
+
+votes: ${p.votes || 0}<br/>
+<div class="small">last vote weight: ${p.lastWeight || 0}</div>
+
 <div class="vote" onclick="vote(${i})">↑ vote</div>
 `
 
@@ -183,6 +217,8 @@ async function submitProject(){
 
 if(!wallet) return alert("connect wallet")
 
+if(!confirm.checked) return alert("confirm 14+ days")
+
 const payload={
 action:"submit",
 data:{
@@ -195,18 +231,19 @@ wallet
 }
 }
 
-const res=await fetch("/api/update",{
+await fetch("/api/update",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify(payload)
 })
 
 status.innerText="submitted ✅"
+
 setTimeout(loadProjects,1500)
 
 }
 
-// VOTE
+// VOTE (FIXED + DEBUG)
 async function vote(index){
 
 if(!wallet) return alert("connect wallet")
@@ -218,10 +255,14 @@ alert("already voted")
 return
 }
 
+console.log("checking token balance...")
+
 const balance = await getTokenBalance(wallet)
 
+console.log("balance:", balance)
+
 if(balance <= 0){
-alert("must hold token")
+alert("no tokens detected")
 return
 }
 
@@ -238,6 +279,7 @@ weight
 })
 })
 
+// store vote locally
 if(!voted[wallet]) voted[wallet]=[]
 voted[wallet].push(index)
 localStorage.setItem("votes",JSON.stringify(voted))
@@ -246,6 +288,7 @@ setTimeout(loadProjects,1000)
 
 }
 
+// INIT
 loadProjects()
 setInterval(loadProjects,5000)
 
