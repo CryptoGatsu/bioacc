@@ -260,14 +260,16 @@ async function loadProjects(){
 
 const feed = document.getElementById("feed")
 
-// loading state
+// loading UI
 feed.innerHTML = "[updating...]"
 
 try {
 
 const res = await fetch(
   "https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?t=" + Date.now(),
-  { cache: "no-store" }
+  {
+    cache: "no-store"
+  }
 )
 
 const data = await res.json()
@@ -297,7 +299,7 @@ return `
 <div class="project">
 
 <b>${p.name || "Unnamed"}</b><br/><br/>
-<a href="${p.github || "#"}" target="_blank">github</a><br/><br/>
+<a href="${p.github || "#"} target="_blank">github</a><br/><br/>
 ${p.desc || ""}<br/><br/>
 
 votes: ${p.votes || 0}<br/><br/>
