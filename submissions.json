@@ -1,6 +1,14 @@
 {
   "projects": [
     {
+      "name": "Biotech Tester 2",
+      "github": "https://github.com/CryptoGatsu/bioacc",
+      "social": "https://github.com/CryptoGatsu/bioacc",
+      "desc": "I REALLY LOVE BIO/ACC. BIOTECH WILL CHANGE THE WORLD 2026!",
+      "votes": 0,
+      "wallet": "9wXpf3goiM2gLrFhCxRtHn3x3rC6PJBfhPGL3ppwwYoo"
+    },
+    {
       "name": "Biotech Tester 1",
       "github": "https://github.com/CryptoGatsu/bioacc",
       "social": "https://github.com/CryptoGatsu/bioacc",
@@ -9,5 +17,5 @@
       "wallet": "9wXpf3goiM2gLrFhCxRtHn3x3rC6PJBfhPGL3ppwwYoo"
     }
   ],
-  "lastUpdated": "2026-04-16T03:17:46.390Z"
+  "lastUpdated": "2026-04-16T03:23:54.176Z"
 }
