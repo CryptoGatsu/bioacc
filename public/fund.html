@@ -356,7 +356,9 @@ async function submitProject(){
 
 if(!wallet) return alert("connect wallet")
 
-if(!confirm.checked){
+const isConfirmed = document.getElementById("confirm").checked
+
+if(!isConfirmed){
 alert("confirm 14+ days")
 return
 }
