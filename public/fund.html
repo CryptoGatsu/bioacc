@@ -37,7 +37,6 @@ text-decoration:none;
 margin-left:20px;
 }
 
-/* LAYOUT */
 .container{
 max-width:900px;
 margin:auto;
@@ -55,14 +54,13 @@ margin-top:20px;
 text-align:left;
 }
 
-/* PROJECT CARD */
+/* PROJECT */
 .project{
 border:1px solid #222;
 padding:20px;
 margin-bottom:25px;
 display:flex;
 gap:20px;
-align-items:flex-start;
 }
 
 /* LOGO */
@@ -219,8 +217,14 @@ animation:scroll 15s linear infinite;
 
 <script>
 
+const HELIUS_KEY = "abe30281-08a6-4f68-921b-4da93db84835"
+const TOKEN_MINT = "CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump"
 const TOKENS_PER_VOTE = 1000000
+
 let wallet = null
+let tokenBalance = 0
+let voteBank = 0
+
 let voteTimestamps = JSON.parse(localStorage.getItem("voteTimestamps") || "{}")
 
 function toggleConfirm(){
@@ -233,7 +237,20 @@ box.classList.toggle("active")
 async function connectWallet(){
 const res = await window.solana.connect()
 wallet = res.publicKey.toString()
-document.getElementById("walletStatus").innerText = wallet
+
+tokenBalance = await getTokenBalance(wallet)
+voteBank = Math.floor(tokenBalance / TOKENS_PER_VOTE)
+
+document.getElementById("walletStatus").innerText =
+`wallet: ${wallet.slice(0,4)}...${wallet.slice(-4)} | tokens: ${Math.floor(tokenBalance)} | votes: ${voteBank}`
+}
+
+async function getTokenBalance(wallet){
+const res = await fetch(`https://api.helius.xyz/v0/addresses/${wallet}/balances?api-key=${HELIUS_KEY}`)
+const data = await res.json()
+const token = data.tokens.find(t => t.mint === TOKEN_MINT)
+if(!token) return 0
+return token.amount / (10 ** (token.decimals || 6))
 }
 
 function addTicker(text){
@@ -255,16 +272,19 @@ document.getElementById("feed").innerHTML = projects.map((p,i)=>{
 
 const id = getProjectId(p)
 
+let locked = false
+
+if(wallet){
 const lastVote = voteTimestamps[id] || 0
-const remaining = 86400000 - (Date.now() - lastVote)
-const locked = remaining > 0
+locked = (Date.now() - lastVote < 86400000)
+}
 
 let rank = i===0?"top1":i===1?"top2":i===2?"top3":""
 
 return `
 <div class="project ${rank}">
 
-<img class="logo" src="${p.logo || ''}">
+${p.logo ? `<img class="logo" src="${p.logo}">` : ""}
 
 <div class="project-content">
 
@@ -290,7 +310,7 @@ ${locked ? "locked" : "vote"}
 </div>
 
 <div class="cooldown">
-${locked ? "cooldown active" : ""}
+${wallet && locked ? "cooldown active" : ""}
 </div>
 
 </div>
@@ -302,6 +322,11 @@ ${locked ? "cooldown active" : ""}
 
 async function vote(id,index){
 
+if(!wallet){
+alert("connect wallet")
+return
+}
+
 const lastVote = voteTimestamps[id] || 0
 
 if(Date.now() - lastVote < 86400000){
@@ -310,6 +335,11 @@ return
 }
 
 const amount = parseInt(document.getElementById(`vote-${index}`).value)
+
+if(!amount || amount > voteBank){
+alert("invalid votes")
+return
+}
 
 await fetch("/api/update",{
 method:"POST",
@@ -343,7 +373,6 @@ alert("name, github, social required")
 return
 }
 
-/* LOGO TO BASE64 */
 const file = document.getElementById("logo").files[0]
 let logo = ""
 
