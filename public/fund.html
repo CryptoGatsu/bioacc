@@ -260,24 +260,17 @@ async function loadProjects(){
 
 const feed = document.getElementById("feed")
 
-// 🔥 loading state
+// loading state
 feed.innerHTML = "[updating...]"
 
 try {
 
 const res = await fetch(
-  "https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?t=" + Date.now(),
-  {
-    headers: {
-      "Accept": "application/vnd.github.v3+json",
-      "Cache-Control": "no-cache"
-    },
-    cache: "no-store"
-  }
+  "https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?t=" + Date.now(),
+  { cache: "no-store" }
 )
 
-const file = await res.json()
-const data = JSON.parse(atob(file.content))
+const data = await res.json()
 
 if(!data.projects || !data.projects.length){
 feed.innerHTML = "[no projects yet]"
@@ -323,7 +316,7 @@ ${locked ? "locked" : "vote"}
 }).join("")
 
 } catch(err){
-console.error(err)
+console.error("LOAD ERROR:", err)
 feed.innerHTML = "error loading"
 }
 
