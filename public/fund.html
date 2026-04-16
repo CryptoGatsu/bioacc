@@ -436,7 +436,7 @@ document.getElementById("desc").value = ""
 document.getElementById("confirm").checked = false
 document.getElementById("confirmBox").classList.remove("active")
 
-setTimeout(loadProjects, 1200)
+await loadProjects()
 
 } else {
 alert("submit failed")
@@ -451,7 +451,7 @@ alert("submit error")
 
 // INIT
 loadProjects()
-setInterval(loadProjects, 20000)
+setInterval(loadProjects, 5000)
 
 </script>
 
