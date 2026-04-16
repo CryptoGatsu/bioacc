@@ -9,18 +9,241 @@
 
 <style>
 
-/* (UNCHANGED STYLES ABOVE) */
+body{
+margin:0;
+background:#000;
+color:#cfcfcf;
+font-family:Courier New, monospace;
+}
+
+.nav{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+padding:15px 40px;
+background:#000;
+border-bottom:1px solid #111;
+display:flex;
+justify-content:space-between;
+align-items:center;
+z-index:100;
+}
+
+.nav a{
+color:#7CFF3A;
+text-decoration:none;
+margin-left:20px;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:110px 20px 100px;
+text-align:center;
+}
+
+h1{color:white;}
+h2{color:#7CFF3A;margin-top:60px;}
+
+.box{
+border:1px solid #222;
+padding:25px;
+margin-top:20px;
+text-align:left;
+}
+
+.project{
+border:1px solid #222;
+padding:20px;
+margin-bottom:25px;
+display:flex;
+gap:20px;
+}
+
+.logo{
+width:70px;
+height:70px;
+background:#111;
+border:1px solid #222;
+object-fit:cover;
+}
+
+.project-content{
+flex:1;
+text-align:left;
+}
+
+.links a{
+color:#7CFF3A;
+margin-right:10px;
+font-size:13px;
+}
+
+.desc{
+margin-top:10px;
+color:#aaa;
+font-size:14px;
+}
 
 .top1{ border:1px solid gold; box-shadow:0 0 15px gold; }
 .top2{ border:1px solid silver; box-shadow:0 0 10px silver; }
 .top3{ border:1px solid #cd7f32; box-shadow:0 0 10px #cd7f32; }
+
+input, textarea{
+width:100%;
+background:#050505;
+border:1px solid #222;
+color:#cfcfcf;
+padding:10px;
+margin-top:10px;
+}
+
+.vote-input{
+width:70px;
+padding:5px;
+margin-top:10px;
+}
+
+.button{
+background:#7CFF3A;
+color:black;
+padding:10px 15px;
+margin-top:15px;
+cursor:pointer;
+border:none;
+}
+
+.file-input{
+display:block;
+margin-top:10px;
+padding:10px;
+background:#050505;
+border:1px solid #222;
+color:#7CFF3A;
+cursor:pointer;
+}
+
+.vote{
+color:#7CFF3A;
+cursor:pointer;
+margin-top:10px;
+}
+
+.cooldown{
+color:#888;
+font-size:12px;
+}
+
+.confirm-box{
+border:1px solid #7CFF3A;
+padding:12px;
+margin-top:15px;
+cursor:pointer;
+}
+
+.confirm-box.active{
+background:#7CFF3A;
+color:black;
+}
+
+.pagination{
+margin-top:20px;
+}
+
+.pagination button{
+margin:5px;
+}
+
+#ticker{
+position:fixed;
+bottom:0;
+width:100%;
+background:#050505;
+border-top:1px solid #222;
+color:#7CFF3A;
+font-size:12px;
+padding:8px;
+white-space:nowrap;
+overflow:hidden;
+}
+
+#ticker span{
+display:inline-block;
+padding-left:100%;
+animation:scroll 15s linear infinite;
+}
+
+@keyframes scroll{
+0%{transform:translateX(0);}
+100%{transform:translateX(-100%);}
+}
 
 </style>
 </head>
 
 <body>
 
-<!-- (UNCHANGED HTML ABOVE) -->
+<div class="nav">
+<div>bio/acc fund</div>
+<div>
+<a href="index.html">home</a>
+<a href="manifesto.html">manifesto</a>
+<a href="fund.html">fund</a>
+</div>
+</div>
+
+<div class="container">
+
+<h1>biotech startup fund</h1>
+
+<button class="button" onclick="connectWallet()">connect wallet</button>
+<div id="walletStatus"></div>
+
+<h2>startup requirements</h2>
+<div class="box">
+• must have public github<br>
+<span style="color:#888">active repo with real commits</span><br><br>
+• must be built for 14+ days<br>
+<span style="color:#888">not a fresh idea / no spam</span><br><br>
+• must have social presence<br>
+<span style="color:#888">twitter / community / visibility</span>
+</div>
+
+<h2>submit project</h2>
+<div class="box">
+
+<input id="name" placeholder="project name (required)">
+<input id="github" placeholder="github link (required)">
+<input id="social" placeholder="social link (required)">
+<input id="website" placeholder="website (optional)">
+<input type="file" id="logo" class="file-input" accept="image/*">
+<textarea id="desc" maxlength="200" placeholder="description (max 200 chars)"></textarea>
+
+<div class="confirm-box" onclick="toggleConfirm()" id="confirmBox">
+✔ confirm 14+ days
+<input type="checkbox" id="confirm" hidden>
+</div>
+
+<button class="button" onclick="submitProject()">submit</button>
+<div id="status"></div>
+
+</div>
+
+<h2>leaderboard</h2>
+<div class="box">
+• 1 vote = 1M tokens<br>
+• 1 project per 24 hours<br>
+• max 2 votes per project<br>
+• votes may take a few seconds
+</div>
+
+<div id="feed"></div>
+<div id="pagination"></div>
+
+</div>
+
+<div id="ticker"></div>
 
 <script>
 
@@ -36,7 +259,13 @@ let voteCounts = JSON.parse(localStorage.getItem("voteCounts")||"{}")
 let currentPage=0
 const perPage=5
 
-/* ✅ FIX 1 — RESTORE TOKEN DISPLAY */
+function toggleConfirm(){
+const box=document.getElementById("confirmBox")
+const input=document.getElementById("confirm")
+input.checked=!input.checked
+box.classList.toggle("active")
+}
+
 async function connectWallet(){
 const res=await window.solana.connect()
 wallet=res.publicKey.toString()
@@ -50,7 +279,6 @@ document.getElementById("walletStatus").innerText =
 loadProjects()
 }
 
-/* ✅ REQUIRED FOR TOKEN DISPLAY */
 async function getTokenBalance(wallet){
 const res = await fetch(`https://api.helius.xyz/v0/addresses/${wallet}/balances?api-key=abe30281-08a6-4f68-921b-4da93db84835`)
 const data = await res.json()
@@ -61,10 +289,6 @@ return token.amount / (10 ** (token.decimals || 6))
 
 function getProjectId(p){
 return p.github||p.name
-}
-
-function addTicker(text){
-document.getElementById("ticker").innerHTML=`<span>${text}</span>`
 }
 
 function getCooldownText(last){
@@ -82,29 +306,20 @@ const data=await res.json()
 
 let projects=data.projects.sort((a,b)=>(b.votes||0)-(a.votes||0))
 
-const totalPages = Math.ceil(projects.length / perPage)
-
+const totalPages=Math.ceil(projects.length/perPage)
 const start=currentPage*perPage
 const pageProjects=projects.slice(start,start+perPage)
 
-/* ✅ FIX 2 — BUILD PROJECT HTML */
 let html = pageProjects.map((p,i)=>{
 
 const id=getProjectId(p)
-
 const last=voteTimestamps[id]||0
-const hasCooldown=(Date.now()-last<86400000)
-
-let cooldownText = hasCooldown ? `cooldown: ${getCooldownText(last)}` : ""
-
-let locked = hasCooldown || (voteCounts[id]||0)>=2
+const locked=(Date.now()-last<86400000)||(voteCounts[id]||0)>=2
 
 let rank=""
 if(start+i===0) rank="top1"
 if(start+i===1) rank="top2"
 if(start+i===2) rank="top3"
-
-let totalVotes=voteCounts[id]||0
 
 return `
 <div class="project ${rank}">
@@ -135,8 +350,7 @@ ${locked?"locked":"vote"}
 </div>
 
 <div class="cooldown">
-${cooldownText}
-${totalVotes>=2?" | max votes reached":""}
+${locked?`cooldown: ${getCooldownText(last)}`:""}
 </div>
 
 </div>
@@ -145,42 +359,26 @@ ${totalVotes>=2?" | max votes reached":""}
 
 }).join("")
 
-/* ✅ FIX 3 — SMART PAGINATION */
-let paginationHTML=""
+let pagination=""
 
 if(totalPages>1){
-
-paginationHTML += `<div class="pagination">`
-
-if(currentPage>0){
-paginationHTML += `<button onclick="prevPage()" class="button">prev</button>`
-}
-
+if(currentPage>0) pagination+=`<button onclick="prevPage()" class="button">prev</button>`
 for(let i=0;i<totalPages;i++){
-paginationHTML += `
-<button onclick="goPage(${i})" class="button">
-${i+1}
-</button>`
+pagination+=`<button onclick="goPage(${i})" class="button">${i+1}</button>`
+}
+if(currentPage<totalPages-1) pagination+=`<button onclick="nextPage()" class="button">next</button>`
 }
 
-if(currentPage < totalPages-1){
-paginationHTML += `<button onclick="nextPage()" class="button">next</button>`
+document.getElementById("feed").innerHTML=html
+document.getElementById("pagination").innerHTML=pagination
 }
 
-paginationHTML += `</div>`
-}
-
-document.getElementById("feed").innerHTML = html + paginationHTML
-}
-
-/* ✅ FIX 4 — INSTANT UI UPDATE */
 async function vote(id,index){
 
 if(!wallet) return alert("connect wallet")
 
 const last=voteTimestamps[id]||0
 if(Date.now()-last<86400000) return alert("daily limit")
-
 if((voteCounts[id]||0)>=2) return alert("max votes reached")
 
 const amount=parseInt(document.getElementById(`vote-${index%perPage}`).value)
@@ -197,17 +395,52 @@ voteCounts[id]=(voteCounts[id]||0)+1
 localStorage.setItem("voteTimestamps",JSON.stringify(voteTimestamps))
 localStorage.setItem("voteCounts",JSON.stringify(voteCounts))
 
-addTicker(`${amount} votes → ${id}`)
-
-await loadProjects()
+loadProjects()
 }
 
 function nextPage(){currentPage++;loadProjects()}
 function prevPage(){if(currentPage>0)currentPage--;loadProjects()}
+function goPage(p){currentPage=p;loadProjects()}
 
-/* ✅ NEW */
-function goPage(p){
-currentPage = p
+async function submitProject(){
+
+if(!document.getElementById("confirm").checked){
+alert("confirm 14+ days")
+return
+}
+
+const name=document.getElementById("name").value.trim()
+const github=document.getElementById("github").value.trim()
+const social=document.getElementById("social").value.trim()
+const website=document.getElementById("website").value.trim()
+const desc=document.getElementById("desc").value.trim()
+
+if(!name||!github||!social){
+alert("required fields missing")
+return
+}
+
+const file=document.getElementById("logo").files[0]
+let logo=""
+
+if(file){
+logo=await new Promise(r=>{
+const reader=new FileReader()
+reader.onload=()=>r(reader.result)
+reader.readAsDataURL(file)
+})
+}
+
+await fetch("/api/update",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+action:"submit",
+data:{name,github,social,website,desc,logo,votes:0,wallet}
+})
+})
+
+document.getElementById("status").innerText="submitted ✅"
 loadProjects()
 }
 
