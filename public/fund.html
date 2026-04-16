@@ -199,7 +199,12 @@ margin-left:10px;
 
 </div>
 
-<h2>leaderboard</h2>
+<div style="display:flex;justify-content:center;align-items:center;gap:15px;margin-top:60px;">
+  <h2 style="margin:0;">leaderboard</h2>
+  <button class="button" onclick="loadProjects()" style="padding:6px 12px;font-size:12px;">
+    refresh
+  </button>
+</div>
 <div id="feed"></div>
 
 </div>
@@ -261,7 +266,10 @@ async function loadProjects(){
 const feed = document.getElementById("feed")
 
 // loading UI
-feed.innerHTML = "[updating...]"
+const newHTML = "[updating...]"
+if(feed.innerHTML !== newHTML){
+  feed.innerHTML = newHTML
+}
 
 try {
 
@@ -446,7 +454,6 @@ alert("submit error")
 
 // INIT
 loadProjects()
-setInterval(loadProjects, 5000)
 
 </script>
 
