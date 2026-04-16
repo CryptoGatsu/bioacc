@@ -70,12 +70,15 @@ padding:10px;
 margin-top:10px;
 }
 
+/* SMALLER VOTE INPUT */
 .vote-input{
-width:80px;
-padding:6px;
+width:70px;
+padding:5px;
 margin-top:10px;
+text-align:center;
 }
 
+/* BUTTON */
 .button{
 background:#7CFF3A;
 color:black;
@@ -85,16 +88,53 @@ cursor:pointer;
 border:none;
 }
 
+/* VOTE */
 .vote{
 color:#7CFF3A;
 cursor:pointer;
 margin-top:10px;
 }
 
+/* COOLDOWN */
 .cooldown{
 color:#888;
 font-size:12px;
 margin-top:5px;
+}
+
+/* 🔥 CONFIRM BOX UPGRADE */
+.confirm-box{
+border:1px solid #7CFF3A;
+padding:12px;
+margin-top:15px;
+display:flex;
+align-items:center;
+gap:10px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.confirm-box:hover{
+background:#0a0a0a;
+}
+
+.confirm-box.active{
+background:#7CFF3A;
+color:black;
+}
+
+.confirm-box input{
+display:none;
+}
+
+.rule{
+margin-bottom:10px;
+}
+
+.sub{
+color:#888;
+font-size:13px;
+margin-left:10px;
 }
 
 </style>
@@ -121,9 +161,22 @@ margin-top:5px;
 
 <h2>requirements</h2>
 <div class="box">
-• public github<br>
-• 14+ days building<br>
-• social presence
+
+<div class="rule">
+• public github  
+<div class="sub">must be active, not empty, shows real work</div>
+</div>
+
+<div class="rule">
+• 14+ days building  
+<div class="sub">consistent commits, not one-day upload</div>
+</div>
+
+<div class="rule">
+• social presence  
+<div class="sub">x, website, or community proof</div>
+</div>
+
 </div>
 
 <h2>submit project</h2>
@@ -134,9 +187,11 @@ margin-top:5px;
 <input id="social" placeholder="social link">
 <textarea id="desc" placeholder="description"></textarea>
 
-<label>
-<input type="checkbox" id="confirm"> confirm 14+ days
-</label>
+<!-- 🔥 NEW CONFIRM UI -->
+<div class="confirm-box" onclick="toggleConfirm()" id="confirmBox">
+<input type="checkbox" id="confirm">
+✔ I confirm this project has been built for 14+ days
+</div>
 
 <button class="button" onclick="submitProject()">submit</button>
 <div id="status"></div>
@@ -160,6 +215,15 @@ let voteBank = 0
 
 let voteTimestamps = JSON.parse(localStorage.getItem("voteTimestamps") || "{}")
 
+// CONFIRM TOGGLE
+function toggleConfirm(){
+const box = document.getElementById("confirmBox")
+const input = document.getElementById("confirm")
+
+input.checked = !input.checked
+box.classList.toggle("active")
+}
+
 // WALLET
 async function connectWallet(){
 
@@ -173,18 +237,21 @@ voteBank = Math.floor(tokenBalance / TOKENS_PER_VOTE)
 
 document.getElementById("walletStatus").innerText =
 `wallet: ${wallet.slice(0,4)}...${wallet.slice(-4)} 
-| $bio/acc tokens: ${Math.floor(tokenBalance)} 
+| $bio/acc tokens: ${Math.floor(tokenBalance).toLocaleString()} 
 | votes: ${voteBank}`
 }
 
-// TOKEN BALANCE
+// 🔥 FIXED DECIMALS
 async function getTokenBalance(wallet){
 
 const res = await fetch(`https://api.helius.xyz/v0/addresses/${wallet}/balances?api-key=${HELIUS_KEY}`)
 const data = await res.json()
 
 const token = data.tokens.find(t => t.mint === TOKEN_MINT)
-return token ? token.amount : 0
+if(!token) return 0
+
+const decimals = token.decimals || 6
+return token.amount / (10 ** decimals)
 }
 
 // LOAD PROJECTS
@@ -237,7 +304,6 @@ ${locked ? "locked" : "vote"}
 `
 
 }).join("")
-
 }
 
 // VOTE
@@ -275,13 +341,11 @@ weight: amount
 })
 })
 
-// update cooldown
+// cooldown
 voteTimestamps[index] = now
 localStorage.setItem("voteTimestamps", JSON.stringify(voteTimestamps))
 
-// 🔥 FORCE REFRESH (fix your bug)
-setTimeout(loadProjects, 1500)
-
+setTimeout(loadProjects, 1200)
 }
 
 // SUBMIT
@@ -311,10 +375,7 @@ wallet
 })
 
 status.innerText="submitted ✅"
-
-// 🔥 force reload
-setTimeout(loadProjects, 1500)
-
+setTimeout(loadProjects, 1200)
 }
 
 // INIT
