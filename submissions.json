@@ -1,4 +1,12 @@
 {
-  "projects": [],
-  "lastUpdated": null
+  "projects": [
+    {
+      "github": "https://github.com/CryptoGatsu/bioacc",
+      "social": "https://github.com/CryptoGatsu/bioacc",
+      "desc": "Im a future biotech project! i love bio/acc! ",
+      "votes": 0,
+      "wallet": "9wXpf3goiM2gLrFhCxRtHn3x3rC6PJBfhPGL3ppwwYoo"
+    }
+  ],
+  "lastUpdated": "2026-04-16T02:38:47.614Z"
 }
