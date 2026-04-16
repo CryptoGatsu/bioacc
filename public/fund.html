@@ -294,8 +294,8 @@ if(!token) return 0
 return token.amount / (10 ** (token.decimals || 6))
 }
 
-function getProjectId(p){
-return p.github||p.name
+function getProjectId(p, index){
+  return `${p.name}_${p.github}_${index}`
 }
 
 function getCooldownText(last){
@@ -319,7 +319,7 @@ const pageProjects=projects.slice(start,start+perPage)
 
 let html = pageProjects.map((p,i)=>{
 
-const id=getProjectId(p)
+const id = getProjectId(p, start + i)
 const last=voteTimestamps[id]||0
 const votedToday = last && (Date.now() - last < 86400000)
 const locked = (votedToday === true) || (voteCounts[id]||0)>=2
