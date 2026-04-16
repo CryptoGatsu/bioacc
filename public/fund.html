@@ -16,7 +16,7 @@ color:#cfcfcf;
 font-family:Courier New, monospace;
 }
 
-/* NAV FIX */
+/* NAV */
 .nav{
 position:fixed;
 top:0;
@@ -28,8 +28,7 @@ border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
 align-items:center;
-z-index:100;
-box-sizing:border-box;
+z-index:10;
 }
 
 .nav a{
@@ -42,51 +41,39 @@ margin-left:20px;
 .container{
 max-width:800px;
 margin:auto;
-padding:120px 25px 60px;
+padding:100px 20px;
 text-align:center;
 }
 
-/* BOX */
 .box{
 border:1px solid #222;
-padding:20px;
+padding:25px;
 margin-top:20px;
 text-align:left;
 }
 
-/* INPUTS */
-input, textarea{
-width:100%;
-margin-top:10px;
-padding:10px;
-background:#050505;
+.project{
 border:1px solid #222;
-color:white;
+padding:20px;
+margin-bottom:20px;
 }
 
-/* BUTTON */
+input, textarea{
+width:100%;
+background:#050505;
+border:1px solid #222;
+color:#cfcfcf;
+padding:10px;
+margin-top:10px;
+}
+
 .button{
 background:#7CFF3A;
 color:black;
-padding:10px;
+padding:10px 15px;
 margin-top:15px;
 cursor:pointer;
 border:none;
-}
-
-/* PROJECT CARDS */
-.project{
-border:1px solid #222;
-padding:15px;
-margin-bottom:20px;
-background:#050505;
-border-radius:6px;
-animation:fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn{
-from{opacity:0; transform:translateY(10px);}
-to{opacity:1; transform:translateY(0);}
 }
 
 .vote{
@@ -95,9 +82,10 @@ cursor:pointer;
 margin-top:10px;
 }
 
-.small{
-color:#777;
+.cooldown{
+color:#888;
 font-size:12px;
+margin-top:5px;
 }
 
 </style>
@@ -111,12 +99,11 @@ font-size:12px;
 <div>
 <a href="index.html">home</a>
 <a href="manifesto.html">manifesto</a>
+<a href="fund.html">fund</a>
 </div>
 </div>
 
 <div class="container">
-
-<h1>biotech startup fund</h1>
 
 <button class="button" onclick="connectWallet()">connect wallet</button>
 <div id="walletStatus"></div>
@@ -129,8 +116,7 @@ font-size:12px;
 <textarea id="desc" placeholder="description"></textarea>
 
 <label>
-<input type="checkbox" id="confirm">
- confirm 14+ days
+<input type="checkbox" id="confirm"> confirm 14+ days
 </label>
 
 <button class="button" onclick="submitProject()">submit</button>
@@ -139,120 +125,149 @@ font-size:12px;
 </div>
 
 <h2>leaderboard</h2>
-<div id="feed">loading...</div>
+<div id="feed"></div>
 
 </div>
 
-<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
-
 <script>
 
-let wallet = null
-
-const connection = new solanaWeb3.Connection(
-"https://mainnet.helius-rpc.com/?api-key=abe30281-08a6-4f68-921b-4da93db84835"
-)
-
-// 🔥 PUT YOUR REAL TOKEN MINT HERE
+const HELIUS_KEY = "abe30281-08a6-4f68-921b-4da93db84835"
 const TOKEN_MINT = "CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump"
+const TOKENS_PER_VOTE = 1000000
+
+let wallet = null
+let userVotes = 0
+
+let voteTimestamps = JSON.parse(localStorage.getItem("voteTimestamps") || "{}")
 
 // WALLET
 async function connectWallet(){
 
-if(!window.solana){
-alert("install phantom")
-return
-}
+if(!window.solana) return alert("install phantom")
 
 const res = await window.solana.connect()
 wallet = res.publicKey.toString()
 
-const bal = await getTokenBalance(wallet)
+const balance = await getTokenBalance(wallet)
+userVotes = Math.floor(balance / TOKENS_PER_VOTE)
 
 document.getElementById("walletStatus").innerText =
-`connected: ${wallet.slice(0,4)}...${wallet.slice(-4)} (${bal} tokens)`
+`wallet: ${wallet.slice(0,4)}...${wallet.slice(-4)} | votes: ${userVotes}`
 }
 
 // TOKEN BALANCE
-async function getTokenBalance(address){
+async function getTokenBalance(wallet){
 
-try {
+const res = await fetch(`https://api.helius.xyz/v0/addresses/${wallet}/balances?api-key=${HELIUS_KEY}`)
+const data = await res.json()
 
-const owner = new solanaWeb3.PublicKey(address)
-const mint = new solanaWeb3.PublicKey(TOKEN_MINT)
-
-const accounts = await connection.getParsedTokenAccountsByOwner(owner,{mint})
-
-if(accounts.value.length === 0) return 0
-
-return accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount
-
-} catch(err){
-console.error("TOKEN ERROR:", err)
-return 0
+const token = data.tokens.find(t => t.mint === TOKEN_MINT)
+return token ? token.amount : 0
 }
 
-}
-
-// LOAD PROJECTS (FIXED)
+// LOAD PROJECTS
 async function loadProjects(){
 
-try {
-
-const res = await fetch(
-`https://api.github.com/repos/cryptogatsu/bioacc/contents/submissions.json?${Date.now()}`
-)
-
-const file = await res.json()
-
-if(!file.content){
-document.getElementById("feed").innerText = "error loading"
-return
-}
-
-const data = JSON.parse(atob(file.content))
+const res = await fetch("https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?cache="+Date.now())
+const data = await res.json()
 
 const feed = document.getElementById("feed")
-feed.innerHTML = ""
 
-if(!data.projects || data.projects.length === 0){
-feed.innerText = "[no projects yet]"
+if(!data.projects.length){
+feed.innerHTML = "[no projects yet]"
 return
 }
 
-data.projects.forEach((p,i)=>{
+feed.innerHTML = data.projects.map((p,i)=>{
 
-const div = document.createElement("div")
-div.className="project"
+const lastVote = voteTimestamps[i] || 0
+const now = Date.now()
+const cooldown = 86400000 // 24h
+const remaining = cooldown - (now - lastVote)
 
-div.innerHTML=`
+let cooldownText = ""
+let canVote = true
+
+if(remaining > 0){
+canVote = false
+const hours = Math.floor(remaining/3600000)
+const mins = Math.floor((remaining%3600000)/60000)
+cooldownText = `cooldown: ${hours}h ${mins}m`
+}
+
+return `
+<div class="project">
+
 <b>${p.name}</b><br/><br/>
 <a href="${p.github}" target="_blank">github</a><br/><br/>
 ${p.desc}<br/><br/>
-votes: ${p.votes || 0}
-<div class="vote" onclick="vote(${i})">↑ vote</div>
+
+votes: ${p.votes || 0}<br/>
+
+<input id="vote-${i}" type="number" min="1" placeholder="votes">
+
+<div class="vote" onclick="vote(${i})">
+${canVote ? "vote" : "locked"}
+</div>
+
+<div class="cooldown">${cooldownText}</div>
+
+</div>
 `
 
-feed.appendChild(div)
-
-})
-
-} catch(err){
-console.error("LOAD ERROR:", err)
-document.getElementById("feed").innerText = "failed to load"
-}
+}).join("")
 
 }
 
-// SUBMIT (FIXED CHECKBOX BUG)
-async function submitProject(){
+// VOTE
+async function vote(index){
 
-if(!wallet){
-alert("connect wallet first")
+if(!wallet) return alert("connect wallet")
+
+const lastVote = voteTimestamps[index] || 0
+const now = Date.now()
+
+if(now - lastVote < 86400000){
+alert("wait 24h before voting again")
 return
 }
 
-// 🔥 FIXED THIS LINE
+const input = document.getElementById(`vote-${index}`)
+const amount = parseInt(input.value)
+
+if(!amount || amount <= 0){
+alert("enter vote amount")
+return
+}
+
+if(amount > userVotes){
+alert("not enough votes")
+return
+}
+
+await fetch("/api/update",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+action:"vote",
+index,
+weight: amount,
+wallet
+})
+})
+
+voteTimestamps[index] = now
+localStorage.setItem("voteTimestamps", JSON.stringify(voteTimestamps))
+
+loadProjects()
+
+}
+
+// SUBMIT
+async function submitProject(){
+
+if(!wallet) return alert("connect wallet")
+
 if(!document.getElementById("confirm").checked){
 alert("confirm 14+ days")
 return
@@ -261,10 +276,10 @@ return
 const payload = {
 action:"submit",
 data:{
-name:document.getElementById("name").value,
-github:document.getElementById("github").value,
-social:document.getElementById("social").value,
-desc:document.getElementById("desc").value,
+name: name.value,
+github: github.value,
+social: social.value,
+desc: desc.value,
 votes:0,
 wallet
 }
@@ -276,44 +291,14 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify(payload)
 })
 
-document.getElementById("status").innerText = "submitted ✅"
-
-setTimeout(loadProjects,1500)
-
-}
-
-// VOTE
-async function vote(index){
-
-if(!wallet) return alert("connect wallet")
-
-const balance = await getTokenBalance(wallet)
-
-if(balance <= 0){
-alert("no tokens detected")
-return
-}
-
-const weight = Math.floor(balance)
-
-await fetch("/api/update",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-action:"vote",
-index,
-wallet,
-weight
-})
-})
-
-setTimeout(loadProjects,1000)
+document.getElementById("status").innerText="submitted ✅"
+loadProjects()
 
 }
 
 // INIT
 loadProjects()
-setInterval(loadProjects,5000)
+setInterval(loadProjects, 30000)
 
 </script>
 
