@@ -354,33 +354,78 @@ setTimeout(loadProjects, 1200)
 // SUBMIT
 async function submitProject(){
 
-if(!wallet) return alert("connect wallet")
+try {
 
+if(!wallet){
+alert("connect wallet")
+return
+}
+
+// ✅ FIX confirm check
 const isConfirmed = document.getElementById("confirm").checked
-
 if(!isConfirmed){
 alert("confirm 14+ days")
 return
 }
 
-await fetch("/api/update",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
+// ✅ FIX input grabbing
+const name = document.getElementById("name").value.trim()
+const github = document.getElementById("github").value.trim()
+const social = document.getElementById("social").value.trim()
+const desc = document.getElementById("desc").value.trim()
+
+if(!name || !github || !desc){
+alert("fill required fields")
+return
+}
+
+const payload = {
 action:"submit",
 data:{
-name:name.value,
-github:github.value,
-social:social.value,
-desc:desc.value,
+name,
+github,
+social,
+desc,
 votes:0,
 wallet
 }
-})
+}
+
+const res = await fetch("/api/update",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(payload)
 })
 
-status.innerText="submitted ✅"
+const result = await res.json()
+
+console.log("SUBMIT RESULT:", result)
+
+// ✅ success UI
+if(result.success){
+document.getElementById("status").innerText = "submitted ✅"
+
+// clear form
+document.getElementById("name").value = ""
+document.getElementById("github").value = ""
+document.getElementById("social").value = ""
+document.getElementById("desc").value = ""
+
+// reset confirm
+document.getElementById("confirm").checked = false
+document.getElementById("confirmBox").classList.remove("active")
+
 setTimeout(loadProjects, 1200)
+
+} else {
+alert("submit failed")
+}
+
+} catch(err){
+console.error(err)
+alert("submit error")
+}
+
 }
 
 // INIT
