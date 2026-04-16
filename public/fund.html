@@ -135,6 +135,13 @@ color:#888;
 font-size:12px;
 }
 
+/* ✅ NEW */
+.voted-today{
+color:#7CFF3A;
+font-size:12px;
+margin-top:5px;
+}
+
 .confirm-box{
 border:1px solid #7CFF3A;
 padding:12px;
@@ -314,7 +321,8 @@ let html = pageProjects.map((p,i)=>{
 
 const id=getProjectId(p)
 const last=voteTimestamps[id]||0
-const locked=(Date.now()-last<86400000)||(voteCounts[id]||0)>=2
+const votedToday = (Date.now()-last<86400000)
+const locked=votedToday||(voteCounts[id]||0)>=2
 
 let rank=""
 if(start+i===0) rank="top1"
@@ -341,7 +349,9 @@ ${p.website?`<a href="${p.website}" target="_blank">website</a>`:""}
 <br>
 votes: ${p.votes||0}
 
-<br><br>
+${votedToday ? `<div class="voted-today">✔ you voted here today</div>` : ""}
+
+<br>
 
 <input class="vote-input" id="vote-${i}" placeholder="votes">
 
