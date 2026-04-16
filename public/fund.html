@@ -29,7 +29,6 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 z-index:100;
-box-sizing:border-box;
 }
 
 .nav a{
@@ -40,9 +39,9 @@ margin-left:20px;
 
 /* LAYOUT */
 .container{
-max-width:800px;
+max-width:900px;
 margin:auto;
-padding:110px 20px 60px;
+padding:110px 20px 80px;
 text-align:center;
 }
 
@@ -56,11 +55,41 @@ margin-top:20px;
 text-align:left;
 }
 
+/* PROJECT CARD */
 .project{
 border:1px solid #222;
 padding:20px;
-margin-bottom:20px;
-transition:0.3s;
+margin-bottom:25px;
+display:flex;
+gap:20px;
+align-items:flex-start;
+}
+
+/* LOGO */
+.logo{
+width:70px;
+height:70px;
+background:#111;
+border:1px solid #222;
+object-fit:cover;
+}
+
+/* CONTENT */
+.project-content{
+flex:1;
+text-align:left;
+}
+
+.links a{
+color:#7CFF3A;
+margin-right:10px;
+font-size:13px;
+}
+
+.desc{
+margin-top:10px;
+color:#aaa;
+font-size:14px;
 }
 
 /* TOP 3 */
@@ -81,7 +110,6 @@ margin-top:10px;
 width:70px;
 padding:5px;
 margin-top:10px;
-text-align:center;
 }
 
 .button{
@@ -102,18 +130,13 @@ margin-top:10px;
 .cooldown{
 color:#888;
 font-size:12px;
-margin-top:5px;
 }
 
 .confirm-box{
 border:1px solid #7CFF3A;
 padding:12px;
 margin-top:15px;
-display:flex;
-align-items:center;
-gap:10px;
 cursor:pointer;
-transition:0.2s;
 }
 
 .confirm-box.active{
@@ -121,16 +144,9 @@ background:#7CFF3A;
 color:black;
 }
 
-.confirm-box input{ display:none; }
-
-.rule{ margin-bottom:10px; }
-.sub{ color:#888; font-size:13px; margin-left:10px; }
-
-/* 🔥 TICKER */
 #ticker{
 position:fixed;
 bottom:0;
-left:0;
 width:100%;
 background:#050505;
 border-top:1px solid #222;
@@ -174,24 +190,19 @@ animation:scroll 15s linear infinite;
 <button class="button" onclick="connectWallet()">connect wallet</button>
 <div id="walletStatus"></div>
 
-<h2>requirements</h2>
-<div class="box">
-<div class="rule">• public github<div class="sub">must be active, not empty</div></div>
-<div class="rule">• 14+ days building<div class="sub">consistent commits required</div></div>
-<div class="rule">• social presence<div class="sub">community or audience proof</div></div>
-</div>
-
 <h2>submit project</h2>
 <div class="box">
 
-<input id="name" placeholder="project name">
-<input id="github" placeholder="github link">
-<input id="social" placeholder="social link">
+<input id="name" placeholder="project name (required)">
+<input id="github" placeholder="github link (required)">
+<input id="social" placeholder="social link (required)">
+<input id="website" placeholder="website (optional)">
+<input type="file" id="logo" accept="image/*">
 <textarea id="desc" placeholder="description"></textarea>
 
 <div class="confirm-box" onclick="toggleConfirm()" id="confirmBox">
-<input type="checkbox" id="confirm">
-✔ I confirm this project has been built for 14+ days
+✔ confirm 14+ days
+<input type="checkbox" id="confirm" hidden>
 </div>
 
 <button class="button" onclick="submitProject()">submit</button>
@@ -199,18 +210,7 @@ animation:scroll 15s linear infinite;
 
 </div>
 
-<!-- UPDATED LEADERBOARD HEADER -->
-<div style="margin-top:60px;">
 <h2>leaderboard</h2>
-
-<div style="color:#888; font-size:13px; max-width:600px; margin:auto; margin-top:10px; line-height:1.6;">
-• 1 vote = 1M $bio/acc tokens<br>
-• allocate votes across projects<br>
-• 1 vote per project every 24 hours<br>
-• votes may take a few seconds to appear
-</div>
-</div>
-
 <div id="feed"></div>
 
 </div>
@@ -219,19 +219,9 @@ animation:scroll 15s linear infinite;
 
 <script>
 
-const HELIUS_KEY = "abe30281-08a6-4f68-921b-4da93db84835"
-const TOKEN_MINT = "CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump"
 const TOKENS_PER_VOTE = 1000000
-
 let wallet = null
-let tokenBalance = 0
-let voteBank = 0
-
 let voteTimestamps = JSON.parse(localStorage.getItem("voteTimestamps") || "{}")
-
-function getProjectId(p){
-return p.github || p.name
-}
 
 function toggleConfirm(){
 const box = document.getElementById("confirmBox")
@@ -243,111 +233,79 @@ box.classList.toggle("active")
 async function connectWallet(){
 const res = await window.solana.connect()
 wallet = res.publicKey.toString()
-
-tokenBalance = await getTokenBalance(wallet)
-voteBank = Math.floor(tokenBalance / TOKENS_PER_VOTE)
-
-document.getElementById("walletStatus").innerText =
-`wallet: ${wallet.slice(0,4)}...${wallet.slice(-4)} 
-| tokens: ${Math.floor(tokenBalance).toLocaleString()} 
-| votes: ${voteBank}`
-}
-
-async function getTokenBalance(wallet){
-const res = await fetch(`https://api.helius.xyz/v0/addresses/${wallet}/balances?api-key=${HELIUS_KEY}`)
-const data = await res.json()
-const token = data.tokens.find(t => t.mint === TOKEN_MINT)
-if(!token) return 0
-return token.amount / (10 ** (token.decimals || 6))
-}
-
-function animateValue(el, start, end, duration=500){
-let startTime = null
-function step(timestamp){
-if(!startTime) startTime = timestamp
-const progress = Math.min((timestamp - startTime)/duration,1)
-el.innerText = Math.floor(progress*(end-start)+start)
-if(progress < 1) requestAnimationFrame(step)
-}
-requestAnimationFrame(step)
+document.getElementById("walletStatus").innerText = wallet
 }
 
 function addTicker(text){
 document.getElementById("ticker").innerHTML = `<span>${text}</span>`
 }
 
+function getProjectId(p){
+return p.github || p.name
+}
+
 async function loadProjects(){
 
-const feed = document.getElementById("feed")
-feed.innerHTML = "[updating...]"
-
-try {
-
-const res = await fetch(
-"https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?t="+Date.now(),
-{ cache:"no-store" }
-)
-
+const res = await fetch("https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?t="+Date.now())
 const data = await res.json()
 
 const projects = data.projects.sort((a,b)=>(b.votes||0)-(a.votes||0))
 
-feed.innerHTML = projects.map((p,i)=>{
+document.getElementById("feed").innerHTML = projects.map((p,i)=>{
 
 const id = getProjectId(p)
 
 const lastVote = voteTimestamps[id] || 0
-const now = Date.now()
-const remaining = 86400000 - (now - lastVote)
+const remaining = 86400000 - (Date.now() - lastVote)
+const locked = remaining > 0
 
-let locked = remaining > 0
-let cooldownText = ""
-
-if(locked){
-const h = Math.floor(remaining/3600000)
-const m = Math.floor((remaining%3600000)/60000)
-cooldownText = `cooldown: ${h}h ${m}m`
-}
-
-let rankClass = i===0?"top1":i===1?"top2":i===2?"top3":""
+let rank = i===0?"top1":i===1?"top2":i===2?"top3":""
 
 return `
-<div class="project ${rankClass}">
-<b>${p.name}</b><br/><br/>
-<a href="${p.github}" target="_blank">github</a><br/><br/>
-${p.desc}<br/><br/>
+<div class="project ${rank}">
 
-votes: <span id="votes-${i}">${p.votes||0}</span><br/><br/>
+<img class="logo" src="${p.logo || ''}">
 
-<input class="vote-input" id="vote-${i}" type="number" min="1" placeholder="votes">
+<div class="project-content">
 
-<div class="vote" onclick="vote('${id}', ${i})">
+<b>${p.name}</b>
+
+<div class="links">
+<a href="${p.github}" target="_blank">github</a>
+<a href="${p.social}" target="_blank">social</a>
+${p.website ? `<a href="${p.website}" target="_blank">website</a>` : ""}
+</div>
+
+<div class="desc">${p.desc}</div>
+
+<br>
+votes: ${p.votes||0}
+
+<br><br>
+
+<input class="vote-input" id="vote-${i}" placeholder="votes">
+
+<div class="vote" onclick="vote('${id}',${i})">
 ${locked ? "locked" : "vote"}
 </div>
 
-<div class="cooldown">${cooldownText}</div>
+<div class="cooldown">
+${locked ? "cooldown active" : ""}
+</div>
+
+</div>
 </div>
 `
+
 }).join("")
-
-projects.forEach((p,i)=>{
-const el = document.getElementById(`votes-${i}`)
-if(el) animateValue(el,0,p.votes||0)
-})
-
-} catch(err){
-feed.innerHTML="error loading"
-}
-
 }
 
 async function vote(id,index){
 
 const lastVote = voteTimestamps[id] || 0
-const now = Date.now()
 
-if(now - lastVote < 86400000){
-alert("cooldown active")
+if(Date.now() - lastVote < 86400000){
+alert("cooldown")
 return
 }
 
@@ -359,7 +317,7 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({action:"vote",index,weight:amount})
 })
 
-voteTimestamps[id]=now
+voteTimestamps[id]=Date.now()
 localStorage.setItem("voteTimestamps", JSON.stringify(voteTimestamps))
 
 addTicker(`${amount} votes → ${id}`)
@@ -374,17 +332,35 @@ alert("confirm 14+ days")
 return
 }
 
-const name = document.getElementById("name").value
-const github = document.getElementById("github").value
-const social = document.getElementById("social").value
-const desc = document.getElementById("desc").value
+const name = document.getElementById("name").value.trim()
+const github = document.getElementById("github").value.trim()
+const social = document.getElementById("social").value.trim()
+const website = document.getElementById("website").value.trim()
+const desc = document.getElementById("desc").value.trim()
+
+if(!name || !github || !social){
+alert("name, github, social required")
+return
+}
+
+/* LOGO TO BASE64 */
+const file = document.getElementById("logo").files[0]
+let logo = ""
+
+if(file){
+logo = await new Promise(resolve=>{
+const reader = new FileReader()
+reader.onload = () => resolve(reader.result)
+reader.readAsDataURL(file)
+})
+}
 
 await fetch("/api/update",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 action:"submit",
-data:{name,github,social,desc,votes:0,wallet}
+data:{name,github,social,website,desc,logo,votes:0,wallet}
 })
 })
 
