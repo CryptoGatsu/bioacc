@@ -321,8 +321,8 @@ let html = pageProjects.map((p,i)=>{
 
 const id=getProjectId(p)
 const last=voteTimestamps[id]||0
-const votedToday = (Date.now()-last<86400000)
-const locked=votedToday||(voteCounts[id]||0)>=2
+const votedToday = last && (Date.now() - last < 86400000)
+const locked = (votedToday === true) || (voteCounts[id]||0)>=2
 
 let rank=""
 if(start+i===0) rank="top1"
