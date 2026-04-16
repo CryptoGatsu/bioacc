@@ -1,4 +1,13 @@
 {
-  "projects": [],
-  "lastUpdated": null
+  "projects": [
+    {
+      "name": "Biotech Tester 1",
+      "github": "https://github.com/CryptoGatsu/bioacc",
+      "social": "https://github.com/CryptoGatsu/bioacc",
+      "desc": "I LOVE BIO/ACC!!",
+      "votes": 0,
+      "wallet": "9wXpf3goiM2gLrFhCxRtHn3x3rC6PJBfhPGL3ppwwYoo"
+    }
+  ],
+  "lastUpdated": "2026-04-16T03:17:46.390Z"
 }
