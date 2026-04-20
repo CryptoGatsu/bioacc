@@ -20,7 +20,6 @@ try {
 
   if (typeof body === "string") body = JSON.parse(body)
 
-  // 🔥 FIX: include projectId
   const { action, data, index, wallet, timestamp, signature, message, projectId } = body
 
   const token = process.env.GITHUB_TOKEN
@@ -97,6 +96,7 @@ try {
   if (!content.votes) content.votes = {}
   if (!content.submissions) content.submissions = {}
   if (!content.voteIndex) content.voteIndex = {}
+  if (!content.manifesto) content.manifesto = [] // ✅ NEW
 
   const ONE_DAY = 86400000
   const now = Date.now()
@@ -168,13 +168,9 @@ try {
       })
     }
 
-    // ✅ SAVE COOLDOWN
     content.votes[wallet] = timestamp
-
-    // ✅ SAVE WHICH PROJECT THEY VOTED FOR
     content.voteIndex[wallet] = projectId
 
-    // 🔥 FIX: FIND PROJECT BY ID (NOT INDEX)
     const project = content.projects.find(p => p.id === projectId)
 
     if (project) {
@@ -182,6 +178,36 @@ try {
     } else {
       return res.status(400).json({ error: "project not found" })
     }
+  }
+
+  // =========================
+  // ✍️ MANIFESTO SIGN
+  // =========================
+  if (action === "signManifesto") {
+
+    const entry = data
+
+    if (!entry.wallet || !entry.signature || !entry.message) {
+      return res.status(400).json({ error: "missing signature data" })
+    }
+
+    const valid = verifySignature(entry.wallet, entry.message, entry.signature)
+
+    if (!valid) {
+      return res.status(400).json({ error: "invalid signature" })
+    }
+
+    if (Math.abs(now - entry.timestamp) > 5 * 60 * 1000) {
+      return res.status(400).json({ error: "stale request" })
+    }
+
+    const exists = content.manifesto.some(m => m.wallet === entry.wallet)
+
+    if (exists) {
+      return res.status(400).json({ error: "already signed" })
+    }
+
+    content.manifesto.unshift(entry)
   }
 
   content.lastUpdated = new Date().toISOString()

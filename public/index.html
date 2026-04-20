@@ -17,7 +17,6 @@ font-family:Courier New, monospace;
 line-height:1.7;
 }
 
-/* NAV */
 .nav{
 position:fixed;
 top:0;
@@ -44,7 +43,6 @@ opacity:0.6;
 pointer-events:none;
 }
 
-/* HERO */
 .hero{
 text-align:center;
 margin-top:60px;
@@ -66,7 +64,6 @@ display:block;
 margin:0 auto;
 }
 
-/* LAYOUT */
 .container{
 max-width:900px;
 margin:auto;
@@ -90,7 +87,6 @@ margin-top:70px;
 color:#7CFF3A;
 }
 
-/* IMAGE */
 .center-image{
 text-align:center;
 margin:40px 0;
@@ -100,7 +96,6 @@ margin:40px 0;
 width:220px;
 }
 
-/* CONTRACT */
 .contract{
 border-top:1px solid #222;
 border-bottom:1px solid #222;
@@ -118,7 +113,6 @@ display:inline-block;
 cursor:pointer;
 }
 
-/* TERMINAL */
 .researchFeed{
 background:#050505;
 border:1px solid #222;
@@ -152,7 +146,6 @@ from{opacity:0;}
 to{opacity:1;}
 }
 
-/* CTA */
 .cta{
 margin-top:40px;
 padding:25px;
@@ -164,7 +157,6 @@ text-align:center;
 margin-top:20px;
 }
 
-/* LINKS */
 .links a{
 color:#7CFF3A;
 margin-right:20px;
@@ -185,7 +177,6 @@ color:#777;
 
 <body>
 
-<!-- NAV -->
 <div class="nav">
 <div>bio/acc</div>
 <div>
@@ -203,6 +194,13 @@ color:#777;
 <p class="green">biotech accelerationism</p>
 
 <img src="heart.png" class="hero-img">
+
+<!-- 🔥 STATS (ADDED) -->
+<div style="margin-top:30px; border-top:1px solid #111; padding-top:20px;">
+<div>projects: <span id="statProjects">-</span></div>
+<div>votes: <span id="statVotes">-</span></div>
+<div>signers: <span id="statSigners">-</span></div>
+</div>
 
 </div>
 
@@ -233,7 +231,6 @@ market cap: <span id="marketCap">loading...</span>
 
 <div id="feedStatus" style="margin-top:10px;color:#777;font-size:14px;"></div>
 
-<!-- CTA -->
 <div class="cta">
 <h2>enter the bio/acc movement</h2>
 <p>Read the manifesto and align with the future of biotech.</p>
@@ -269,55 +266,56 @@ const mc=document.getElementById("marketCap")
 const status=document.getElementById("marketStatus")
 
 try{
-
 const res=await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/c3wrylbj6v8pqwxmtszgrdpysxptncmip3k5txmkv1xw")
 const data=await res.json()
-
 const cap=data.pair?.fdv || 0
-
 mc.innerText="$"+Number(cap).toLocaleString()
-
 status.innerText="market cap updated: "+new Date().toLocaleString()
-
 }catch{
-
 status.innerText="market data unavailable"
-
+}
 }
 
+// 🔥 STATS
+async function loadStats(){
+try{
+const res=await fetch("https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?t="+Date.now())
+const data=await res.json()
+
+let totalVotes=0
+data.projects?.forEach(p=>{
+totalVotes+=(p.votes||0)
+})
+
+document.getElementById("statProjects").innerText=data.projects?.length||0
+document.getElementById("statVotes").innerText=totalVotes
+document.getElementById("statSigners").innerText=data.manifesto?.length||0
+
+}catch(err){
+console.log("stats error",err)
+}
 }
 
 // DELAY
-function delay(ms){
-return new Promise(resolve => setTimeout(resolve, ms))
-}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
 
 // TYPE LINE
-async function typeLine(container, text){
-
+async function typeLine(container,text){
 const line=document.createElement("div")
 line.className="new-line"
-
 container.appendChild(line)
-
 let i=0
-
 while(i<text.length){
 line.innerHTML=text.slice(0,i)+'<span class="cursor"></span>'
 i++
 await delay(8)
 }
-
 line.innerHTML=text
-
 line.style.color="#7CFF3A"
-setTimeout(()=>{
-line.style.color="#cfcfcf"
-},400)
-
+setTimeout(()=>{line.style.color="#cfcfcf"},400)
 }
 
-// LOAD FEED (GITHUB SOURCE)
+// LOAD FEED
 async function loadResearch(){
 
 const feed=document.getElementById("researchFeed")
@@ -325,11 +323,7 @@ const status=document.getElementById("feedStatus")
 
 try{
 
-const res=await fetch(
-"https://raw.githubusercontent.com/cryptogatsu/bioacc/main/news.json?cache=" + Date.now(),
-{ cache: "no-store" }
-)
-
+const res=await fetch("https://raw.githubusercontent.com/cryptogatsu/bioacc/main/news.json?cache="+Date.now(),{cache:"no-store"})
 const data=await res.json()
 
 feed.innerHTML=""
@@ -337,36 +331,27 @@ feed.innerHTML=""
 await typeLine(feed,"[sync] connecting to bio/acc intelligence network...")
 await delay(200)
 
-await typeLine(feed,"[pulse] syncing external sources...")
-await delay(200)
-
 for(const item of data.items){
-
-const randomDelay=50+Math.random()*120
-await delay(randomDelay)
-
+await delay(50+Math.random()*120)
 await typeLine(feed,"> "+item)
 feed.scrollTop=feed.scrollHeight
-
 }
 
-const updated=new Date(data.lastUpdated)
-status.innerText="intelligence updated: "+updated.toLocaleString()
+status.innerText="intelligence updated: "+new Date(data.lastUpdated).toLocaleString()
 
 }catch{
-
 feed.innerHTML="[error] intelligence network offline"
-
 }
-
 }
 
 // INIT
 loadResearch()
 refreshMarketCap()
+loadStats()
 
 setInterval(loadResearch,180000)
 setInterval(refreshMarketCap,60000)
+setInterval(loadStats,60000)
 
 </script>
 
