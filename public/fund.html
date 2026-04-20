@@ -241,6 +241,19 @@ let backendData=null
 let currentPage=0
 const perPage=5
 
+function toggleConfirm(){
+  const box = document.getElementById("confirmBox")
+  const input = document.getElementById("confirm")
+
+  input.checked = !input.checked
+
+  if(input.checked){
+    box.classList.add("active")
+  } else {
+    box.classList.remove("active")
+  }
+}
+
 function getCooldownText(last){
 const remaining=86400000-(Date.now()-last)
 if(remaining<=0) return ""
