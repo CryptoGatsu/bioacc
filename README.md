@@ -1,4 +1,4 @@
-# bio/acc Fund
+# bio/acc
 
 ## Overview
 
