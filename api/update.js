@@ -20,7 +20,8 @@ try {
 
   if (typeof body === "string") body = JSON.parse(body)
 
-  const { action, data, index, wallet, timestamp, signature, message } = body
+  // 🔥 FIX: include projectId
+  const { action, data, index, wallet, timestamp, signature, message, projectId } = body
 
   const token = process.env.GITHUB_TOKEN
   const owner = process.env.GITHUB_OWNER
@@ -95,7 +96,7 @@ try {
   if (!content.projects) content.projects = []
   if (!content.votes) content.votes = {}
   if (!content.submissions) content.submissions = {}
-  if (!content.voteIndex) content.voteIndex = {} // ✅ NEW
+  if (!content.voteIndex) content.voteIndex = {}
 
   const ONE_DAY = 86400000
   const now = Date.now()
@@ -145,7 +146,7 @@ try {
   // =========================
   if (action === "vote") {
 
-    if (!wallet || !signature || !message) {
+    if (!wallet || !signature || !message || !projectId) {
       return res.status(400).json({ error: "missing signature data" })
     }
 
@@ -170,12 +171,16 @@ try {
     // ✅ SAVE COOLDOWN
     content.votes[wallet] = timestamp
 
-    // ✅ SAVE WHICH PROJECT THEY VOTED FOR (CRITICAL FIX)
-    content.voteIndex[wallet] = index
+    // ✅ SAVE WHICH PROJECT THEY VOTED FOR
+    content.voteIndex[wallet] = projectId
 
-    if (content.projects[index]) {
-      content.projects[index].votes =
-        (content.projects[index].votes || 0) + (body.weight || 1)
+    // 🔥 FIX: FIND PROJECT BY ID (NOT INDEX)
+    const project = content.projects.find(p => p.id === projectId)
+
+    if (project) {
+      project.votes = (project.votes || 0) + (body.weight || 1)
+    } else {
+      return res.status(400).json({ error: "project not found" })
     }
   }
 
