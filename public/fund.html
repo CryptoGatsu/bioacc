@@ -8,159 +8,20 @@
 <title>bio/acc fund</title>
 
 <style>
-
-body{
-margin:0;
-background:#000;
-color:#cfcfcf;
-font-family:Courier New, monospace;
-}
-
-.nav{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-padding:15px 40px;
-background:#000;
-border-bottom:1px solid #111;
-display:flex;
-justify-content:space-between;
-align-items:center;
-z-index:100;
-}
-
-.nav a{
-color:#7CFF3A;
-text-decoration:none;
-margin-left:20px;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:110px 20px 100px;
-text-align:center;
-}
-
-h1{color:white;}
-h2{color:#7CFF3A;margin-top:60px;}
-
-.box{
-border:1px solid #222;
-padding:25px;
-margin-top:20px;
-text-align:left;
-}
-
-.project{
-border:1px solid #222;
-padding:20px;
-margin-bottom:25px;
-display:flex;
-gap:20px;
-}
-
-.logo{
-width:70px;
-height:70px;
-background:#111;
-border:1px solid #222;
-object-fit:cover;
-}
-
-.project-content{
-flex:1;
-text-align:left;
-}
-
-.links a{
-color:#7CFF3A;
-margin-right:10px;
-font-size:13px;
-}
-
-.desc{
-margin-top:10px;
-color:#aaa;
-font-size:14px;
-}
-
-.top1{ border:1px solid gold; box-shadow:0 0 15px gold; }
-.top2{ border:1px solid silver; box-shadow:0 0 10px silver; }
-.top3{ border:1px solid #cd7f32; box-shadow:0 0 10px #cd7f32; }
-
-input, textarea{
-width:100%;
-background:#050505;
-border:1px solid #222;
-color:#cfcfcf;
-padding:10px;
-margin-top:10px;
-}
-
-.vote-input{
-width:70px;
-padding:5px;
-margin-top:10px;
-}
-
-.button{
-background:#7CFF3A;
-color:black;
-padding:10px 15px;
-margin-top:15px;
-cursor:pointer;
-border:none;
-}
-
-.file-input{
-display:block;
-margin-top:10px;
-padding:10px;
-background:#050505;
-border:1px solid #222;
-color:#7CFF3A;
-cursor:pointer;
-}
-
-.vote{
-color:#7CFF3A;
-cursor:pointer;
-margin-top:10px;
-}
-
-.cooldown{
-color:#888;
-font-size:12px;
-}
-
-.voted-today{
-color:#7CFF3A;
-font-size:12px;
-margin-top:5px;
-}
-
-.confirm-box{
-border:1px solid #7CFF3A;
-padding:12px;
-margin-top:15px;
-cursor:pointer;
-}
-
-.confirm-box.active{
-background:#7CFF3A;
-color:black;
-}
-
-.pagination{
-margin-top:20px;
-}
-
-.pagination button{
-margin:5px;
-}
-
+body{margin:0;background:#000;color:#cfcfcf;font-family:Courier New, monospace;}
+.nav{position:fixed;top:0;width:100%;padding:15px 40px;background:#000;border-bottom:1px solid #111;display:flex;justify-content:space-between;}
+.nav a{color:#7CFF3A;text-decoration:none;margin-left:20px;}
+.container{max-width:900px;margin:auto;padding:110px 20px;}
+.project{border:1px solid #222;padding:20px;margin-bottom:25px;display:flex;gap:20px;}
+.logo{width:70px;height:70px;border:1px solid #222;}
+.project-content{flex:1;}
+.links a{color:#7CFF3A;margin-right:10px;font-size:13px;}
+.desc{margin-top:10px;color:#aaa;}
+.vote{color:#7CFF3A;cursor:pointer;margin-top:10px;}
+.cooldown{color:#888;font-size:12px;}
+.voted-today{color:#7CFF3A;font-size:12px;}
+.button{background:#7CFF3A;color:black;padding:10px;cursor:pointer;border:none;}
+.vote-input{width:70px;}
 </style>
 </head>
 
@@ -183,73 +44,63 @@ margin:5px;
 <div id="walletStatus"></div>
 
 <h2>submit project</h2>
-<div class="box">
 
-<input id="name" placeholder="project name (required)">
-<input id="github" placeholder="github link (required)">
-<input id="social" placeholder="social link (required)">
-<input id="website" placeholder="website (optional)">
-<input type="file" id="logo" class="file-input" accept="image/*">
-<textarea id="desc" maxlength="200" placeholder="description (max 200 chars)"></textarea>
-
-<div class="confirm-box" onclick="toggleConfirm()" id="confirmBox">
-✔ confirm 14+ days
-<input type="checkbox" id="confirm" hidden>
-</div>
+<input id="name" placeholder="project name">
+<input id="github" placeholder="github">
+<input id="social" placeholder="social">
+<input id="website" placeholder="website">
+<input type="file" id="logo">
+<textarea id="desc"></textarea>
 
 <button class="button" onclick="submitProject()">submit</button>
-<div id="status"></div>
 <div id="submitCooldown"></div>
 
-</div>
-
 <h2>leaderboard</h2>
+
 <div id="feed"></div>
-<div id="pagination"></div>
 
 </div>
 
 <script>
 
+const TOKENS_PER_VOTE = 1000000
+
 let wallet=null
+let tokenBalance=0
+let voteBank=0
 let backendData=null
 
-let currentPage=0
-const perPage=5
-
 function timeLeft(ts){
-const remaining=86400000-(Date.now()-ts)
-if(remaining<=0) return ""
-const h=Math.floor(remaining/3600000)
-const m=Math.floor((remaining%3600000)/60000)
-return `${h}h ${m}m`
+const r=86400000-(Date.now()-ts)
+if(r<=0) return ""
+return `${Math.floor(r/3600000)}h ${Math.floor((r%3600000)/60000)}m`
 }
 
 async function signMessage(message){
-const provider=window.solana
-const encoded=new TextEncoder().encode(message)
-const signed=await provider.signMessage(encoded,"utf8")
-return {
-signature:Array.from(signed.signature),
-publicKey:provider.publicKey.toString()
-}
-}
-
-function toggleConfirm(){
-const box=document.getElementById("confirmBox")
-const input=document.getElementById("confirm")
-input.checked=!input.checked
-box.classList.toggle("active")
+const p=window.solana
+const e=new TextEncoder().encode(message)
+const s=await p.signMessage(e,"utf8")
+return {signature:Array.from(s.signature)}
 }
 
 async function connectWallet(){
-const res=await window.solana.connect()
-wallet=res.publicKey.toString()
+const r=await window.solana.connect()
+wallet=r.publicKey.toString()
 
-document.getElementById("walletStatus").innerText =
-`wallet: ${wallet.slice(0,4)}...${wallet.slice(-4)}`
+tokenBalance=await getTokenBalance(wallet)
+voteBank=Math.floor(tokenBalance/TOKENS_PER_VOTE)
+
+document.getElementById("walletStatus").innerText=
+`wallet: ${wallet.slice(0,4)}... | tokens: ${Math.floor(tokenBalance)} | votes: ${voteBank}`
 
 loadProjects()
+}
+
+async function getTokenBalance(wallet){
+const res=await fetch(`https://api.helius.xyz/v0/addresses/${wallet}/balances?api-key=abe30281-08a6-4f68-921b-4da93db84835`)
+const data=await res.json()
+const t=data.tokens.find(x=>x.mint==="CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump")
+return t? t.amount/(10**(t.decimals||6)) : 0
 }
 
 async function loadProjects(){
@@ -260,33 +111,40 @@ backendData=data
 
 const votedAt=data.votes?.[wallet]
 const votedIndex=data.voteIndex?.[wallet]
-const submittedAt=data.submissions?.[wallet]
+const submitted=data.submissions?.[wallet]
 
-if(submittedAt && Date.now()-submittedAt<86400000){
-document.getElementById("submitCooldown").innerText =
-`submit cooldown: ${timeLeft(submittedAt)}`
+if(submitted && Date.now()-submitted<86400000){
+document.getElementById("submitCooldown").innerText=`submit cooldown: ${timeLeft(submitted)}`
 }
 
-let projects=data.projects.sort((a,b)=>(b.votes||0)-(a.votes||0))
+let html=data.projects.map((p,i)=>{
 
-const start=currentPage*perPage
-const pageProjects=projects.slice(start,start+perPage)
-
-let html=pageProjects.map((p,i)=>{
-
-const globalIndex=start+i
 const votedToday=votedAt && Date.now()-votedAt<86400000
-const isMine=votedIndex===globalIndex
 
 return `
-<div class="project ${votedToday?"locked":""}">
+<div class="project">
+
+${p.logo?`<img class="logo" src="${p.logo}">`:""}
+
+<div class="project-content">
 
 <b>${p.name}</b>
-<br>votes: ${p.votes||0}
 
-${votedToday && isMine ? `<div class="voted-today">✔ you voted here today</div>`:""}
+<div class="links">
+<a href="${p.github}" target="_blank">github</a>
+<a href="${p.social}" target="_blank">social</a>
+${p.website?`<a href="${p.website}" target="_blank">website</a>`:""}
+</div>
 
-<div class="vote" onclick="vote(${globalIndex})">
+<div class="desc">${p.desc}</div>
+
+votes: ${p.votes||0}
+
+${votedToday && votedIndex===i ? `<div class="voted-today">✔ you voted here today</div>`:""}
+
+<input class="vote-input" id="vote-${i}" placeholder="votes">
+
+<div class="vote" onclick="vote(${i})">
 ${votedToday?"locked":"vote"}
 </div>
 
@@ -295,36 +153,37 @@ ${votedToday?`cooldown: ${timeLeft(votedAt)}`:""}
 </div>
 
 </div>
+</div>
 `
-
 }).join("")
 
 document.getElementById("feed").innerHTML=html
 }
 
-async function vote(index){
+async function vote(i){
 
 if(!wallet) return alert("connect wallet")
 
 const votedAt=backendData.votes?.[wallet]
-if(votedAt && Date.now()-votedAt<86400000){
-return alert("already voted today")
-}
+if(votedAt && Date.now()-votedAt<86400000) return alert("already voted")
 
-const timestamp=Date.now()
-const message=`vote:${wallet}:${index}:${timestamp}`
-const signed=await signMessage(message)
+const amount=parseInt(document.getElementById(`vote-${i}`).value)||1
+
+const t=Date.now()
+const m=`vote:${wallet}:${i}:${t}`
+const s=await signMessage(m)
 
 await fetch("/api/update",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 action:"vote",
-index,
+index:i,
+weight:amount,
 wallet,
-timestamp,
-signature:signed.signature,
-message
+timestamp:t,
+signature:s.signature,
+message:m
 })
 })
 
@@ -336,29 +195,25 @@ async function submitProject(){
 if(!wallet) return alert("connect wallet")
 
 const last=backendData.submissions?.[wallet]
-if(last && Date.now()-last<86400000){
-return alert("already submitted today")
-}
+if(last && Date.now()-last<86400000) return alert("already submitted")
 
-const name=document.getElementById("name").value.trim()
+const name=document.getElementById("name").value
 
-const timestamp=Date.now()
-const message=`submit:${wallet}:${timestamp}`
-const signed=await signMessage(message)
+const t=Date.now()
+const m=`submit:${wallet}:${t}`
+const s=await signMessage(m)
 
 await fetch("/api/update",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 action:"submit",
-data:{name,wallet,timestamp,signature:signed.signature,message}
+data:{name,wallet,timestamp:t,signature:s.signature,message:m}
 })
 })
 
 loadProjects()
 }
-
-loadProjects()
 
 </script>
 
