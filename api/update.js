@@ -37,7 +37,6 @@ try {
       const msgBytes = new TextEncoder().encode(msg)
       const sigBytes = new Uint8Array(sig)
       const pubBytes = bs58.decode(pubKey)
-
       return nacl.sign.detached.verify(msgBytes, sigBytes, pubBytes)
     } catch {
       return false
@@ -96,6 +95,7 @@ try {
   if (!content.projects) content.projects = []
   if (!content.votes) content.votes = {}
   if (!content.submissions) content.submissions = {}
+  if (!content.voteIndex) content.voteIndex = {} // ✅ NEW
 
   const ONE_DAY = 86400000
   const now = Date.now()
@@ -117,7 +117,6 @@ try {
       return res.status(400).json({ error: "invalid signature" })
     }
 
-    // replay protection
     if (Math.abs(now - sub.timestamp) > 5 * 60 * 1000) {
       return res.status(400).json({ error: "stale request" })
     }
@@ -130,7 +129,6 @@ try {
       })
     }
 
-    // prevent duplicate project
     const exists = content.projects.some(p =>
       p.name === sub.name && p.github === sub.github
     )
@@ -157,7 +155,6 @@ try {
       return res.status(400).json({ error: "invalid signature" })
     }
 
-    // replay protection
     if (Math.abs(now - timestamp) > 5 * 60 * 1000) {
       return res.status(400).json({ error: "stale request" })
     }
@@ -170,7 +167,11 @@ try {
       })
     }
 
+    // ✅ SAVE COOLDOWN
     content.votes[wallet] = timestamp
+
+    // ✅ SAVE WHICH PROJECT THEY VOTED FOR (CRITICAL FIX)
+    content.voteIndex[wallet] = index
 
     if (content.projects[index]) {
       content.projects[index].votes =
