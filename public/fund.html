@@ -135,7 +135,6 @@ color:#888;
 font-size:12px;
 }
 
-/* ✅ NEW */
 .voted-today{
 color:#7CFF3A;
 font-size:12px;
@@ -266,6 +265,20 @@ let voteCounts = JSON.parse(localStorage.getItem("voteCounts")||"{}")
 let currentPage=0
 const perPage=5
 
+async function signMessage(message){
+  const provider = window.solana
+  if (!provider || !provider.isPhantom){
+    alert("Phantom wallet not found")
+    return null
+  }
+  const encoded = new TextEncoder().encode(message)
+  const signed = await provider.signMessage(encoded, "utf8")
+  return {
+    signature: Array.from(signed.signature),
+    publicKey: provider.publicKey.toString()
+  }
+}
+
 function toggleConfirm(){
 const box=document.getElementById("confirmBox")
 const input=document.getElementById("confirm")
@@ -391,12 +404,26 @@ const last=voteTimestamps[id]||0
 if(Date.now()-last<86400000) return alert("daily limit")
 if((voteCounts[id]||0)>=2) return alert("max votes reached")
 
-const amount=parseInt(document.getElementById(`vote-${index%perPage}`).value)
+const amount=parseInt(document.getElementById(`vote-${index%perPage}`).value)||1
+
+const timestamp = Date.now()
+const message = `vote:${wallet}:${index}:${timestamp}`
+
+const signed = await signMessage(message)
+if(!signed) return
 
 await fetch("/api/update",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({action:"vote",index,weight:amount})
+body:JSON.stringify({
+action:"vote",
+index,
+weight:amount,
+wallet,
+timestamp,
+signature:signed.signature,
+message
+})
 })
 
 voteTimestamps[id]=Date.now()
@@ -408,11 +435,9 @@ localStorage.setItem("voteCounts",JSON.stringify(voteCounts))
 loadProjects()
 }
 
-function nextPage(){currentPage++;loadProjects()}
-function prevPage(){if(currentPage>0)currentPage--;loadProjects()}
-function goPage(p){currentPage=p;loadProjects()}
-
 async function submitProject(){
+
+if(!wallet) return alert("connect wallet")
 
 if(!document.getElementById("confirm").checked){
 alert("confirm 14+ days")
@@ -441,18 +466,35 @@ reader.readAsDataURL(file)
 })
 }
 
+const timestamp = Date.now()
+const message = `submit:${wallet}:${timestamp}`
+
+const signed = await signMessage(message)
+if(!signed) return
+
 await fetch("/api/update",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 action:"submit",
-data:{name,github,social,website,desc,logo,votes:0,wallet}
+data:{
+name,github,social,website,desc,logo,
+votes:0,
+wallet,
+timestamp,
+signature:signed.signature,
+message
+}
 })
 })
 
 document.getElementById("status").innerText="submitted ✅"
 loadProjects()
 }
+
+function nextPage(){currentPage++;loadProjects()}
+function prevPage(){if(currentPage>0)currentPage--;loadProjects()}
+function goPage(p){currentPage=p;loadProjects()}
 
 loadProjects()
 
