@@ -1,32 +1,26 @@
+import nacl from "tweetnacl"
+import bs58 from "bs58"
+
 export default async function handler(req, res) {
 
 try {
 
-  // ONLY POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "method not allowed" })
   }
 
-  // --- BODY PARSING (ROBUST) ---
+  // --- PARSE BODY ---
   let body = req.body
 
   if (!body) {
     const buffers = []
-    for await (const chunk of req) {
-      buffers.push(chunk)
-    }
-    const raw = Buffer.concat(buffers).toString()
-    body = JSON.parse(raw)
+    for await (const chunk of req) buffers.push(chunk)
+    body = JSON.parse(Buffer.concat(buffers).toString())
   }
 
-  if (typeof body === "string") {
-    body = JSON.parse(body)
-  }
+  if (typeof body === "string") body = JSON.parse(body)
 
-  const { action, data, index } = body
-
-  console.log("ACTION:", action)
-  console.log("DATA:", data)
+  const { action, data, index, wallet, timestamp, signature, message } = body
 
   const token = process.env.GITHUB_TOKEN
   const owner = process.env.GITHUB_OWNER
@@ -37,16 +31,29 @@ try {
     return res.status(500).json({ error: "missing env variables" })
   }
 
-  // --- HELPER: GET LATEST FILE ---
+  // --- VERIFY SIGNATURE ---
+  function verifySignature(pubKey, msg, sig) {
+    try {
+      const msgBytes = new TextEncoder().encode(msg)
+      const sigBytes = new Uint8Array(sig)
+      const pubBytes = bs58.decode(pubKey)
+
+      return nacl.sign.detached.verify(msgBytes, sigBytes, pubBytes)
+    } catch {
+      return false
+    }
+  }
+
+  // --- GET FILE ---
   async function getFile() {
-    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json"
       }
     })
 
-    const file = await res.json()
+    const file = await r.json()
 
     const content = JSON.parse(
       Buffer.from(file.content, "base64").toString("utf8")
@@ -55,12 +62,12 @@ try {
     return { file, content }
   }
 
-  // --- HELPER: UPDATE WITH RETRY ---
+  // --- UPDATE FILE ---
   async function updateGitHub(content, retry = 0) {
 
     const { file } = await getFile()
 
-    const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -73,11 +80,9 @@ try {
       })
     })
 
-    const result = await updateRes.json()
+    const result = await r.json()
 
-    // RETRY ON SHA CONFLICT
     if (result.message && result.message.includes("sha") && retry < 3) {
-      console.log("Retrying...", retry + 1)
       await new Promise(r => setTimeout(r, 300))
       return updateGitHub(content, retry + 1)
     }
@@ -85,39 +90,97 @@ try {
     return result
   }
 
-  // --- ALWAYS GET LATEST BEFORE MODIFY ---
+  // --- LOAD DATA ---
   const { content } = await getFile()
 
-  if (!content.projects) {
-    content.projects = []
-  }
+  if (!content.projects) content.projects = []
+  if (!content.votes) content.votes = {}
+  if (!content.submissions) content.submissions = {}
 
-  // --- ACTIONS ---
+  const ONE_DAY = 86400000
+  const now = Date.now()
+
+  // =========================
+  // 🚀 SUBMIT PROJECT
+  // =========================
   if (action === "submit") {
 
-    // prevent duplicate exact submissions (optional safety)
+    const sub = data
+
+    if (!sub.wallet || !sub.signature || !sub.message) {
+      return res.status(400).json({ error: "missing signature data" })
+    }
+
+    const valid = verifySignature(sub.wallet, sub.message, sub.signature)
+
+    if (!valid) {
+      return res.status(400).json({ error: "invalid signature" })
+    }
+
+    // replay protection
+    if (Math.abs(now - sub.timestamp) > 5 * 60 * 1000) {
+      return res.status(400).json({ error: "stale request" })
+    }
+
+    const lastSubmit = content.submissions[sub.wallet]
+
+    if (lastSubmit && (sub.timestamp - lastSubmit < ONE_DAY)) {
+      return res.status(400).json({
+        error: "submit cooldown active"
+      })
+    }
+
+    // prevent duplicate project
     const exists = content.projects.some(p =>
-      p.name === data.name && p.github === data.github
+      p.name === sub.name && p.github === sub.github
     )
 
     if (!exists) {
-      content.projects.unshift(data)
+      content.projects.unshift(sub)
     }
 
+    content.submissions[sub.wallet] = sub.timestamp
   }
 
-if (action === "vote") {
-  if (content.projects[index]) {
-    content.projects[index].votes =
-      (content.projects[index].votes || 0) + (body.weight || 1)
+  // =========================
+  // 🗳️ VOTE
+  // =========================
+  if (action === "vote") {
+
+    if (!wallet || !signature || !message) {
+      return res.status(400).json({ error: "missing signature data" })
+    }
+
+    const valid = verifySignature(wallet, message, signature)
+
+    if (!valid) {
+      return res.status(400).json({ error: "invalid signature" })
+    }
+
+    // replay protection
+    if (Math.abs(now - timestamp) > 5 * 60 * 1000) {
+      return res.status(400).json({ error: "stale request" })
+    }
+
+    const lastVote = content.votes[wallet]
+
+    if (lastVote && (timestamp - lastVote < ONE_DAY)) {
+      return res.status(400).json({
+        error: "vote cooldown active"
+      })
+    }
+
+    content.votes[wallet] = timestamp
+
+    if (content.projects[index]) {
+      content.projects[index].votes =
+        (content.projects[index].votes || 0) + (body.weight || 1)
+    }
   }
-}
 
   content.lastUpdated = new Date().toISOString()
 
-  const result = await updateGitHub(content)
-
-  console.log("GITHUB RESULT:", result)
+  await updateGitHub(content)
 
   return res.status(200).json({ success: true })
 
