@@ -24,19 +24,28 @@ position:fixed;
 top:0;
 left:0;
 width:100%;
-padding:15px 40px;
-background:#000;
+padding:15px 25px;
+background:rgba(0,0,0,0.9);
 border-bottom:1px solid #111;
 display:flex;
 justify-content:space-between;
 align-items:center;
-z-index:100;
+z-index:10;
+box-sizing:border-box;
+overflow:visible;
 }
 
 .nav a{
 color:#7CFF3A;
 text-decoration:none;
 margin-left:20px;
+}
+
+.nav div:last-child{
+display:flex;
+gap:20px;
+align-items:center;
+flex-wrap:wrap;
 }
 
 .container{
@@ -108,13 +117,34 @@ padding:5px;
 margin-top:10px;
 }
 
-.button{
-background:#7CFF3A;
-color:black;
-padding:10px 15px;
-margin-top:15px;
-cursor:pointer;
-border:none;
+.button,
+.btn {
+  background: #7CFF3A;
+  color: #000;
+  border: none;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-family: Courier New, monospace;
+  text-transform: lowercase;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+
+  /* ✨ unified glow */
+  box-shadow: 0 0 12px #7CFF3A;
+  transition: all 0.2s ease;
+}
+
+.button:hover,
+.btn:hover {
+  box-shadow: 0 0 22px #7CFF3A;
+  transform: translateY(-1px);
+}
+
+.button:disabled,
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .file-input{
@@ -164,11 +194,91 @@ margin-top:20px;
 margin:5px;
 }
 
+/* 🔥 FIX: ADD MISSING MODAL STYLES */
+.modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.9);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+.modal-content{
+background:#000;
+border:1px solid #222;
+padding:20px;
+width:90%;
+max-width:500px;
+}
+
+.close{
+cursor:pointer;
+color:#7CFF3A;
+float:right;
+
+
+
+
+}
+
+.dropdown-item{
+  padding:8px;
+  cursor:pointer;
+  color:#7CFF3A;
+}
+
+.dropdown-item:hover{
+  background:#111;
+}
+
+.vote-btn:disabled{
+  background:#222;
+  color:#555;
+  cursor:not-allowed;
+}
+
+.project{
+  align-items:flex-start;
+}
+
+.project-content h3{
+  margin:0 0 5px 0;
+}
+
+.links{
+  margin-bottom:5px;
+}
+
+
+
 </style>
 </head>
 <link rel="icon" type="image/png" href="/favicon.png">
 
 <body>
+
+  <!-- 🔥 FIX: MOVED INSIDE BODY -->
+<div id="profileModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeProfile()">[close]</span>
+
+    <h3 id="profileWallet"></h3>
+
+    <h4>submitted</h4>
+    <div id="profileProjects"></div>
+
+    <h4>voted today</h4>
+    <div id="profileVote"></div>
+
+    <h4>status</h4>
+    <div id="profileBadges"></div>
+  </div>
+</div>
 
 <div class="nav">
 <div>bio/acc fund</div>
@@ -183,7 +293,7 @@ margin:5px;
 
 <h1>biotech startup fund</h1>
 
-<button class="button" onclick="connectWallet()">connect wallet</button>
+<button id="connectBtn" class="btn" onclick="connectWallet()">connect wallet</button>
 <div id="walletStatus"></div>
 
 <h2>startup requirements</h2>
@@ -203,7 +313,15 @@ margin:5px;
 <input id="github" placeholder="github link (required)">
 <input id="social" placeholder="social link (required)">
 <input id="website" placeholder="website (optional)">
-<input type="file" id="logo" class="file-input" accept="image/*">
+<label class="button" style="display:inline-block;">
+  choose file
+  <input type="file" id="logo" accept="image/*" style="display:none;">
+</label>
+<div style="font-size:12px; color:#888; margin-top:6px;">
+  max file size: 4MB
+</div>
+
+<span id="fileName" style="color:#7CFF3A;margin-left:10px;"></span>
 <textarea id="desc" maxlength="200" placeholder="description (max 200 chars)"></textarea>
 
 <div class="confirm-box" onclick="toggleConfirm()" id="confirmBox">
@@ -211,7 +329,8 @@ margin:5px;
 <input type="checkbox" id="confirm" hidden>
 </div>
 
-<button class="button" onclick="submitProject()">submit</button>
+<button id="submitBtn" class="button" onclick="submitProject()">submit</button>
+<div id="submitInfo" style="font-size:12px;color:#777;margin-top:6px;"></div>
 <div id="status"></div>
 
 </div>
@@ -224,22 +343,26 @@ margin:5px;
 • votes may take a few seconds
 </div>
 
+<div id="projects" style="margin-top:30px;"></div>
+
 <div id="feed"></div>
 <div id="pagination"></div>
 
 </div>
 
-<!-- ONLY CHANGES ARE COMMENTED WITH: 🔥 FIX -->
+<!-- ONLY CHANGES ARE MARKED 🔥 FIX -->
+
+<script src="/wallet.js"></script>
+<script src="/profile.js"></script>
 
 <script>
 
+// ========================
+// CONFIG
+// ========================
 const TOKENS_PER_VOTE = 1000000
 
-let wallet=null
-let tokenBalance=0
-let voteBank=0
-let backendData=null
-
+let projects = []
 let currentPage=0
 const perPage=5
 
@@ -247,246 +370,522 @@ function toggleConfirm(){
   const box = document.getElementById("confirmBox")
   const input = document.getElementById("confirm")
 
-  input.checked = !input.checked
-
-  if(input.checked){
-    box.classList.add("active")
-  } else {
-    box.classList.remove("active")
-  }
+  const active = box.classList.toggle("active")
+  input.checked = active
 }
 
-function getCooldownText(last){
-const remaining=86400000-(Date.now()-last)
-if(remaining<=0) return ""
-const h=Math.floor(remaining/3600000)
-const m=Math.floor((remaining%3600000)/60000)
-return `${h}h ${m}m`
-}
+document.getElementById("logo").addEventListener("change", e=>{
+  const file = e.target.files[0]
+  document.getElementById("fileName").innerText = file ? file.name : ""
+})
 
-async function signMessage(message){
-  const provider = window.solana
-  const encoded = new TextEncoder().encode(message)
-  const signed = await provider.signMessage(encoded, "utf8")
-  return { signature: Array.from(signed.signature) }
-}
 
-async function connectWallet(){
-const res=await window.solana.connect()
-wallet=res.publicKey.toString()
 
-tokenBalance = await getTokenBalance(wallet)
-voteBank = Math.floor(tokenBalance / TOKENS_PER_VOTE)
-
-document.getElementById("walletStatus").innerText =
-`wallet: ${wallet.slice(0,4)}...${wallet.slice(-4)} | tokens: ${Math.floor(tokenBalance)} | votes: ${voteBank}`
-
-loadProjects()
-}
-
-async function getTokenBalance(wallet){
-const res = await fetch(`https://api.helius.xyz/v0/addresses/${wallet}/balances?api-key=abe30281-08a6-4f68-921b-4da93db84835`)
-const data = await res.json()
-const token = data.tokens.find(t => t.mint === "CLP3exiqE8drZSzwhPas257cTh1evzq6nr7i1Xwvpump")
-return token ? token.amount / (10 ** (token.decimals || 6)) : 0
-}
-
+// ========================
+// LOAD PROJECTS (SUPABASE)
+// ========================
 async function loadProjects(){
 
-const res=await fetch("https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?t="+Date.now())
-const data=await res.json()
+  const container = document.getElementById("projects")
+  if(!container) return
 
-backendData=data
+  try{
 
-// 🔥 FIX: ensure every project has permanent ID
-data.projects.forEach(p=>{
-  if(!p.id){
-    p.id = "proj_" + Math.random().toString(36).substring(2,10)
+    const [projRes, voteRes] = await Promise.all([
+      fetch("/api/projects"),
+      fetch("/api/vote")
+    ])
+
+    if(!projRes.ok){
+      console.error("projects fetch failed")
+      return
+    }
+
+    const projectsData = await projRes.json()
+    const votes = voteRes.ok ? await voteRes.json() : []
+
+    // 🔥 BUILD VOTE MAP
+    const voteMap = {}
+    const userVoteMap = {}
+
+    votes.forEach(v=>{
+      voteMap[v.project_id] = (voteMap[v.project_id] || 0) + v.amount
+
+      if(v.wallet === window.wallet){
+        userVoteMap[v.project_id] = (userVoteMap[v.project_id] || 0) + v.amount
+      }
+    })
+
+    // attach votes
+    projectsData.forEach(p=>{
+      p.realVotes = voteMap[p.id] || 0
+      p.userVotes = userVoteMap[p.id] || 0
+    })
+
+    // sort
+    projectsData.sort((a,b)=>b.realVotes - a.realVotes)
+
+    container.innerHTML = ""
+
+    projectsData.forEach((p,i)=>{
+
+      const disabled = (window.remainingVotes ?? window.voteBank) <= 0
+
+      container.innerHTML += `
+        <div class="project ${i===0?'top1':i===1?'top2':i===2?'top3':''}">
+          
+          <img class="logo" src="${p.logo || ''}" />
+
+          <div class="project-content">
+
+            <h3>${p.name}</h3>
+
+            <div class="links">
+              <a href="${p.github || "#"}" target="_blank">github</a>
+              <a href="${p.social || "#"}" target="_blank">social</a>
+              <a href="${p.website || "#"}" target="_blank">website</a>
+            </div>
+
+            <div class="desc">${p.description || ""}</div>
+
+            <div style="margin-top:10px;">
+              votes: ${p.realVotes || 0}
+            </div>
+
+            <div style="font-size:12px;color:#777;margin-top:4px;">
+              submitted: ${formatDate(p.created_at)}
+            </div>
+
+            <input 
+              id="vote-${i}" 
+              class="vote-input"
+              type="number" 
+              min="1"
+              placeholder="votes"
+            />
+
+            <button 
+              class="button vote-btn"
+              ${disabled ? "disabled" : ""}
+              onclick="vote('${p.id}', ${i})"
+            >
+              ${disabled ? "no votes" : "vote"}
+            </button>
+
+          </div>
+        </div>
+      `
+    })
+
+  }catch(err){
+    console.error("loadProjects error", err)
   }
-})
-
-// 🔥 FIX: NON-MUTATING SORT
-let projects=[...data.projects].sort((a,b)=>(b.votes||0)-(a.votes||0))
-
-const votedAt=data.votes?.[wallet]
-const votedProjectId=data.voteIndex?.[wallet] // now stores ID
-const submittedAt=data.submissions?.[wallet]
-
-if(submittedAt && Date.now()-submittedAt<86400000){
-document.getElementById("status").innerText =
-`submit cooldown: ${getCooldownText(submittedAt)}`
 }
 
-const totalPages=Math.ceil(projects.length/perPage)
-const start=currentPage*perPage
-const pageProjects=projects.slice(start,start+perPage)
-
-let html = pageProjects.map((p,i)=>{
-
-// 🔥 FIX: use ID instead of index
-const votedToday = votedAt && (Date.now() - votedAt < 86400000)
-const isMine = votedProjectId === p.id
-const locked = votedToday
-
-let rank=""
-if(start+i===0) rank="top1"
-if(start+i===1) rank="top2"
-if(start+i===2) rank="top3"
-
-return `
-<div class="project ${rank}">
-
-${p.logo?`<img class="logo" src="${p.logo}">`:""}
-
-<div class="project-content">
-
-<b>${p.name}</b>
-
-<div class="links">
-<a href="${p.github}" target="_blank">github</a>
-<a href="${p.social}" target="_blank">social</a>
-${p.website?`<a href="${p.website}" target="_blank">website</a>`:""}
-</div>
-
-<div class="desc">${p.desc}</div>
-
-<br>
-votes: ${p.votes||0}
-
-${votedToday && isMine ? `<div class="voted-today">✔ you voted here today</div>` : ""}
-
-<br>
-
-<input class="vote-input" id="vote-${i}" placeholder="votes">
-
-<div class="vote" onclick="vote('${p.id}', ${i})">
-${locked?"locked":"vote"}
-</div>
-
-<div class="cooldown">
-${locked?`cooldown: ${getCooldownText(votedAt)}`:""}
-</div>
-
-</div>
-</div>
-`
-}).join("")
-
-let pagination=""
-
-if(totalPages>1){
-if(currentPage>0) pagination+=`<button onclick="prevPage()" class="button">prev</button>`
-for(let i=0;i<totalPages;i++){
-pagination+=`<button onclick="goPage(${i})" class="button">${i+1}</button>`
-}
-if(currentPage<totalPages-1) pagination+=`<button onclick="nextPage()" class="button">next</button>`
-}
-
-document.getElementById("feed").innerHTML=html
-document.getElementById("pagination").innerHTML=pagination
-}
-
-async function vote(projectId, localIndex){
-
-if(!wallet) return alert("connect wallet")
-
-// 🔥 TOKEN CHECK BEFORE SIGN
-if(tokenBalance < 1){
-return alert("you need at least 1M tokens to vote")
-}
-
-const votedAt=backendData.votes?.[wallet]
-if(votedAt && Date.now()-votedAt<86400000){
-return alert("already voted today")
-}
-
-const amount=parseInt(document.getElementById(`vote-${localIndex}`).value)||1
-
-const timestamp = Date.now()
-const message = `vote:${wallet}:${projectId}:${timestamp}`
-const signed = await signMessage(message)
-
-await fetch("/api/update",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-action:"vote",
-projectId, // 🔥 FIX: use ID
-weight:amount,
-wallet,
-timestamp,
-signature:signed.signature,
-message
-})
-})
-
-loadProjects()
-}
-
+// ========================
+// SUBMIT PROJECT (SUPABASE + SIGNED)
+// ========================
 async function submitProject(){
 
-if(!wallet) return alert("connect wallet")
+  if(!window.wallet) return alert("connect wallet")
 
-const last=backendData.submissions?.[wallet]
-if(last && Date.now()-last<86400000){
-return alert("already submitted today")
+  const statusEl = document.getElementById("status")
+
+  const confirmed = document.getElementById("confirm").checked
+
+if(!confirmed){
+  return alert("you must confirm 14+ days")
 }
 
-if(!document.getElementById("confirm").checked){
-alert("confirm 14+ days")
-return
+  const name=document.getElementById("name").value.trim()
+  const github=document.getElementById("github").value.trim()
+  const social=document.getElementById("social").value.trim()
+  const website=document.getElementById("website").value.trim()
+  const desc=document.getElementById("desc").value.trim()
+
+  if(!name || !github || !social){
+    return alert("missing required fields")
+  }
+
+  const file=document.getElementById("logo").files[0]
+  let logo=""
+
+  if(file && file.size > 4 * 1024 * 1024){
+  statusEl.innerText = "file too large (max 4MB)"
+  return
 }
 
-const name=document.getElementById("name").value.trim()
-const github=document.getElementById("github").value.trim()
-const social=document.getElementById("social").value.trim()
-const website=document.getElementById("website").value.trim()
-const desc=document.getElementById("desc").value.trim()
+  if(file){
+    logo=await new Promise(r=>{
+      const reader=new FileReader()
+      reader.onload=()=>r(reader.result)
+      reader.readAsDataURL(file)
+    })
+  }
 
-const file=document.getElementById("logo").files[0]
-let logo=""
+  const fileInput = document.getElementById("logo")
 
-if(file){
-logo=await new Promise(r=>{
-const reader=new FileReader()
-reader.onload=()=>r(reader.result)
-reader.readAsDataURL(file)
-})
-}
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0]
+  if(!file) return
 
-// 🔥 ADD ID ON CREATE
-const id = "proj_" + Math.random().toString(36).substring(2,10)
+  const sizeMB = (file.size / (1024*1024)).toFixed(2)
 
-const timestamp = Date.now()
-const message = `submit:${wallet}:${timestamp}`
-const signed = await signMessage(message)
-
-await fetch("/api/update",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-action:"submit",
-data:{
-id, // 🔥 FIX
-name,github,social,website,desc,logo,
-votes:0,
-wallet,
-timestamp,
-signature:signed.signature,
-message
-}
-})
+  console.log(`Selected file: ${sizeMB} MB`)
 })
 
-document.getElementById("status").innerText="submitted ✅"
+  const id = "proj_" + Math.random().toString(36).substring(2,10)
+
+  // 🔥 SIGN MESSAGE
+  const timestamp = Date.now()
+  const message = `submit:${window.wallet}:${timestamp}`
+
+  const encoded = new TextEncoder().encode(message)
+  const signed = await window.solana.signMessage(encoded, "utf8")
+
+  const res = await fetch("/api/projects",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      id,
+      name,
+      github,
+      social,
+      website,
+      description:desc,
+      logo,
+      wallet:window.wallet,
+      signature: Array.from(signed.signature),
+      message
+    })
+  })
+
+  const data = await res.json()
+
+  if(!res.ok){
+    alert(data.error || "submit failed")
+    return
+  }
+
+  statusEl.innerText="submitted ✅"
+
+  loadProjects()
+}
+
+// ========================
+// 🔥 FETCH USER STATS
+// ========================
+async function fetchStats(wallet){
+
+  if(!wallet){
+    console.log("No wallet — skipping stats fetch")
+    return
+  }
+
+  try{
+    const res = await fetch(`/api/profile-stats?wallet=${wallet}`)
+
+    if(!res.ok){
+      throw new Error("failed to fetch stats")
+    }
+
+    const stats = await res.json()
+
+    console.log("stats data:", stats)
+
+    return stats
+
+  }catch(err){
+    console.log("fetchStats error", err)
+
+    return {
+      totalVotes: 0,
+      projectsVoted: [],
+      maxVotes: 25,
+      lastVoteTime: Date.now()
+    }
+  }
+}
+
+function checkVoteReset(stats){
+
+  if(!stats) return null // 🔥 FIX
+
+  const DAY = 24 * 60 * 60 * 1000
+  const now = Date.now()
+
+  if(!stats.lastVoteTime){
+    return stats
+  }
+
+  const timePassed = now - stats.lastVoteTime
+
+  if(timePassed >= DAY){
+    console.log("🔄 votes reset")
+
+    return {
+      ...stats,
+      totalVotes: 0,
+      votesRemaining: stats.maxVotes,
+      projectsVoted: [],
+      lastVoteTime: null
+    }
+  }
+
+  return stats
+}
+
+// ========================
+// VOTE (SUPABASE + SIGNED)
+// ========================
+async function vote(projectId, index){
+
+  const stats = await fetchStats(window.wallet)
+
+if(!stats){
+  console.log("no stats — skipping reset")
+  return
+}
+
+checkVoteReset(stats)
+
+  try{
+
+    if(!window.wallet) return alert("connect wallet")
+
+    const amount = parseInt(document.getElementById(`vote-${index}`).value) || 1
+
+    if(amount > (window.remainingVotes ?? window.voteBank)){
+  return alert("not enough voting power")
+}
+
+    const message = `vote:${window.wallet}:${projectId}:${Date.now()}`
+
+    // 🔥 SIGN MESSAGE
+    const encodedMessage = new TextEncoder().encode(message)
+    const signed = await window.solana.signMessage(encodedMessage, "utf8")
+
+    // 🔥 IMPORTANT: convert signature → ARRAY
+    const signature = Array.from(signed.signature)
+
+    const res = await fetch("/api/vote",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        wallet: window.wallet,
+        projectId,
+        amount,
+        signature,
+        message
+      })
+    })
+
+    const text = await res.text()
+
+    let data
+    try{
+      data = JSON.parse(text)
+    }catch{
+      console.error("vote parse error:", text)
+      alert("vote failed")
+      return
+    }
+
+    if(!res.ok){
+      alert(data.error || "vote failed")
+      return
+    }
+
+    console.log("vote success:", data)
+
+    // 🔥 instant UI update (optimistic)
+window.remainingVotes = Math.max(0, (window.remainingVotes ?? window.voteBank) - amount)
+
+// 🔥 update header immediately
+const status = document.getElementById("walletStatus")
+if(status){
+  status.innerHTML = status.innerHTML.replace(
+    /(\d+)\s*\/\s*(\d+)/,
+    (_, used, max) => `${parseInt(used) + amount} / ${max}`
+  )
+}
+
+// 🔥 refresh true data (source of truth)
+await window.refreshVotingUI?.()
+
+// 🔥 reload projects (updates votes + disables buttons)
 loadProjects()
+
+  }catch(err){
+    console.log("vote error:", err)
+    alert("vote failed")
+  }
 }
 
-function nextPage(){currentPage++;loadProjects()}
-function prevPage(){if(currentPage>0)currentPage--;loadProjects()}
-function goPage(p){currentPage=p;loadProjects()}
+function setWallet(w){
+  window.wallet = w
+  CURRENT_WALLET = w
 
-loadProjects()
+  updateWalletUI()
+
+  // ✅ ONLY do what fund page actually supports
+  if (typeof fetchStats === "function") {
+    fetchStats(w).then(stats => {
+      const safeStats = checkVoteReset(stats)
+
+      console.log("fund stats:", safeStats)
+    })
+  }
+}
+
+
+
+function shortenWallet(w){
+  if(!w) return ""
+  return w.slice(0,4) + "..." + w.slice(-4)
+}
+
+function formatDate(dateStr){
+  if(!dateStr) return "unknown"
+
+  const d = new Date(dateStr)
+
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  })
+}
+
+// ========================
+// 🔥 LIVE SUBMISSION LIMIT (FIXED)
+// ========================
+
+let cooldownInterval = null
+
+function formatCooldown(ms){
+  if(ms <= 0) return null
+
+  const hours = Math.floor(ms / (1000 * 60 * 60))
+  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((ms % (1000 * 60)) / 1000)
+
+  return `${hours}h ${minutes}m ${seconds}s`
+}
+
+function startCooldownTimer(lastTime){
+  const button = document.getElementById("submitBtn")
+  const info = document.getElementById("submitInfo")
+
+  if(cooldownInterval) clearInterval(cooldownInterval)
+
+  cooldownInterval = setInterval(() => {
+    const now = Date.now()
+    const limit = 24 * 60 * 60 * 1000
+
+    const remaining = limit - (now - lastTime)
+
+    if(remaining <= 0){
+      clearInterval(cooldownInterval)
+
+      if(button){
+        button.disabled = false
+        button.style.opacity = 1
+      }
+
+      if(info){
+        info.innerText = "ready to submit"
+      }
+
+      window.lastSubmitTime = null
+      return
+    }
+
+    const formatted = formatCooldown(remaining)
+
+    if(button){
+      button.disabled = true
+      button.style.opacity = 0.5
+    }
+
+    if(info){
+      info.innerText = `one project per 24h (${formatted})`
+    }
+
+  }, 1000)
+}
+
+async function checkSubmissionLimit(wallet){
+
+  if(!wallet) return
+
+  try{
+    const res = await fetch("/api/projects")
+    if(!res.ok) return
+
+    const projects = await res.json()
+    if(!Array.isArray(projects)) return
+
+    const userProjects = projects.filter(p => p.wallet === wallet)
+
+    if(userProjects.length === 0){
+      window.lastSubmitTime = null
+
+      const info = document.getElementById("submitInfo")
+      const button = document.getElementById("submitBtn")
+
+      if(info) info.innerText = "ready to submit"
+      if(button){
+        button.disabled = false
+        button.style.opacity = 1
+      }
+
+      return
+    }
+
+    const latest = userProjects.sort((a,b)=>
+      new Date(b.created_at) - new Date(a.created_at)
+    )[0]
+
+    const lastTime = new Date(latest.created_at).getTime()
+
+    window.lastSubmitTime = lastTime
+
+    startCooldownTimer(lastTime)
+
+  }catch(err){
+    console.log("limit check failed", err)
+  }
+}
+
+// ========================
+// INIT
+// ========================
+window.addEventListener("DOMContentLoaded", async () => {
+
+  await window.autoConnect()
+
+  if(window.wallet){
+    CURRENT_WALLET = window.wallet
+
+    // ✅ SAFE VERSION (NO CRASH)
+    if (typeof fetchStats === "function") {
+      const stats = await fetchStats(window.wallet)
+      const safeStats = checkVoteReset(stats)
+      console.log("fund stats:", safeStats)
+    }
+  }
+
+  if(window.wallet){
+  await checkSubmissionLimit(window.wallet)
+}
+
+  await loadProjects()
+})
 
 </script>
 

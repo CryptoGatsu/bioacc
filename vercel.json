@@ -13,11 +13,13 @@
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/fund", "destination": "/fund.html" },
-    { "source": "/manifesto", "destination": "/manifesto.html" }
+    { "source": "/manifesto", "destination": "/manifesto.html" },
+    { "source": "/profile", "destination": "/profile.html" }
   ],
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/fund.html", "destination": "/fund", "permanent": true },
-    { "source": "/manifesto.html", "destination": "/manifesto", "permanent": true }
+    { "source": "/manifesto.html", "destination": "/manifesto", "permanent": true },
+    { "source": "/profile.html", "destination": "/profile", "permanent": true }
   ]
 }

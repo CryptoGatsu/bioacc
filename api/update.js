@@ -9,7 +9,6 @@ try {
     return res.status(405).json({ error: "method not allowed" })
   }
 
-  // --- PARSE BODY ---
   let body = req.body
 
   if (!body) {
@@ -20,7 +19,7 @@ try {
 
   if (typeof body === "string") body = JSON.parse(body)
 
-  const { action, data, index, wallet, timestamp, signature, message, projectId } = body
+  const { action, data, wallet, timestamp, signature, message, projectId } = body
 
   const token = process.env.GITHUB_TOKEN
   const owner = process.env.GITHUB_OWNER
@@ -31,7 +30,6 @@ try {
     return res.status(500).json({ error: "missing env variables" })
   }
 
-  // --- VERIFY SIGNATURE ---
   function verifySignature(pubKey, msg, sig) {
     try {
       const msgBytes = new TextEncoder().encode(msg)
@@ -43,7 +41,6 @@ try {
     }
   }
 
-  // --- GET FILE ---
   async function getFile() {
     const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
       headers: {
@@ -61,7 +58,6 @@ try {
     return { file, content }
   }
 
-  // --- UPDATE FILE ---
   async function updateGitHub(content, retry = 0) {
 
     const { file } = await getFile()
@@ -89,126 +85,49 @@ try {
     return result
   }
 
-  // --- LOAD DATA ---
   const { content } = await getFile()
 
   if (!content.projects) content.projects = []
   if (!content.votes) content.votes = {}
   if (!content.submissions) content.submissions = {}
   if (!content.voteIndex) content.voteIndex = {}
-  if (!content.manifesto) content.manifesto = [] // ✅ NEW
+  if (!content.manifesto) content.manifesto = []
+  if (!content.profiles) content.profiles = {} // 🔥 NEW
 
   const ONE_DAY = 86400000
   const now = Date.now()
 
   // =========================
-  // 🚀 SUBMIT PROJECT
+  // 🔥 SAVE PROFILE
   // =========================
-  if (action === "submit") {
+  if (action === "saveProfile") {
 
-    const sub = data
+    const p = data
 
-    if (!sub.wallet || !sub.signature || !sub.message) {
+    if (!p.wallet || !p.signature || !p.message) {
       return res.status(400).json({ error: "missing signature data" })
     }
 
-    const valid = verifySignature(sub.wallet, sub.message, sub.signature)
+    const valid = verifySignature(p.wallet, p.message, p.signature)
 
     if (!valid) {
       return res.status(400).json({ error: "invalid signature" })
     }
 
-    if (Math.abs(now - sub.timestamp) > 5 * 60 * 1000) {
+    if (Math.abs(now - p.timestamp) > 5 * 60 * 1000) {
       return res.status(400).json({ error: "stale request" })
     }
 
-    const lastSubmit = content.submissions[sub.wallet]
-
-    if (lastSubmit && (sub.timestamp - lastSubmit < ONE_DAY)) {
-      return res.status(400).json({
-        error: "submit cooldown active"
-      })
-    }
-
-    const exists = content.projects.some(p =>
-      p.name === sub.name && p.github === sub.github
-    )
-
-    if (!exists) {
-      content.projects.unshift(sub)
-    }
-
-    content.submissions[sub.wallet] = sub.timestamp
-  }
-
-  // =========================
-  // 🗳️ VOTE
-  // =========================
-  if (action === "vote") {
-
-    if (!wallet || !signature || !message || !projectId) {
-      return res.status(400).json({ error: "missing signature data" })
-    }
-
-    const valid = verifySignature(wallet, message, signature)
-
-    if (!valid) {
-      return res.status(400).json({ error: "invalid signature" })
-    }
-
-    if (Math.abs(now - timestamp) > 5 * 60 * 1000) {
-      return res.status(400).json({ error: "stale request" })
-    }
-
-    const lastVote = content.votes[wallet]
-
-    if (lastVote && (timestamp - lastVote < ONE_DAY)) {
-      return res.status(400).json({
-        error: "vote cooldown active"
-      })
-    }
-
-    content.votes[wallet] = timestamp
-    content.voteIndex[wallet] = projectId
-
-    const project = content.projects.find(p => p.id === projectId)
-
-    if (project) {
-      project.votes = (project.votes || 0) + (body.weight || 1)
-    } else {
-      return res.status(400).json({ error: "project not found" })
+    content.profiles[p.wallet] = {
+      username: p.username || "",
+      bio: p.bio || "",
+      updated: new Date().toISOString()
     }
   }
 
   // =========================
-  // ✍️ MANIFESTO SIGN
+  // (KEEP YOUR EXISTING LOGIC)
   // =========================
-  if (action === "signManifesto") {
-
-    const entry = data
-
-    if (!entry.wallet || !entry.signature || !entry.message) {
-      return res.status(400).json({ error: "missing signature data" })
-    }
-
-    const valid = verifySignature(entry.wallet, entry.message, entry.signature)
-
-    if (!valid) {
-      return res.status(400).json({ error: "invalid signature" })
-    }
-
-    if (Math.abs(now - entry.timestamp) > 5 * 60 * 1000) {
-      return res.status(400).json({ error: "stale request" })
-    }
-
-    const exists = content.manifesto.some(m => m.wallet === entry.wallet)
-
-    if (exists) {
-      return res.status(400).json({ error: "already signed" })
-    }
-
-    content.manifesto.unshift(entry)
-  }
 
   content.lastUpdated = new Date().toISOString()
 

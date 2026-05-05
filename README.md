@@ -2,137 +2,147 @@
 
 ## Overview
 
-**bio/acc Fund** is a wallet-authenticated, community-driven platform for discovering, submitting, and voting on early-stage biotech startups.
+**bio/acc Fund V2** is a wallet-authenticated, community-driven platform for discovering, funding, and surfacing early-stage biotech startups.
 
-It combines Web3 identity (wallet signatures) with a lightweight off-chain backend to create a transparent, spam-resistant funding leaderboard.
+It combines **Solana wallet identity**, **off-chain data integrity**, and **community-driven signal** to create a transparent system where:
+
+> the best biotech ideas rise through conviction, not noise.
 
 ---
 
 ## Core Concept
 
 * Users connect a Solana wallet
-* Projects are submitted publicly
-* The community votes using token-gated influence
-* The leaderboard ranks projects based on votes
-
-The system is designed to prioritize:
-
-* real builders
-* active projects
-* community-backed ideas
+* Builders submit real biotech projects
+* Community votes using token-based influence
+* Manifesto aligns users under a shared vision
+* Leaderboard ranks projects by conviction
 
 ---
 
-## Key Features
+## 🔥 What Changed in V2
 
-### 🔐 Wallet Authentication
+V2 is a **major infrastructure upgrade**:
 
-* Users must connect a wallet (Phantom)
-* All actions require a signed message
-* Prevents spoofing and fake submissions
+### ✅ Database Migration (CRITICAL)
+
+* Moved from `submissions.json` → **Supabase**
+* Real persistent backend
+* No more GitHub rate limits
+* Scalable data structure
 
 ---
 
-### 🚀 Project Submission
+### ✅ Manifesto System
 
-Users can submit a project with:
+Users can now **sign the bio/acc manifesto**:
+
+* Wallet-signed participation
+* Optional personal message
+* Public signer list
+* Social proof layer for the movement
+
+> This turns bio/acc from a tool into a **movement**
+
+---
+
+### ✅ Stable Wallet System
+
+* Persistent wallet connection
+* Clean UI state handling
+* No desync between frontend/backend
+* Signature-based authentication across all actions
+
+---
+
+### ✅ Real-Time Stats Engine
+
+Platform now tracks:
+
+* Total projects
+* Total votes
+* Total manifesto signers
+* User vote usage + cooldowns
+
+All stats update dynamically and reliably.
+
+---
+
+### ✅ Submission System (Hardened)
+
+Users can submit:
 
 * Name
-* GitHub repository (required)
+* GitHub (required)
 * Social link (required)
 * Website (optional)
 * Description
-* Logo
+* Logo (max 4MB)
 
 #### Rules:
 
-* Must have a public GitHub
-* Must be worked on for at least 14 days
-* Must have a social presence
+* Must be active (14+ days)
+* Must have public GitHub
+* Must have social presence
 
 #### Restrictions:
 
-* 1 submission per wallet every 24 hours
-* Signature verification required
+* **1 project per wallet every 24h**
+* Enforced at database level
+* UI reflects cooldown in real time
 
 ---
 
-### 🗳️ Voting System
+### ✅ Voting System (Finalized)
 
-* Votes are tied to token holdings
-* **1 vote = 1,000,000 tokens**
-* Users input how many votes to allocate
+* **1 vote = 1M tokens**
+* Token-gated participation
+* Signature required
 
 #### Restrictions:
 
-* 1 voting session per wallet every 24 hours
-* Must hold at least 1M tokens to vote
-* Signature required before vote is processed
+* Vote cooldown enforced
+* Max votes per project
+* Votes tracked per wallet
 
 ---
 
-### 📊 Leaderboard
+### ✅ Leaderboard (Stable)
 
-* Projects ranked by total votes
-* Top 3 highlighted visually
-* Pagination for scalability
-* Fully dynamic and auto-updating
-
----
-
-### 🧠 Persistent Backend State
-
-All critical data is stored in `submissions.json`:
-
-* Projects
-* Votes
-* Submission timestamps
-* Vote cooldowns
-* Vote tracking per wallet
-
-This ensures:
-
-* votes persist after refresh
-* cooldowns cannot be bypassed
-* UI reflects real system state
+* Projects ranked by votes
+* Timestamp-based ordering
+* Real-time updates
+* First-mover visibility (submission time shown)
 
 ---
 
-### 🆔 Permanent Project IDs
+### ✅ Time System (Fixed)
 
-Each project is assigned a unique ID:
-
-* prevents vote mismatches
-* ensures leaderboard stability
-* allows future scalability
+* All timestamps converted to **user local time**
+* Cooldowns display **live ticking countdown**
+* No more mismatched durations (24h accurate)
 
 ---
 
-### ⏱️ Cooldown System
+### ✅ UI Consistency Upgrade
 
-#### Voting:
-
-* 24-hour cooldown per wallet
-* UI shows remaining time
-* Vote button locks after use
-
-#### Submissions:
-
-* 24-hour cooldown per wallet
-* Prevents spam project entries
+* Unified button styling (glow + font)
+* Wallet-aware UI states
+* Disabled actions when restricted
+* Cleaner terminal-style design
 
 ---
 
-### 🛡️ Anti-Spam + Security
+## 🛡️ Security
 
-* Wallet signature verification (tweetnacl)
-* Replay attack protection (timestamp validation)
-* Backend enforcement of all rules
-* No reliance on localStorage
+* Wallet signature verification
+* Timestamp validation (anti-replay)
+* Database-enforced cooldowns
+* No reliance on client-side trust
 
 ---
 
-## Tech Stack
+## 🧱 Tech Stack
 
 ### Frontend
 
@@ -141,215 +151,188 @@ Each project is assigned a unique ID:
 
 ### Backend
 
-* Vercel serverless function (`update.js`)
-* GitHub API for persistent storage
+* Vercel serverless API
 
-### Storage
+### Database
 
-* `submissions.json` (acts as database)
+* **Supabase (PostgreSQL)**
 
 ### Crypto
 
-* `tweetnacl` for signature verification
-* `bs58` for public key decoding
+* tweetnacl
+* bs58
 
 ---
 
-## How It Works (Flow)
+## ⚙️ System Flow
 
 ### Submit
 
-1. User connects wallet
-2. Fills form
-3. Signs message
-4. Backend verifies signature
-5. Project stored in JSON
+1. Connect wallet
+2. Fill project form
+3. Sign message
+4. Backend verifies
+5. Stored in Supabase
+6. Cooldown activated
 
 ---
 
 ### Vote
 
-1. User connects wallet
-2. Enters vote amount
-3. System checks token balance
-4. User signs message
-5. Backend verifies + applies vote
+1. Connect wallet
+2. Enter votes
+3. Sign message
+4. Backend verifies
+5. Votes applied
 6. Cooldown activated
 
 ---
 
-## Current Limitations
+### Manifesto
 
-* No on-chain voting (off-chain system)
-* GitHub used as database (rate limits possible)
-* No project editing after submission
-* No multi-vote scaling tied directly to wallet balance yet
+1. Connect wallet
+2. Sign manifesto
+3. Optional note stored
+4. Added to public signer list
 
 ---
 
-## Future Improvements
+## 📊 Data Model (Simplified)
 
-* Token-weighted automatic voting
-* On-chain governance integration
-* Project detail pages
-* User profile / activity dashboard
-* Anti-sybil wallet scoring
-* Batch vote processing (performance scaling)
+Tables:
+
+* `projects`
+* `votes`
+* `profiles`
+* `manifesto`
+
+---
+
+## ⚠️ Current Limitations
+
+* Off-chain voting (not yet on Solana)
+* No project editing
+* No advanced filtering/search yet
+* No reputation scoring yet
+
+---
+
+## 🚀 V3 ROADMAP (NEXT PHASE)
+
+This is where bio/acc becomes something much bigger.
+
+---
+
+### 🧠 1. Community-Curated Funding Layer
+
+* Projects enter a **pre-funding phase**
+* Community votes = signal
+* Top projects unlock funding
+
+---
+
+### 💰 2. Capped Presales (25 SOL Model)
+
+* Each project has:
+
+  * Funding cap (ex: 25 SOL)
+  * Participation window
+* Fully community-driven allocation
+
+---
+
+### ⚡ 3. One-Click Token Deployment
+
+After funding fills:
+
+* Creator gets **Deploy Button**
+* Auto-launch token
+* Auto-distribute allocations
+* Fee capture built-in
+
+---
+
+### 🎯 4. “Earn for Being Right”
+
+* Early supporters rewarded
+* Voting becomes **predictive signal**
+* Incentivizes real research
+
+---
+
+### 🧬 5. Bio/Acc Signal Engine
+
+Turn platform into:
+
+> a live biotech intelligence feed
+
+* Trending research detection
+* Multi-source signal aggregation
+* “🔥 trending topic” system expansion
+
+---
+
+### 🧑‍🚀 6. Reputation System
+
+* Wallet-based scoring
+* Accuracy over time
+* Anti-sybil weighting
+
+---
+
+### 🌐 7. Full DAO Layer
+
+* Proposal system
+* Governance voting
+* Staking-based influence
+
+---
+
+### 📈 8. Advanced Discovery
+
+* Filters (new / trending / funded)
+* Categories (AI bio, longevity, etc.)
+* Search system
+
+---
+
+### 🔗 9. On-Chain Expansion
+
+* Move key actions on-chain
+* Token-integrated governance
+* Trustless funding rails
 
 ---
 
 ## Vision
 
-bio/acc Fund aims to become:
+bio/acc is evolving into:
 
-> A decentralized discovery engine for early biotech innovation
+> A decentralized biotech discovery + funding engine
 
 Where:
 
-* builders gain visibility
-* communities curate quality
-* capital follows conviction
+* builders get visibility early
+* communities surface real innovation
+* capital flows based on conviction
 
 ---
 
 ## Status
 
-✅ MVP Complete
-✅ Fully functional voting system
-✅ Persistent backend
-🚧 Scaling + UX improvements next
+✅ V2 COMPLETE
+✅ Supabase backend live
+✅ Manifesto system live
+✅ Voting + submission stable
+
+🚧 V3 = Funding Layer + Tokenization
 
 ---
 
 ## Final Note
 
-This is not just a website — it’s a **foundation for a decentralized startup ecosystem**.
+bio/acc is no longer just a voting app.
 
+It is becoming:
 
-## 🚧 Planned V2 Features
-
-The next phase of **bio/acc Fund** focuses on transforming the platform from a voting tool into a **community-driven ecosystem** for biotech innovation.
-
----
-
-### 👤 User Profiles
-
-Introduce wallet-based user profiles to build identity and reputation across the platform.
-
-**Features:**
-
-* View connected wallet profile
-* Track submitted projects
-* Track voting history
-* Total votes cast
-* Join date
-
-**Goal:**
-Create accountability and reward consistent contributors.
-
----
-
-### 💬 Project Comment Sections
-
-Enable discussion under each project to encourage community engagement and deeper evaluation.
-
-**Features:**
-
-* Wallet-authenticated comments
-* Timestamped messages
-* Per-project comment threads
-* Basic anti-spam protections (cooldowns + length limits)
-
-**Goal:**
-Turn passive voters into active participants.
-
----
-
-### 📄 Project Detail Pages
-
-Each project will have its own dedicated page for a more in-depth view.
-
-**Features:**
-
-* Full project information
-* External links (GitHub, social, website)
-* Vote count and ranking
-* Comment section
-* Activity history
-
-**Goal:**
-Improve discovery, readability, and engagement.
-
----
-
-### 🧠 Enhanced Backend Structure
-
-Expand the current JSON-based system to support new data types and scale more effectively.
-
-**Additions:**
-
-* `users` (profile data)
-* `comments` (per project)
-* Improved indexing using project IDs
-
-**Goal:**
-Prepare the system for growth without breaking existing functionality.
-
----
-
-### 🛡️ Improved Anti-Spam & Trust Systems
-
-Strengthen protections against abuse and low-quality participation.
-
-**Planned Enhancements:**
-
-* Comment cooldowns
-* Submission validation improvements
-* Optional reputation scoring (based on activity quality)
-
-**Goal:**
-Maintain high signal-to-noise ratio across the platform.
-
----
-
-### 📊 User Activity Dashboard
-
-Allow users to easily view their activity in one place.
-
-**Features:**
-
-* Projects submitted
-* Votes cast
-* Current cooldown timers
-* Recent interactions
-
-**Goal:**
-Increase transparency and user engagement.
-
----
-
-### 🔮 Future Considerations
-
-Beyond V2, additional upgrades may include:
-
-* Token-weighted voting
-* Staking-based governance
-* Project reputation scoring
-* On-chain integration
-* Leaderboards for top contributors
-
----
-
-## Vision for V2
-
-V2 shifts bio/acc Fund toward:
-
-> A decentralized, community-curated platform for discovering and evaluating early-stage biotech projects.
-
-Where:
-
-* builders showcase real work
-* users contribute meaningful feedback
-* community consensus drives visibility
-
----
+> **a market for discovering and funding the future of biotech**

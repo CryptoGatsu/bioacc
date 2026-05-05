@@ -47,15 +47,51 @@ padding:100px 25px 60px;
 h1{color:white;font-size:34px;text-align:center;margin-bottom:40px;}
 h2{color:#7CFF3A;margin-top:50px;}
 
-.section{margin-bottom:40px;}
+.section {
+  margin-bottom: 50px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid #111;
+}
 
-button{
-background:#7CFF3A;
-border:none;
-padding:10px 16px;
-cursor:pointer;
-color:black;
-margin-top:15px;
+.section p {
+  margin-top: 10px;
+  color: #aaa;
+}
+
+.section h2 {
+  color: #7CFF3A;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(124,255,58,0.4);
+}
+
+.button,
+.btn {
+  background: #7CFF3A;
+  color: #000;
+  border: none;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-family: Courier New, monospace;
+  text-transform: lowercase;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+
+  /* ✨ unified glow */
+  box-shadow: 0 0 12px #7CFF3A;
+  transition: all 0.2s ease;
+}
+
+.button:hover,
+.btn:hover {
+  box-shadow: 0 0 22px #7CFF3A;
+  transform: translateY(-1px);
+}
+
+.button:disabled,
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 textarea{
@@ -86,6 +122,24 @@ color:#777;
 text-align:center;
 }
 
+.profile-link{
+color:#7CFF3A;
+cursor:pointer;
+}
+.profile-link:hover{
+text-decoration:underline;
+}
+
+.dropdown-item{
+  padding:8px;
+  cursor:pointer;
+  color:#7CFF3A;
+}
+
+.dropdown-item:hover{
+  background:#111;
+}
+
 </style>
 </head>
 
@@ -101,55 +155,134 @@ text-align:center;
 
 <div class="container">
 
-<h1>the bio/acc manifesto</h1>
+<h1 style="text-shadow: 0 0 12px rgba(124,255,58,0.6);">
+the bio/acc manifesto
+</h1>
 
 <div class="section">
 <h2>1. decentralize biopower</h2>
-<p>Biotechnology must not remain locked within institutions. We distribute research, funding, and infrastructure across open networks. No gatekeepers. No permission.</p>
+<p>
+Biotechnology has been locked behind institutions, capital barriers, and permissioned systems for too long.
+We are breaking that model.
+</p>
+<p>
+Bio/acc distributes research, funding, and infrastructure across open networks—where anyone can contribute,
+fund, and build. The future of biology should not be decided by a handful of entities.
+</p>
+<p>
+No gatekeepers. No closed doors. Only open acceleration.
+</p>
 </div>
 
 <div class="section">
 <h2>2. engineer ethical evolution</h2>
-<p>Acceleration without alignment leads to collapse. We embed biosafety, transparency, and accountability into every system we build.</p>
+<p>
+Acceleration without alignment leads to instability.
+We are not here to blindly move fast—we are here to move correctly.
+</p>
+<p>
+Every system we build must embed biosafety, transparency, and accountability at its core.
+Ethics is not a constraint—it is infrastructure.
+</p>
+<p>
+We are designing a future that scales safely.
+</p>
 </div>
 
 <div class="section">
 <h2>3. align with ecological intelligence</h2>
-<p>Nature is not a constraint — it is the blueprint. We design systems that cooperate with biological reality rather than override it.</p>
+<p>
+Nature is not something to dominate—it is something to learn from.
+</p>
+<p>
+Biology has already solved complexity, resilience, and adaptability.
+We study it, integrate it, and build with it.
+</p>
+<p>
+The strongest systems are those that cooperate with life itself.
+</p>
 </div>
 
 <div class="section">
 <h2>4. hack health</h2>
-<p>Biology is programmable. Individuals should have access to tools that allow them to understand and improve their bodies and minds.</p>
+<p>
+Your biology is not fixed—it is programmable.
+</p>
+<p>
+We believe individuals should have access to the tools, knowledge, and systems needed to
+understand, optimize, and evolve their own bodies and minds.
+</p>
+<p>
+Health should not be reactive—it should be engineered.
+</p>
 </div>
 
 <div class="section">
 <h2>5. open-source the code of life</h2>
-<p>Genomes, therapies, and protocols belong in the commons. Closed systems slow progress. Open systems accelerate it.</p>
+<p>
+Closed systems slow progress. Open systems compound it.
+</p>
+<p>
+Genomes, therapies, research, and protocols should not be locked behind paywalls or institutions.
+They should live in the commons.
+</p>
+<p>
+The more people who can build, the faster we evolve.
+</p>
 </div>
 
 <div class="section">
 <h2>6. accelerate biotech infrastructure</h2>
-<p>From lab automation to decentralized manufacturing, we reduce the time between discovery and deployment.</p>
+<p>
+Discovery is useless if it cannot scale.
+</p>
+<p>
+We are building the infrastructure layer of biotech—automation, funding rails,
+deployment systems, and decentralized coordination.
+</p>
+<p>
+The goal is simple: compress time from idea → reality.
+</p>
 </div>
 
 <div class="section">
 <h2>7. build in public</h2>
-<p>Transparency creates trust. We document, share, and iterate openly so others can build with us.</p>
+<p>
+Secrecy slows innovation. Transparency accelerates it.
+</p>
+<p>
+We build openly, share openly, and iterate openly so others can join, improve,
+and extend what we create.
+</p>
+<p>
+The network grows stronger with every contributor.
+</p>
 </div>
 
 <div class="section">
 <h2>8. evolve or expire</h2>
-<p>The future will not wait. We either accelerate biotechnology responsibly — or fall behind those who will.</p>
+<p>
+The future will not wait.
+</p>
+<p>
+Biotechnology is advancing—with or without alignment.
+We choose to guide it, shape it, and accelerate it responsibly.
+</p>
+<p>
+Adaptation is no longer optional.
+</p>
 </div>
 
-<h2>sign the manifesto</h2>
+<h2 style="margin-top:60px;">join the movement</h2>
+<p style="color:#888; margin-bottom:15px;">
+sign the manifesto and become part of the bio/acc network
+</p>
 
-<button onclick="connectWallet()">connect wallet</button>
+<button id="connectBtn" class="btn" onclick="connectWallet()">connect wallet</button>
 <p id="walletStatus"></p>
 
 <textarea id="note" placeholder="leave a note (optional)"></textarea>
-<button onclick="signManifesto()">sign manifesto</button>
+<button class="btn" onclick="signManifesto()">sign manifesto</button>
 
 <div class="counter" id="signatureCount">0 people have signed the bio/acc manifesto</div>
 <div class="signatures" id="signatures"></div>
@@ -160,84 +293,89 @@ bio/acc is a decentralized movement accelerating biotechnology.
 
 </div>
 
-<script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+<script src="/wallet.js"></script>
+<script src="/profile.js"></script>
 
 <script>
 
-let walletAddress=null
-
-async function connectWallet(){
-const provider=window.solana
-if(!provider || !provider.isPhantom){
-alert("Phantom not found")
-return
-}
-const res=await provider.connect()
-walletAddress=res.publicKey.toString()
-
-document.getElementById("walletStatus").innerText=
-walletAddress.slice(0,4)+"..."+walletAddress.slice(-4)
-
-loadSignatures()
-}
-
+// ========================
+// LOAD SIGNATURES (SUPABASE)
+// ========================
 async function loadSignatures(){
-const res=await fetch("https://raw.githubusercontent.com/cryptogatsu/bioacc/main/submissions.json?t="+Date.now())
-const data=await res.json()
 
-render(data.manifesto || [])
+  const res = await fetch("/api/manifesto")
+  const sigs = await res.json()
+
+  const list=document.getElementById("signatures")
+  const count=document.getElementById("signatureCount")
+
+  list.innerHTML=""
+
+  for(const sig of sigs){
+
+    let name = sig.wallet.slice(0,4)+"..."+sig.wallet.slice(-4)
+
+    try{
+      const profile = await window.getProfile(sig.wallet)
+      if(profile?.username){
+        name = profile.username
+      }
+    }catch{}
+
+    const el=document.createElement("div")
+    el.className="signature"
+    el.innerText=`> ${name} — ${sig.note || ""}`
+    list.appendChild(el)
+  }
+
+  count.innerText=sigs.length+" people have signed the bio/acc manifesto"
 }
 
-function render(sigs){
-const list=document.getElementById("signatures")
-const count=document.getElementById("signatureCount")
 
-list.innerHTML=""
-
-sigs.forEach(sig=>{
-const el=document.createElement("div")
-el.className="signature"
-el.innerText=`> ${sig.wallet.slice(0,4)}...${sig.wallet.slice(-4)} — ${sig.note}`
-list.appendChild(el)
-})
-
-count.innerText=sigs.length+" people have signed the bio/acc manifesto"
-}
-
+// ========================
+// SIGN MANIFESTO (SUPABASE)
+// ========================
 async function signManifesto(){
 
-if(!walletAddress) return alert("connect wallet")
+  if(!window.wallet) return alert("connect wallet")
 
-const note=document.getElementById("note").value || "signed manifesto"
+  const note = document.getElementById("note").value || "signed manifesto"
 
-const timestamp=Date.now()
-const message=`manifesto:${walletAddress}:${timestamp}`
+  const timestamp = Date.now()
+  const message = `manifesto:${window.wallet}:${timestamp}`
 
-const encoded=new TextEncoder().encode(message)
-const signed=await window.solana.signMessage(encoded,"utf8")
+  const encoded = new TextEncoder().encode(message)
 
-await fetch("/api/update",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-action:"signManifesto",
-data:{
-wallet:walletAddress,
-note,
-timestamp,
-signature:Array.from(signed.signature),
-message
+  // 🔥 THIS TRIGGERS WALLET POPUP
+  const signed = await window.solana.signMessage(encoded, "utf8")
+
+  await fetch("/api/manifesto",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      wallet:window.wallet,
+      note,
+      signature: Array.from(signed.signature),
+      message
+    })
+  })
+
+  document.getElementById("note").value = ""
+
+  loadSignatures()
 }
-})
-})
 
-document.getElementById("note").value=""
-loadSignatures()
-}
 
-loadSignatures()
+
+
+// ========================
+// INIT
+// ========================
+window.addEventListener("DOMContentLoaded", async () => {
+  await autoConnect()
+  await loadSignatures()
+})
 
 </script>
-
 </body>
 </html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>profile</title>
+
+<style>
+
+body{
+margin:0;
+background:#000;
+color:#cfcfcf;
+font-family:Courier New, monospace;
+}
+
+.nav{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+padding:15px 25px;
+background:rgba(0,0,0,0.9);
+border-bottom:1px solid #111;
+display:flex;
+justify-content:space-between;
+align-items:center;
+z-index:10;
+box-sizing:border-box;
+}
+
+.nav-links{
+display:flex;
+gap:20px;
+align-items:center;
+flex-wrap:wrap;
+}
+
+.nav a{
+color:#7CFF3A;
+text-decoration:none;
+white-space:nowrap;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+padding:120px 20px;
+}
+
+h1{color:white;}
+
+input, textarea{
+width:100%;
+background:#000;
+border:1px solid #333;
+color:white;
+padding:10px;
+margin-top:10px;
+}
+
+.button,
+.btn {
+  background: #7CFF3A;
+  color: #000;
+  border: none;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-family: Courier New, monospace;
+  text-transform: lowercase;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+
+  /* ✨ unified glow */
+  box-shadow: 0 0 12px #7CFF3A;
+  transition: all 0.2s ease;
+}
+
+.button:hover,
+.btn:hover {
+  box-shadow: 0 0 22px #7CFF3A;
+  transform: translateY(-1px);
+}
+
+.button:disabled,
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.section{margin-top:40px;}
+
+.profile-link{
+color:#7CFF3A;
+cursor:pointer;
+}
+.profile-link:hover{
+text-decoration:underline;
+}
+
+.dropdown-item{
+  padding:8px;
+  cursor:pointer;
+  color:#7CFF3A;
+}
+
+.dropdown-item:hover{
+  background:#111;
+}
+
+.profile-stats{
+  display:grid;
+  grid-template-columns: repeat(2,1fr);
+  gap:20px;
+  margin-top:40px;
+}
+
+.stat-box{
+  border:1px solid #1f1f1f;
+  padding:20px;
+  background:#050505;
+}
+
+.stat-label{
+  color:#777;
+  font-size:12px;
+  margin-bottom:10px;
+}
+
+.stat-value{
+  color:#7CFC00;
+  font-size:22px;
+  font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="nav">
+  <div>bio/acc profile</div>
+  <div class="nav-links">
+    <a href="/">home</a>
+    <a href="/manifesto">manifesto</a>
+    <a href="/fund">fund</a>
+  </div>
+</div>
+
+<div class="container">
+
+<h1 id="walletTitle">wallet</h1>
+
+<div id="profileBio" style="color:#777;margin-top:10px;"></div>
+
+<div class="section">
+<b>username</b>
+<input id="username">
+</div>
+
+<div class="section">
+<b>bio</b>
+<textarea id="bio"></textarea>
+</div>
+
+<div class="profile-stats" id="profileStats">
+  <div class="stat-box">
+    <div class="stat-label">votes</div>
+    <div class="stat-value" id="statVotes">0</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-label">projects voted</div>
+    <div class="stat-value" id="statProjects">0</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-label">tokens</div>
+    <div class="stat-value" id="statTokens">0</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-label">manifesto</div>
+    <div class="stat-value" id="statManifesto">no</div>
+  </div>
+</div>
+
+<button class="btn" onclick="saveProfile()">save profile</button>
+<div id="saveStatus" style="margin-top:10px;color:#7CFF3A;font-size:14px;"></div>
+
+</div>
+
+<script src="/wallet.js"></script>
+<script src="/profile.js"></script>
+
+<script>
+
+let viewingWallet = null
+
+const params = new URLSearchParams(window.location.search)
+viewingWallet = params.get("wallet")
+
+// ========================
+// LOAD PAGE
+// ========================
+async function load(){
+
+  window.wallet = localStorage.getItem("wallet")
+
+  if(!viewingWallet){
+    viewingWallet = window.wallet
+  }
+
+  await render()
+}
+
+// ========================
+// RENDER PROFILE
+// ========================
+async function render(){
+
+  if(!viewingWallet){
+    document.getElementById("walletTitle").innerText = "no wallet"
+    return
+  }
+
+  const profile = await window.getProfile(viewingWallet)
+
+  const name =
+    profile.username ||
+    viewingWallet.slice(0,4)+"..."+viewingWallet.slice(-4)
+
+  document.getElementById("walletTitle").innerText = name
+  document.getElementById("profileBio").innerText = profile.bio || ""
+
+  // ALWAYS sync inputs
+  document.getElementById("username").value = profile.username || ""
+  document.getElementById("bio").value = profile.bio || ""
+}
+
+// ========================
+// SAVE PROFILE (FIXED)
+// ========================
+async function saveProfile(){
+
+  if(!window.wallet){
+    alert("connect wallet")
+    return
+  }
+
+  const username = document.getElementById("username").value
+  const bio = document.getElementById("bio").value
+
+  document.getElementById("saveStatus").innerText = "saving..."
+
+  // =========================
+  // SIGN
+  // =========================
+  const timestamp = Date.now()
+  const message = `profile:${window.wallet}:${timestamp}`
+  const encoded = new TextEncoder().encode(message)
+
+  const signed = await window.solana.signMessage(encoded, "utf8")
+
+  // =========================
+  // SAVE TO BACKEND
+  // =========================
+  await fetch("/api/profile", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      wallet: window.wallet,
+      username,
+      bio,
+      signature: Array.from(signed.signature),
+      message
+    })
+  })
+
+  // =========================
+  // 🔥 HARD RESET CACHE
+  // =========================
+  delete window.profileCache[window.wallet]
+
+  // =========================
+  // 🔥 FORCE FRESH FETCH
+  // =========================
+  const fresh = await window.getProfile(window.wallet)
+
+  // =========================
+  // 🔥 FORCE UI UPDATE
+  // =========================
+  const name =
+    fresh.username ||
+    window.wallet.slice(0,4)+"..."+window.wallet.slice(-4)
+
+  document.getElementById("walletTitle").innerText = name
+  document.getElementById("profileBio").innerText = fresh.bio || ""
+
+  document.getElementById("username").value = fresh.username || ""
+  document.getElementById("bio").value = fresh.bio || ""
+
+  await window.updateWalletUI(true)
+
+  document.getElementById("saveStatus").innerText = "saved ✓"
+}
+
+// ========================
+// INIT
+// ========================
+window.addEventListener("DOMContentLoaded", async () => {
+
+  await autoConnect()
+
+  if(window.wallet){
+    delete window.profileCache[window.wallet]
+  }
+
+  await render()
+  await updateWalletUI(true)
+
+})
+
+</script>
+
+</body>
+</html>
