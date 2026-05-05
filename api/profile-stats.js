@@ -56,28 +56,36 @@ export default async function handler(req, res){
     }
 
     // ========================
-    // FETCH VOTES
-    // ========================
-    const voteRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/votes?wallet=eq.${wallet}&select=*`,
-      {
-        headers:{
-          apikey: KEY,
-          Authorization:`Bearer ${KEY}`
-        }
-      }
-    )
-
-    const voteText = await voteRes.text()
-    console.log("VOTES RAW:", voteText)
-
-    let votes = []
-    try{
-      votes = JSON.parse(voteText)
-    }catch(err){
-      console.log("VOTES PARSE ERROR:", voteText)
-      return res.status(500).json({ error:"votes parse failed" })
+// FETCH VOTES SAFELY
+// ========================
+const votesRes = await fetch(
+  `${SUPABASE_URL}/rest/v1/votes?wallet=eq.${wallet}&select=*`,
+  {
+    headers: {
+      apikey: KEY,
+      Authorization: `Bearer ${KEY}`
     }
+  }
+)
+
+const votesJson = await votesRes.json()
+
+// ✅ FIX: ALWAYS USE .data OR FALLBACK
+const votes = Array.isArray(votesJson) 
+  ? votesJson 
+  : votesJson?.data || []
+
+// 🛡️ HARD GUARD
+if (!Array.isArray(votes)) {
+  console.log("votes malformed:", votesJson)
+  return res.status(200).json({
+    totalVotes: 0,
+    votesRemaining: 0,
+    projectsVoted: [],
+    hasSigned: false,
+    maxVotes: 0
+  })
+}
 
     // ========================
     // FETCH MANIFESTO
